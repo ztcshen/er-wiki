@@ -1,0 +1,138 @@
+.eda-workspace{--eda-active:#0a78bf;--eda-field-active:#e3f1fd;display:flex;flex-direction:column;flex:1;min-height:0;background:var(--wiki-background);color:var(--wiki-ink)}
+body[theme-mode=dark] .eda-workspace{--eda-active:#7fc4f4;--eda-field-active:#204763}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* One compact application header; file and advanced actions live in More. */
+.desktop-header{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:58px;padding:10px 16px;border-bottom:1px solid var(--wiki-line);background:var(--wiki-card);color:var(--wiki-ink)}
+.desktop-header-identity{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.desktop-brand{display:grid;place-items:center;width:30px;height:30px;flex-shrink:0;border-radius:8px;background:#0f766e;color:white;font-size:17px}
+.desktop-model-switcher{flex:1;min-width:0;max-width:510px}
+.desktop-model-switcher label{display:block;min-width:0}
+.desktop-model-switcher select{width:100%;min-width:0;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--wiki-ink);font:inherit;font-size:14px;font-weight:600;padding:6px 8px;text-overflow:ellipsis;cursor:pointer}
+.desktop-model-switcher select:hover{background:var(--wiki-surface);border-color:var(--wiki-line)}
+.desktop-model-switcher option{background:var(--wiki-card);color:var(--wiki-ink)}
+.desktop-model-switcher small{display:block;color:var(--wiki-danger);font-size:11px;overflow-wrap:anywhere}
+.desktop-header-actions,.desktop-history{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.desktop-history{gap:2px;border-right:1px solid var(--wiki-line);padding-right:8px;margin-right:2px}
+.desktop-header button,.eda-workspace button,.eda-workspace select,.eda-workspace input,.eda-display-panel select,.eda-relationship-form button,.eda-relationship-form select{font:inherit;color:var(--wiki-ink);border:1px solid var(--wiki-line);background:var(--wiki-card);border-radius:6px;padding:6px 10px}
+.desktop-header button,.eda-workspace button{cursor:pointer;font-size:12px;min-height:30px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.desktop-header button:hover,.eda-workspace button:hover{background:var(--wiki-surface)}
+.desktop-header button:disabled,.eda-workspace button:disabled{opacity:.4;cursor:default}
+.desktop-header button:focus-visible,.eda-workspace button:focus-visible,.eda-workspace select:focus-visible,.eda-node:focus-visible{outline:2px solid var(--wiki-primary,#175e7a);outline-offset:2px}
+.desktop-header .desktop-icon-button,.eda-workspace .eda-icon-button{width:30px;height:30px;padding:0;flex-shrink:0;border-color:transparent;background:transparent;font-size:15px}
+.desktop-header .desktop-save-button,.eda-workspace .eda-primary-button{background:#0f766e;border-color:#0f766e;color:white}
+.desktop-header .desktop-save-button:hover,.eda-workspace .eda-primary-button:hover{background:#0b655e}
+.desktop-save-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--wiki-muted);margin-right:8px;white-space:nowrap}
+.desktop-save-status i{width:5px;height:5px;border-radius:50%;background:#66998e}
+.desktop-save-status.is-error{color:var(--wiki-danger)}
+.desktop-save-status.is-error i{background:var(--wiki-danger)}
+.desktop-more-menu{min-width:215px;max-width:300px;max-height:75vh;overflow:auto}
+.desktop-more-menu .semi-dropdown-item{display:flex;align-items:center;gap:10px}
+.desktop-menu-label{flex:1;min-width:0}
+.desktop-more-menu small{color:var(--wiki-muted);font-size:10px}
+
+/* Reading controls: no duplicate breadcrumb, group selector or debug strip. */
+.eda-toolbar{flex-shrink:0;padding:7px 12px;background:var(--wiki-card);border-bottom:1px solid var(--wiki-line)}
+.eda-controls{display:flex;align-items:center;gap:8px;min-width:0}
+.eda-controls>select{font-size:12px;max-width:135px;min-height:30px}
+.eda-scope-name{font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eda-model-count{font-size:11px;color:var(--wiki-muted);white-space:nowrap}
+.eda-view-actions{margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.eda-display-panel{width:270px;max-width:calc(100vw - 32px);padding:16px;color:var(--wiki-ink);font-size:12px;line-height:1.6}
+.eda-display-panel>strong{display:block;margin-bottom:14px;font-size:13px}
+.eda-display-panel>label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.eda-display-panel .eda-display-check{flex-direction:row;align-items:center;gap:8px}
+.eda-display-panel input[type=checkbox]{width:14px;height:14px;accent-color:#0f766e}
+.eda-display-panel select{width:100%;min-width:0}
+.eda-display-panel small{color:var(--wiki-muted);font-size:11px}
+.eda-display-panel details{border-top:1px solid var(--wiki-line);margin-top:12px;padding-top:10px}
+.eda-display-panel summary{cursor:pointer;color:var(--wiki-muted)}
+.eda-display-panel p{margin:8px 0 0}
+
+/* The inspector only occupies space when an object is selected. */
+.eda-body{display:grid;grid-template-columns:minmax(0,1fr);flex:1;min-height:0;gap:8px;padding:8px;position:relative}
+.eda-body[data-directory=true]{grid-template-columns:216px minmax(0,1fr)}
+.eda-body[data-inspector=true]{grid-template-columns:minmax(0,1fr) 292px}
+.eda-body[data-directory=true][data-inspector=true]{grid-template-columns:216px minmax(0,1fr) 292px}
+.eda-directory,.eda-inspector{background:var(--wiki-card);border:1px solid var(--wiki-line);border-radius:8px;padding:12px;min-height:0;min-width:0;overflow:auto}
+.eda-directory{display:flex;flex-direction:column}
+.eda-directory-heading,.eda-inspector-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;font-size:12px;color:var(--wiki-muted)}
+.eda-directory-heading strong,.eda-inspector-heading strong{font-weight:500}
+.eda-directory-tools .group-view-bar{padding:0;display:block;border:0;margin:0}
+.eda-directory-tools .group-view-bar>label,.eda-directory-tools .group-view-summary,.eda-directory-tools .group-legend,.eda-directory-tools .group-view-bar>button:not(:first-of-type){display:none}
+.eda-directory-tools .group-view-bar>button{font-size:11px;border:0;color:var(--wiki-muted);padding:2px 4px;min-height:24px;width:auto}
+.eda-directory>label{display:block}
+.eda-directory input{width:100%;font-size:12px;background:var(--wiki-surface);min-width:0}
+.eda-directory-scroll{overflow:auto;min-height:0;margin-top:8px}
+.eda-directory-scroll button{display:block;width:100%;border:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;min-height:28px;justify-content:flex-start}
+.eda-directory-scroll small{display:block;color:var(--wiki-muted);overflow:hidden;text-overflow:ellipsis;font-size:10px}
+.eda-directory-scroll .eda-domain-heading{display:flex;border-left:3px solid;border-radius:0 5px 5px 0;margin:12px 0 4px;padding:4px 7px;font-weight:600;gap:5px}
+.eda-domain-heading small{display:inline;margin-left:auto;flex-shrink:0;font-weight:400}
+.eda-directory-scroll .eda-table-link{padding-left:12px;font-size:11.5px}
+.eda-directory-scroll button[aria-current=true],.eda-directory-scroll button[aria-pressed=true]{background:var(--wiki-surface);color:var(--eda-active)}
+.eda-canvas{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--wiki-line);border-radius:8px;overflow:hidden;background:var(--wiki-canvas)}
+.eda-scene{flex:1;min-height:0;height:0;width:100%;display:block;touch-action:none;user-select:none}
+.eda-node{cursor:pointer}
+.eda-node-title{font-size:14px;font-weight:600;fill:var(--wiki-ink)}
+.eda-small{font-size:11px;fill:var(--wiki-muted)}
+.eda-label-code{font-size:12px;fill:var(--wiki-ink);font-weight:600}
+.eda-field-name{font-size:11px;fill:var(--wiki-ink)}
+.eda-field-type{font-size:10px;fill:var(--wiki-type-number)}
+.eda-canvas-controls{position:absolute;bottom:12px;right:12px;display:flex;gap:2px;padding:3px;background:var(--wiki-card);border:1px solid var(--wiki-line);border-radius:8px;box-shadow:0 2px 10px #0000000b}
+.eda-canvas-controls button{width:30px;height:30px;padding:0;border:0;font-size:17px}
+.eda-canvas-controls button[aria-label="适应窗口"]{font-size:13px}
+.eda-canvas-hint{position:absolute;left:14px;bottom:17px;font-size:10px;color:var(--wiki-muted);pointer-events:none}
+.eda-metrics{position:absolute;bottom:12px;left:12px;right:125px;padding:7px 10px;border:1px solid var(--wiki-line);border-radius:6px;background:var(--wiki-card);color:var(--wiki-muted);font-size:11px;pointer-events:none}
+.eda-metrics small{display:block;font-size:10px}
+.eda-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--wiki-background);opacity:.97;padding:24px;text-align:center;font-size:13px}
+.eda-error{color:var(--wiki-danger)}
+.eda-inspector{font-size:12px;overflow-wrap:anywhere}
+.eda-inspector-heading{position:sticky;top:-12px;padding:6px 0 8px;background:var(--wiki-card);z-index:1;border-bottom:1px solid var(--wiki-line)}
+.eda-inspector h3{font-size:14px;margin:0 0 10px}
+.eda-inspector p{margin:6px 0 12px;line-height:1.65}
+.eda-inspector>button{margin:0 4px 6px 0}
+.eda-code{font-family:ui-monospace,monospace}
+.eda-detail-count{color:var(--wiki-muted);font-size:11px;font-weight:400}
+h3 .eda-detail-count{margin-left:10px}
+.eda-detail-actions{display:flex;gap:8px;margin-bottom:14px}
+.eda-member-list article{padding:12px 0;border-bottom:1px solid var(--wiki-line)}
+.eda-member-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.eda-member-heading .eda-text-link{border:0;padding:0;background:transparent;color:var(--eda-active);text-align:left;justify-content:flex-start;overflow:hidden;text-overflow:ellipsis;min-width:0;font-size:12px}
+.eda-evidence summary{cursor:pointer;color:var(--wiki-muted);font-size:11px;padding:5px 0}
+.eda-evidence small{display:block;color:var(--wiki-muted);line-height:1.6;padding:6px 0}
+.eda-evidence p{white-space:pre-line;font-size:12px}
+.eda-field-details{border-bottom:1px solid var(--wiki-line);margin-bottom:12px;padding-bottom:10px}
+.field-code-reference{margin:8px 0;padding:8px 10px;border:1px solid var(--wiki-line);border-radius:5px;background:var(--wiki-surface);font-size:12px;overflow-wrap:anywhere}
+.field-code-reference summary{cursor:pointer;color:var(--wiki-muted);font-size:11px}
+.field-code-reference p{margin:8px 0 4px}
+.field-code-reference small{color:var(--wiki-muted)}
+.eda-model-editor{height:min(64vh,600px);overflow:hidden}
+.eda-model-editor .wiki-sidebar-inner{width:100%!important}
+.eda-model-editor .wiki-sidebar-resize{display:none}
+.eda-relationship-form{display:grid;gap:12px}
+.eda-relationship-form label{display:grid;grid-template-columns:90px minmax(0,1fr);align-items:center;gap:8px}
+.eda-relationship-form [role=alert]{color:var(--wiki-danger)}
+
+@media(max-width:1100px){
+  .eda-body[data-directory=true]{grid-template-columns:195px minmax(0,1fr)}
+  .eda-body[data-inspector=true]{grid-template-columns:minmax(0,1fr)}
+  .eda-body[data-directory=true][data-inspector=true]{grid-template-columns:195px minmax(0,1fr)}
+  .eda-inspector{position:absolute;top:8px;bottom:8px;right:8px;width:292px;max-width:calc(100% - 16px);z-index:4;box-shadow:0 8px 32px #0003}
+  .desktop-save-status{margin-right:2px}.eda-scope-name{max-width:130px}
+}
+@media(max-width:760px){
+  .desktop-header{flex-wrap:wrap;gap:6px;padding:8px 10px}
+  .desktop-header-identity{flex-basis:100%}.desktop-model-switcher{max-width:none}
+  .desktop-header-actions{width:100%;justify-content:flex-end}
+  .desktop-save-status{margin-right:auto}.desktop-model-switcher select{font-size:13px}
+  .eda-toolbar{padding:6px 8px}.eda-controls{gap:5px}.eda-scope-name{display:none}
+  .eda-model-count span{display:none}.eda-controls>select{max-width:112px}
+}
+@media(max-width:600px){
+  .eda-body{padding:5px;gap:5px}
+  .eda-body[data-directory=true],.eda-body[data-directory=true][data-inspector=true]{grid-template-columns:minmax(0,1fr)}
+  .eda-directory{position:absolute;top:5px;bottom:5px;left:5px;width:235px;z-index:3;box-shadow:0 8px 32px #0003}
+  .eda-canvas-hint{display:none}.eda-inspector{top:5px;bottom:5px;right:5px}
+  .eda-controls>select{max-width:100px}.eda-back-button{padding:5px!important}.eda-view-actions{gap:3px}
+  .eda-view-actions button{padding:5px 7px}.eda-model-count{font-size:10px}
+}
