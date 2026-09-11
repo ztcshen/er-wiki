@@ -15,9 +15,10 @@ Ad-hoc macOS signing is not Developer ID notarization.
 ## Reporting
 
 Do not publish credentials, internal schemas or real data in an issue.
-Once the proposed GitHub repository exists and private vulnerability reporting is
-enabled, use that private channel. Until then, contact the maintainer through the
-GitHub profile and agree on a private reporting channel before sending details.
+Use GitHub's private vulnerability-reporting channel when it is available at
+https://github.com/ztcshen/er-wiki/security/advisories/new.
+If unavailable, contact the maintainer through the GitHub profile and agree on
+a private reporting channel before sending details.
 
-Supported version policy will be set with the first public release. At present
-there is only a local preview candidate, not a supported public release.
+Only the latest community preview is being maintained. It is not a stable
+production release and carries no security-response SLA.

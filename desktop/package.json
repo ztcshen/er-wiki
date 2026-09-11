@@ -12,8 +12,7 @@
     "build": "node build.mjs",
     "start": "electron .",
     "package": "npm run build && node package.mjs",
-    "test": "node --test test/*.test.cjs",
-    "test:e2e": "node ../frontend/node_modules/@playwright/test/cli.js test --config test/playwright.config.cjs"
+    "test": "node --test test/*.test.cjs"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",

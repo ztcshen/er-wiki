@@ -4,8 +4,10 @@ An offline-first desktop workspace for understanding and editing database models
 Built with Electron, drawDB and ELK. The current interface is primarily Chinese;
 broader localization is a planned contribution area.
 
-**Local open-source candidate — not published or released yet.** Proposed GitHub
-home: `ztcshen/er-wiki`. This directory has a new, independent Git history.
+[![CI](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml/badge.svg)](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
+
+**Community preview.** [Source](https://github.com/ztcshen/er-wiki) ·
+[Downloads and release notes](https://github.com/ztcshen/er-wiki/releases)
 
 [中文说明](README.zh-CN.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
@@ -76,8 +78,8 @@ modeling tool. Layout selection is heuristic, not a global optimum. A drawn
 logical relationship is not automatically a database constraint.
 
 See [known limitations](docs/KNOWN_LIMITATIONS.md) and the
-[publication checklist](docs/PUBLISH_CHECKLIST.md). CI configuration is included
-but has not run on GitHub; no GitHub repository, PR or Release was created.
+[publication checklist](docs/PUBLISH_CHECKLIST.md). The CI badge and release page
+show live status. A passing build is not an independent review or full UI acceptance.
 
 ## License and attribution
 

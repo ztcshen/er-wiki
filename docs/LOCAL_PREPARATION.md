@@ -1,6 +1,7 @@
 # Local preparation record
 
-This is a local-only candidate. GitHub account identity was checked as
+Historical local-preparation record at commit `5bfa6dc`, before publication
+authorization. GitHub account identity was checked as
 `ztcshen`; no remote repository, PR, workflow run or Release was created.
 
 The source starts with a new local history and a fictional 13-table, 19-relation
@@ -20,8 +21,8 @@ upstream icon. The guard now requires a complete address token, rather than
 accepting a prefix inside a longer dotted coordinate sequence.
 
 This is not a clean-machine npm-install verification or a full secret audit.
-UI/regression checks were not run. GitHub CI, independent review, maintained
-secret scanning and release-signing work remain pending.
+UI/regression checks were not run at this checkpoint. For later publication
+status, use the repository CI and release pages rather than this historical record.
 
 Local dependency-cache symlinks are ignored and are not part of source commits
 or application source bundles. A fresh clone should use npm ci and npm run setup.

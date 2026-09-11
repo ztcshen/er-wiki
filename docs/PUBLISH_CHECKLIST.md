@@ -1,9 +1,9 @@
 # Publication checklist
 
-Current decision: **local preparation only**. No remote repository, PR, tag push,
-Release or public binary upload is authorized by this checkpoint.
+Publication of this sanitized community preview has been authorized. Only the
+generic application and fictional fulfillment example are in scope.
 
-Planned owner/name: `ztcshen/er-wiki`.
+Owner/name: `ztcshen/er-wiki`.
 
 ## Candidate content
 
@@ -18,10 +18,10 @@ Planned owner/name: `ztcshen/er-wiki`.
 - [ ] Review dependency security/license results and existing limitations.
 - [ ] Complete the agreed focused UI and platform checks before a stable release.
 
-## After explicit permission to publish
+## Publication sequence
 
 1. Recheck the active GitHub account is `ztcshen`, repository name and visibility.
-2. Agree how to bootstrap an empty default branch; do not silently push main.
+2. Bootstrap README and LICENSE on GitHub; publish full source through a PR.
 3. Publish the candidate branch and open a draft PR.
 4. Evaluate CI and review against the exact current PR head.
 5. Address actionable feedback before requesting merge/release approval.

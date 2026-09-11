@@ -3,8 +3,10 @@
 一个本地优先的数据库模型桌面工作台，基于 Electron、drawDB 和 ELK。
 目前界面主要为中文，开源候选版与原有业务工作区使用不同的数据目录。
 
-**当前仅整理到本地，未创建 GitHub 仓库、未推送、未发布 Release。**
-计划使用账号/仓库：`ztcshen/er-wiki`。
+**当前为社区预览版。**
+[GitHub 仓库](https://github.com/ztcshen/er-wiki) ·
+[下载与发布说明](https://github.com/ztcshen/er-wiki/releases) ·
+[CI 状态](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
 ## 电商履约示例
 
