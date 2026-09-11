@@ -1,0 +1,22 @@
+{
+  "name": "er-wiki-desktop",
+  "productName": "ER Wiki",
+  "version": "0.1.0-preview.1",
+  "private": true,
+  "description": "Local-first ER model workspace based on drawDB",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "main.cjs",
+  "scripts": {
+    "runtime": "install-electron",
+    "build": "node build.mjs",
+    "start": "electron .",
+    "package": "npm run build && node package.mjs",
+    "test": "node --test test/*.test.cjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "44.3.0",
+    "elkjs": "0.12.0"
+  }
+}

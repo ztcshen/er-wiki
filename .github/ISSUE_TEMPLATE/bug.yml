@@ -1,0 +1,25 @@
+name: Bug report
+description: Report a reproducible issue using fictional data
+body:
+  - type: markdown
+    attributes:
+      value: Do not include real business models, credentials or personal records.
+  - type: input
+    id: version
+    attributes:
+      label: Version and operating system
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Prefer the included fulfillment example.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true

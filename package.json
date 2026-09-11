@@ -1,0 +1,22 @@
+{
+  "name": "er-wiki-workspace",
+  "version": "0.1.0-preview.1",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "build": "npm --prefix desktop run build",
+    "start": "npm --prefix desktop start",
+    "package": "npm --prefix desktop run package",
+    "demo": "node scripts/build-demo.mjs",
+    "scan": "node scripts/privacy-guard.mjs",
+    "test": "npm --prefix desktop test"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "6.5.2",
+    "bootstrap-icons": "1.11.1",
+    "monaco-editor": "0.52.2"
+  }
+}
