@@ -1,0 +1,30 @@
+title = "ER Wiki secret scanning"
+
+[extend]
+useDefault = true
+
+# These are reviewed JavaScript syntax/SQL-parser identifiers, not credentials.
+# Keep both path and exact expression restrictions; never exclude a whole bundle.
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "TypeScript worker AST member expression"
+condition = "AND"
+paths = ['''(?:^|/)vendor/monaco/language/typescript/tsWorker\.js$''']
+regexTarget = "match"
+regexes = ['''^[A-Za-z_$][\w$]*\.token,[A-Za-z_$][\w$]*=[A-Za-z_$][\w$]*\.parent\.kind;$''']
+
+[[rules.allowlists]]
+description = "Monaco keybinding module export initialization"
+condition = "AND"
+paths = ['''(?:^|/)vendor/monaco/editor/editor\.main\.js$''']
+regexTarget = "match"
+regexes = ['''^[A-Za-z_$][\w$]*\.KeybindingResolver=[A-Za-z_$][\w$]*\.NoMatchingKb=void\s*$''']
+
+[[rules.allowlists]]
+description = "SQL grammar property names in bundled parser"
+condition = "AND"
+paths = ['''(?:^|/)assets/index-[^/]+\.js$''']
+regexTarget = "match"
+regexes = ['''^key:[`](?:visitAt[_]before1|SAML2[_]X509[_]CERT|SAML2[_]ENABLE[_]SP[_]INITIATED|SAML2[_]SNOWFLAKE[_]X509[_]CERT|SAML2[_]SNOWFLAKE[_]ACS[_]URL)[`]$''']

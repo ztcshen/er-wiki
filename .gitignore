@@ -1,0 +1,13 @@
+node_modules
+work/
+desktop/node_modules
+desktop/dist/
+desktop/release/
+desktop/test-results/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+private/
+user-data/

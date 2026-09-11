@@ -1,0 +1,6 @@
+{
+  "repository": "https://github.com/drawdb-io/drawdb.git",
+  "commit": "95cc92ec0f35d30ad2d18eb8480b7ae6df780df8",
+  "license": "AGPL-3.0-only",
+  "patch": "patches/drawdb-editor.patch"
+}
