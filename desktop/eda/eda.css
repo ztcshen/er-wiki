@@ -73,6 +73,13 @@ body[theme-mode=dark] .eda-workspace{--eda-active:#7fc4f4;--eda-field-active:#20
 .eda-canvas{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--wiki-line);border-radius:8px;overflow:hidden;background:var(--wiki-canvas)}
 .eda-scene{flex:1;min-height:0;height:0;width:100%;display:block;touch-action:none;user-select:none}
 .eda-node{cursor:pointer}
+[data-eda-cardinality]{cursor:pointer}
+.eda-cardinality-note{font-size:11px;color:var(--wiki-muted);line-height:1.6}
+.eda-cardinality-tables{font-size:11px;color:var(--wiki-muted);overflow-wrap:anywhere}
+.eda-member-list article[data-selected=true]{border-left:3px solid var(--eda-active);padding-left:10px;background:var(--wiki-surface)}
+.eda-member-list .eda-cardinality-pair{display:flex;align-items:center;gap:10px;border:1px solid var(--wiki-line);border-radius:5px;background:var(--wiki-surface);width:100%;padding:7px 9px;margin:8px 0;color:var(--wiki-ink)}
+.eda-cardinality-pair strong{font-size:13px;letter-spacing:.04em;color:var(--eda-active)}
+.eda-cardinality-pair span{font-size:11px;color:var(--wiki-muted)}
 .eda-node-title{font-size:14px;font-weight:600;fill:var(--wiki-ink)}
 .eda-small{font-size:11px;fill:var(--wiki-muted)}
 .eda-label-code{font-size:12px;fill:var(--wiki-ink);font-weight:600}

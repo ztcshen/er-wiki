@@ -89,6 +89,17 @@ try{
     await page.getByRole('option',{name:/^orders\.status/}).click();await ready();
     await page.waitForFunction(()=>Number(document.querySelector('[data-eda-scene]').getAttribute('viewBox').split(' ')[2])<1000);
     await capture(`fulfillment-focus-${language}.png`,`${language}: actual focused field and navigation minimap`);
+    await page.getByRole('button',{name:/^(适应窗口|Fit to window)$/}).click();
+    const relation=demo.relationships.find(r=>r.startTableId==='order_items'&&r.endTableId==='orders');
+    const badges=page.locator('[data-eda-cardinality]');
+    const badgeIndex=await badges.evaluateAll((nodes,id)=>nodes.findIndex(node=>node.dataset.cardinalityTable==='order_items'&&JSON.parse(node.dataset.relIds).includes(id)),relation.id);
+    assert(badgeIndex>=0);assert.equal(await badges.nth(badgeIndex).getAttribute('data-eda-cardinality'),'N');
+    await badges.nth(badgeIndex).click();await page.mouse.move(20,70);
+    await page.getByRole('button',{name:/^(Focus relationship|定位关系)$/}).click();
+    assert.equal(await page.locator('[data-net-member][data-selected="true"]').getAttribute('data-net-member'),relation.id);
+    const highlighted=await page.locator('[data-eda-wire][data-highlight="true"]').evaluateAll(nodes=>nodes.map(node=>JSON.parse(node.dataset.relIds)));
+    assert(highlighted.length>0&&highlighted.every(ids=>ids.includes(relation.id)));
+    await capture(`fulfillment-cardinality-${language}.png`,`${language}: actual 1:N table endpoints and individual relation tracing`);
     await overview();
     await page.getByRole('button',{name:/^(Quick search|快速查找)$/}).click();
     await page.getByRole('combobox',{name:/^(Search actions or fields|搜索操作或表字段)$/}).fill('orders.status');
@@ -108,6 +119,7 @@ try{
   const svg=await fs.readFile(exported,'utf8');
   assert.equal((svg.match(/data-node-kind="table"/g)||[]).length,demo.tables.length);
   assert(svg.includes('显示名称'));assert(!svg.includes('eda-toolbar'));assert(!svg.includes('eda-minimap'));
+  assert(svg.includes('data-eda-cardinality="1"'));assert(svg.includes('data-eda-cardinality="N"'));
   await fs.copyFile(exported,path.join(output,'fulfillment.svg'));
   await closeEditor();
   const saved=await readModel();

@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import EdaScene from './EdaScene';
 
-export function diagramSvg(result, view, style) {
-  const text = renderToStaticMarkup(<EdaScene result={result} view={view} selectedNet={null} onNet={()=>{}} onNode={()=>{}} onEdit={()=>{}} onField={()=>{}} onView={()=>{}}/>);
+export function diagramSvg(result, view, style, {showCardinality=true} = {}) {
+  const text = renderToStaticMarkup(<EdaScene result={result} view={view} selectedNet={null} showCardinality={showCardinality} onNet={()=>{}} onNode={()=>{}} onEdit={()=>{}} onField={()=>{}} onView={()=>{}}/>);
   const document = new DOMParser().parseFromString(text, 'image/svg+xml'), svg = document.documentElement;
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('width', String(Math.ceil(view[2]))); svg.setAttribute('height', String(Math.ceil(view[3])));

@@ -121,6 +121,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
   }
   return finish();
   function finish(){
-    return {level,nodes:[...nodes.values()],edges,nets,domains,covered:[...covered],totalRelations:model.relationships.length};
+    return {level,nodes:[...nodes.values()],edges,nets,domains,covered:[...covered],totalRelations:model.relationships.length,
+      tableNames:model.tables.map(t=>({id:t.id,name:t.name}))};
   }
 }

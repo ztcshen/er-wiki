@@ -25,6 +25,7 @@ Simplified Chinese and the system default without translating your model content
 - Display preferences are separate from saved model content.
 - Keyboard-first quick search (⌘/Ctrl+K), grouped actions and independently folding domains.
 - Navigation minimap, cursor-anchored zoom, 100% reading scale and remembered layout direction.
+- 1 / N endpoint cardinality, individual relationship tracing and focus within bundles or Net Labels.
 - No hosted account, cloud-sharing service or application telemetry is required.
 
 ## Fictional fulfillment example
@@ -33,17 +34,21 @@ The included example models **products and warehouse stock → order reservation
 split fulfillment → parcel shipment → returns**. It has 13 tables and supports
 multi-warehouse allocation and partial shipments at the schema level.
 
-These are real screenshots of the local **0.2.0-preview.3 macOS desktop app**,
+These are real screenshots of the local **0.2.0-preview.4 macOS desktop app**,
 loaded with the example JSON below. They are not a separately drawn mockup.
 
 ![Actual ER Wiki desktop: all 13 fulfillment tables](docs/images/fulfillment-desktop-en.png)
 
+Read one-to-many endpoints and trace an individual relationship inside a bundle:
+
+![Actual ER Wiki desktop: cardinality and individual relationship tracing](docs/images/fulfillment-cardinality-en.png)
+
+<details>
+<summary>Field details, table editor and quick search</summary>
+
 Focus on a field at reading size while keeping its context in the minimap:
 
 ![Actual ER Wiki desktop: field details and navigation minimap](docs/images/fulfillment-focus-en.png)
-
-<details>
-<summary>Table editor and quick search</summary>
 
 The same model in the actual table editor, including field names, types and display names:
 
