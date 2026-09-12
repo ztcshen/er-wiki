@@ -9,7 +9,7 @@
 [下载与发布说明](https://github.com/ztcshen/er-wiki/releases) ·
 [CI 状态](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
-当前源码版本为 `0.2.0-preview.3`；已发布版本与安装包以 Releases 为准。
+当前源码版本为 `0.2.0-preview.4`；已发布版本与安装包以 Releases 为准。
 
 ## 桌面工作流
 
@@ -17,6 +17,7 @@
 - ⌘/Ctrl+K 快速查找表、字段和操作；菜单按任务分组，目录分组可独立折叠。
 - 按模型恢复领域、选中表、缩放平移；支持阅读书签和返回上次位置。
 - 导航小地图、鼠标定点缩放、100% 阅读比例，以及自动／横向／纵向布局方向。
+- 表端 1 / N 基数、线束内单条关系追踪，以及包含 Net Label 的完整关系定位。
 - 搜索表、字段、别名、注释及枚举解释。
 - 修改显示名称、说明和枚举不重排整图；结构变化重新布局。
 - SQL 本机解析预览后导入新模型；JSON 带版本号并兼容旧文件。
@@ -34,17 +35,21 @@
 - 分仓履约、包裹及部分发货；
 - 退货申请、退货明细与入库处置。
 
-以下为本地 **0.2.0-preview.3 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
+以下为本地 **0.2.0-preview.4 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
 不是另一套绘图脚本生成的示意图。
 
 ![真实桌面界面：电商履约全部 13 张表](docs/images/fulfillment-desktop-zh.png)
 
+查看表两端的一对多基数，在线束中单独追踪一条关系：
+
+![真实桌面界面：关系基数与单条关系追踪](docs/images/fulfillment-cardinality-zh.png)
+
+<details>
+<summary>字段详情、表编辑和快速查找截图</summary>
+
 定位到字段，以正常比例阅读，并通过小地图保留位置参照：
 
 ![真实桌面界面：字段详情和导航小地图](docs/images/fulfillment-focus-zh.png)
-
-<details>
-<summary>表编辑和快速查找截图</summary>
 
 同一模型的真实表编辑界面，展示字段名、类型、显示名称三列：
 

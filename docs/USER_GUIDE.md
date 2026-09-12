@@ -64,6 +64,25 @@ refresh presentation without moving nodes. Structural edits and Arrange rerun EL
 共享引用可以合并为 Bus / Hub，长线可用同名 Net Label 表示。点击关系查看原始成员和依据。
 修改注释、字段别名、类型显示或枚举解释不会重排整图；增删表、改变关联和分组结构才触发布局。
 
+## Cardinality and tracing / 基数与关系追踪
+
+Table endpoints show **1** or **N** according to the model's relationship definition.
+One-to-many and many-to-one are opposite readings of the same relationship, not
+two separate wires. `?` means unspecified; Mixed means different cardinalities
+share a port. These markers do not infer minimum participation or prove row counts
+or database constraints. A bundle's relationship count is not cardinality.
+
+Click a branch or its endpoint badge to highlight that relationship, including its
+shared trunk. Click its Net Label to trace the same logical connection. The
+relationship panel shows the two endpoint values; **Focus relationship** frames
+its tables, routed path and complete labels. **Display → Show cardinality** toggles
+the annotations without editing the model; diagram exports follow this setting.
+
+表端 `1 / N` 来自模型定义，一对多和多对一是同一条关系的两个观察方向。
+`?` 表示未定义，混合表示同一端口存在不同基数；不推断最少参与条数，也不代表真实数据量或物理约束。
+线束的“几条关系”与基数分开显示。点击分支、端点或 Net Label 可追踪单条关系，
+右侧“定位关系”会将两端表、路径和完整标签纳入视野。可在“显示”中关闭标记，导出也遵循该设置。
+
 ## Save and recover / 保存与恢复
 
 | Action / 操作 | Meaning / 含义 |

@@ -1,4 +1,19 @@
-# 0.2.0-preview.3 — Diagram navigation
+# 0.2.0-preview.4 — ER cardinality and relation tracing
+
+- Display 1 / N at real table endpoints while keeping orthogonal routing.
+- Keep bundle relationship counts separate from cardinality; mixed endpoint values are shown explicitly.
+- Select one relationship within a bundle or Net Label network and trace only its complete path.
+- Inspect cardinality in the relationship panel and focus both endpoints, routed paths and complete Net Labels.
+- Remember the selected relationship without changing model content or reading-position keys.
+- Toggle cardinality under Display; include the same annotations in diagram exports.
+- Refresh bilingual screenshots from the packaged desktop with the fictional fulfillment model only.
+
+Cardinality describes the model's configured multiplicity, not live row counts or
+verified database constraints. Minimum participation is not inferred; unspecified
+cardinality is shown as a question mark. Private business models/configurations
+are not included in this community release.
+
+## Diagram navigation
 
 - Optional navigation minimap with click, drag and keyboard movement.
 - Smooth cursor-anchored wheel zoom and a 100% reading-scale button.
