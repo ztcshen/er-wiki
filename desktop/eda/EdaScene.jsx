@@ -11,7 +11,7 @@ const fitText=(value,width,size=11)=>{
 };
 
 const pathText=points=>points.map((p,i)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' ');
-export default function EdaScene({result,selectedNet,selectedRelation=null,showCardinality=true,onNet,onNode,onEdit,onField,view,onView}){
+export default function EdaScene({result,selectedNet,selectedRelation=null,showCardinality=true,onNet,onNode,onEdit,onField,view,onView,renderNode,renderEdge,highlightBindings=[]}){
   const drag=useRef(null),svg=useRef(null);
   const updateView=useRef(onView);updateView.current=onView;
   useEffect(()=>{
@@ -33,7 +33,7 @@ export default function EdaScene({result,selectedNet,selectedRelation=null,showC
   const activeRelation=hover?hover.relationId:selectedRelation;
   const activeNet=result.projection.nets.find(n=>n.id===active);
   const activeMembers=activeRelation!=null?[relationMeta.get(activeRelation)].filter(Boolean):activeNet?.members||[];
-  const endpoint=(tid,fid)=>activeMembers.some(r=>(r.fields||[r]).some(p=>r.startTableId===tid&&p.startFieldId===fid||r.endTableId===tid&&p.endFieldId===fid));
+  const endpoint=(tid,fid)=>highlightBindings.some(b=>b.tableId===tid&&(b.fieldIds.includes(fid)||b.state?.fieldId===fid))||activeMembers.some(r=>(r.fields||[r]).some(p=>r.startTableId===tid&&p.startFieldId===fid||r.endTableId===tid&&p.endFieldId===fid));
   const tableNames=new Map(result.projection.tableNames?.map(t=>[t.id,t.name])||result.projection.nodes.filter(n=>n.kind==='table').map(n=>[n.tableId,n.title]));
   const nodeRefs=nodeRelations(result.projection);
   const describe=refs=>refs.map(id=>relationMeta.get(id)).filter(Boolean).map(r=>relationCaption(r,id=>tableNames.get(id)||String(id),tr)).join('\n');
@@ -42,7 +42,7 @@ export default function EdaScene({result,selectedNet,selectedRelation=null,showC
   const [x,y,w,h]=view;
   const netColor=id=>result.projection.nodes.find(n=>n.netId===id)?.color||'#536f8b';
   return <svg ref={svg} className="eda-scene" data-eda-scene viewBox={view.join(' ')}
-    onPointerDown={event=>{if(event.button!==0||event.target.closest('[data-eda-node],[data-eda-wire],[data-eda-cardinality]'))return;
+    onPointerDown={event=>{if(event.button!==0||event.target.closest('[data-eda-node],[data-eda-wire],[data-eda-cardinality],[data-process-edge]'))return;
       drag.current={x:event.clientX,y:event.clientY,view:[...view]};svg.current.setPointerCapture(event.pointerId);}}
     onPointerMove={event=>{if(!drag.current)return;const rect=svg.current.getBoundingClientRect(),d=drag.current;
       const scale=Math.max(d.view[2]/rect.width,d.view[3]/rect.height);onView([d.view[0]-(event.clientX-d.x)*scale,d.view[1]-(event.clientY-d.y)*scale,d.view[2],d.view[3]]);}}
@@ -51,6 +51,7 @@ export default function EdaScene({result,selectedNet,selectedRelation=null,showC
     <defs><pattern id="eda-grid" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".8" fill="var(--wiki-grid)" /></pattern></defs>
     <rect x={x} y={y} width={w} height={h} fill="url(#eda-grid)" />
     {(result.layout.edges||[]).map(edge=>{const m=edgeMeta.get(edge.id),highlight=matchesRelation(m,active,activeRelation),dim=(active||activeRelation!=null)&&!highlight,uncertain=m.refs.some(id=>relationMeta.get(id)?.reviewEvidence?.kind==='inferred');
+      if(renderEdge&&m.kind.startsWith('process-'))return <g key={edge.id}>{renderEdge(edge,m)}</g>;
       return <g key={edge.id} data-eda-wire={edge.id} data-net-ids={JSON.stringify(m.netIds)} data-rel-ids={JSON.stringify(m.refs)}
         data-kind={m.kind} data-highlight={highlight?'true':'false'} opacity={dim?.15:1} role="button" tabIndex={0}
         aria-label={describe(m.refs)}
@@ -71,13 +72,13 @@ export default function EdaScene({result,selectedNet,selectedRelation=null,showC
         className="eda-node" role="button" tabIndex={0} aria-label={`${m.kind} ${m.title}`}
         onClick={select} onDoubleClick={event=>{if(m.kind==='table'){event.stopPropagation();onEdit(m.tableId);}}} onKeyDown={event=>{if(event.key==='Enter')select();}}>
         <title>{virtual?`${m.title}\n${describe(refs)}`:m.comment||m.title}</title>
-        {m.kind==='junction'?<><line x1="0" y1="12" x2="24" y2="12" stroke={lit?'var(--eda-active)':m.color} strokeWidth="2"/><circle cx="12" cy="12" r="4" fill={lit?'var(--eda-active)':m.color}/></>:
+        {renderNode&&['action','decision','event'].includes(m.kind)?renderNode(node,m):m.kind==='junction'?<><line x1="0" y1="12" x2="24" y2="12" stroke={lit?'var(--eda-active)':m.color} strokeWidth="2"/><circle cx="12" cy="12" r="4" fill={lit?'var(--eda-active)':m.color}/></>:
           m.kind==='hub'?<><path d="M 0 29 H 12 M 68 29 H 80" stroke={lit?'var(--eda-active)':m.color} strokeWidth="2"/>
             <path d="M 40 13 L 68 29 L 40 45 L 12 29 Z" fill="var(--wiki-card)" stroke={lit?'var(--eda-active)':m.color} strokeWidth="2" />
             <text x="40" y="33" textAnchor="middle" fontSize="11" fill="var(--wiki-ink)">{m.fanout}</text><text x="40" y="10" textAnchor="middle" className="eda-small">Hub · {m.title}</text></>:
           m.kind==='label'?<><path d={`M 0 0 H ${m.width-12} L ${m.width} 26 L ${m.width-12} 52 H 0 Z`} fill="var(--wiki-card)" stroke={lit?'var(--eda-active)':m.color} strokeWidth={lit?3:1.5}/>
             <text x="10" y="21" className="eda-label-code">{m.title} · Net Label</text><text x="10" y="40" className="eda-small">{m.subtitle.slice(0,25)}</text></>:
-          <><rect width={node.width} height={node.height} rx="5" fill="var(--wiki-card)" stroke="var(--wiki-line)" />
+          <><rect width={node.width} height={node.height} rx="5" fill="var(--wiki-card)" stroke={highlightBindings.some(b=>b.tableId===m.tableId)?'var(--eda-active)':'var(--wiki-line)'} strokeWidth={highlightBindings.some(b=>b.tableId===m.tableId)?2:1} data-process-table-highlight={highlightBindings.some(b=>b.tableId===m.tableId)?'true':undefined}/>
             <rect width={node.width} height="4" rx="2" fill={m.color}/>
             <text x="12" y="26" className="eda-node-title">{fitText(m.kind==='domain'&&m.domainId==='__unassigned__'?tr(m.title):m.title,node.width-24,14)}</text>
             {m.kind==='domain'?<><text x="12" y="55" className="eda-small">{m.tableIds.length} 张表 · {m.internal.length} 条内部关系</text><text x="12" y="90" className="eda-small">点击进入领域 →</text></>:

@@ -1,4 +1,5 @@
-export const MODEL_VERSION = 1;
+import { validateProcessModel } from '../process/definition.mjs';
+export const MODEL_VERSION = 2;
 
 // Version 0 is the original drawDB JSON. Migration never rewrites field content.
 export function migrateModelDocument(value) {
@@ -7,6 +8,7 @@ export function migrateModelDocument(value) {
   if (!Number.isInteger(version) || version < 0 || version > MODEL_VERSION)
     throw new Error('This model requires a newer ER Wiki version');
   if (value.format && value.format !== 'er-wiki') throw new Error('Unsupported model format');
+  validateProcessModel(value.processModel);
   return { ...value, format: 'er-wiki', schemaVersion: MODEL_VERSION,
     notes: value.notes ?? [], subjectAreas: value.subjectAreas ?? [] };
 }

@@ -1,0 +1,289 @@
+.process-switchbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--wiki-line);
+  background: var(--wiki-card);
+  min-height: 51px;
+}
+.process-view-tabs {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--wiki-surface);
+  border: 1px solid var(--wiki-line);
+  gap: 2px;
+}
+.process-view-tabs button {
+  border: 0 !important;
+  background: transparent !important;
+  padding: 6px 13px !important;
+  font-size: 12px !important;
+}
+.process-view-tabs button[aria-pressed="true"] {
+  background: var(--wiki-card) !important;
+  box-shadow: 0 1px 4px #0001;
+  color: var(--eda-active) !important;
+  font-weight: 600;
+}
+.process-switchbar select,
+.process-toolbar select {
+  font: inherit;
+  font-size: 12px;
+  color: var(--wiki-ink);
+  background: var(--wiki-surface);
+  border: 1px solid var(--wiki-line);
+  padding: 6px 8px;
+  border-radius: 6px;
+  max-width: 230px;
+}
+.process-switchbar .process-config-button {
+  margin-left: auto;
+}
+.process-context {
+  font-size: 11px;
+  color: var(--eda-active);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.process-muted {
+  color: var(--wiki-muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+.process-canvas .eda-node:focus-visible {
+  outline: 2px solid var(--eda-active);
+  outline-offset: 3px;
+}
+.process-original-er {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+.process-original-er.is-hidden {
+  display: none !important;
+}
+.process-workspace {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+.process-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--wiki-line);
+  font-size: 12px;
+}
+.process-mode-description {
+  color: var(--wiki-muted);
+  margin-right: auto;
+}
+.process-body {
+  display: grid;
+  grid-template-columns: 206px minmax(0, 1fr) 286px;
+  gap: 8px;
+  padding: 8px;
+  flex: 1;
+  min-height: 0;
+}
+.process-workspace[data-process-mode="flow"] .process-body {
+  grid-template-columns: minmax(0, 1fr) 286px;
+}
+.process-workspace[data-process-mode="flow"] .process-directory {
+  display: none;
+}
+.process-directory {
+  gap: 9px;
+}
+.process-directory p {
+  margin: 0;
+}
+.process-step-list {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+.process-step-list button {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 4px 6px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 7px !important;
+  border: 0 !important;
+  background: transparent !important;
+  margin-bottom: 3px;
+}
+.process-step-list button > span {
+  grid-row: span 2;
+  font:
+    10px ui-monospace,
+    monospace;
+  color: var(--wiki-muted);
+  padding-top: 3px;
+}
+.process-step-list strong {
+  font-weight: 500;
+  font-size: 12px;
+}
+.process-step-list small {
+  font-size: 10px;
+  color: var(--wiki-muted);
+}
+.process-step-list button[data-related="true"] {
+  box-shadow: inset 3px 0 var(--eda-active);
+}
+.process-step-list button[aria-pressed="true"] {
+  background: var(--wiki-surface) !important;
+  color: var(--eda-active);
+}
+.process-evidence {
+  font-size: 11px;
+  color: var(--wiki-muted);
+  line-height: 1.65;
+  border-top: 1px solid var(--wiki-line);
+  padding-top: 8px;
+}
+.process-evidence summary {
+  cursor: pointer;
+}
+.process-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 12px;
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--wiki-muted);
+  background: var(--wiki-card);
+  padding: 6px;
+  border-radius: 5px;
+  pointer-events: none;
+}
+.process-binding-detail {
+  border: 1px solid var(--wiki-line);
+  border-radius: 7px;
+  margin: 10px 0;
+  padding: 10px;
+}
+.process-binding-detail[data-selected="true"] {
+  border-color: var(--eda-active);
+}
+.process-binding-detail > div:first-child {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.process-binding-detail button {
+  border: 0 !important;
+  background: transparent !important;
+  text-align: left;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  min-width: 0;
+}
+.process-access {
+  font-size: 10px;
+  flex-shrink: 0;
+  padding: 3px 5px;
+  border-radius: 4px;
+  background: var(--wiki-surface);
+  color: var(--wiki-muted);
+}
+.process-access-read {
+  color: #3276b9;
+}
+.process-access-create {
+  color: #0f766e;
+}
+.process-access-update {
+  color: #bd7a24;
+}
+.process-access-delete {
+  color: #bc5772;
+}
+.process-field-links {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.process-field-links button {
+  font:
+    10px ui-monospace,
+    monospace !important;
+  padding: 4px 5px !important;
+  color: var(--wiki-muted) !important;
+}
+.process-state-change {
+  padding: 7px;
+  background: var(--wiki-surface);
+  font-size: 11px;
+  border-left: 2px solid #bd7a24;
+  line-height: 1.8;
+}
+.process-edit-table {
+  font-size: 10px !important;
+  color: var(--eda-active) !important;
+  padding: 2px 0 !important;
+}
+.process-issues {
+  margin: 0 8px 8px;
+  padding: 7px 10px;
+  background: var(--wiki-card);
+  border: 1px solid #bd7a24;
+  color: var(--wiki-danger);
+  font-size: 11px;
+  max-height: 140px;
+  overflow: auto;
+}
+.process-config textarea {
+  min-height: 320px;
+  height: 48vh;
+  white-space: pre;
+  font:
+    12px ui-monospace,
+    monospace;
+}
+@media (max-width: 1100px) {
+  .process-body {
+    grid-template-columns: 170px minmax(0, 1fr) 244px;
+  }
+  .process-legend {
+    top: 10px;
+    bottom: auto;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .process-switchbar {
+    gap: 6px;
+  }
+  .process-switchbar select {
+    max-width: 180px;
+  }
+  .process-context {
+    max-width: 220px;
+  }
+}
+@media (max-width: 850px) {
+  .process-body {
+    grid-template-columns: 145px minmax(0, 1fr);
+  }
+  .process-inspector {
+    display: none;
+  }
+  .process-switchbar {
+    flex-wrap: wrap;
+  }
+  .process-toolbar {
+    flex-wrap: wrap;
+  }
+  .process-view-tabs button {
+    padding: 6px 9px !important;
+  }
+}

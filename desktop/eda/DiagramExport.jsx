@@ -4,7 +4,7 @@ import { diagramSvg, svgToPng } from './export-diagram';
 import { tr } from '../i18n/renderer';
 import { createLayoutTask } from './layout-task.mjs';
 
-export default function DiagramExport({model,result,current,location,view,showCardinality=true}) {
+export default function DiagramExport({model,result,current,location,view,showCardinality=true,viewOnly=false,sceneProps={}}) {
   const [open,setOpen]=useState(false),[scope,setScope]=useState('view'),[format,setFormat]=useState('svg');
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
   const job=useRef(null);
@@ -26,7 +26,7 @@ export default function DiagramExport({model,result,current,location,view,showCa
         viewport=[0,0,Math.max(300,selected.layout.width),Math.max(250,selected.layout.height)];
       }
       if(!selected)throw new Error('当前没有可以导出的图形');
-      const svg=diagramSvg(selected,viewport,getComputedStyle(document.querySelector('.eda-workspace')),{showCardinality});
+      const svg=diagramSvg(selected,viewport,getComputedStyle(document.querySelector('.eda-workspace')),{showCardinality,...sceneProps});
       let ok;
       if(format==='svg')ok=await window.erDesktop.exportAsset({name:'ER Diagram',extension:'svg',content:svg});
       else {
@@ -41,11 +41,12 @@ export default function DiagramExport({model,result,current,location,view,showCa
   return <CanvasEditorDialog title="导出 ER 图" visible={open} footerNote="" onClose={()=>{if(!busy)setOpen(false);}}>
     <div className="desktop-form">
       <label>导出范围<select value={scope} onChange={e=>setScope(e.target.value)} disabled={busy}>
-        <option value="view">当前视图</option><option value="domain" disabled={!location.domainId}>当前领域</option><option value="overview">完整总图（全部表）</option>
+        <option value="view">当前视图</option><option value="domain" disabled={viewOnly||!location.domainId}>当前领域</option><option value="overview" disabled={viewOnly}>完整总图（全部表）</option>
       </select></label>
       <label>格式<select value={format} onChange={e=>setFormat(e.target.value)} disabled={busy}><option value="svg">SVG</option><option value="png">PNG</option><option value="clipboard">复制 PNG 到剪贴板</option></select></label>
       <p>导出只包含图形，不包含工具栏。大型总图建议使用 SVG，PNG 会限制图片尺寸。</p>
-      <button disabled={busy||!model.tables.length} onClick={run}>{busy?'正在导出…':'导出'}</button>
+      {viewOnly&&<p>流程和混合视图导出当前画面，保留动作与读写关系。</p>}
+      <button disabled={busy||(!model.tables.length&&!(viewOnly&&result?.layout.children?.length))} onClick={run}>{busy?'正在导出…':'导出'}</button>
       {error&&<p role="alert">{tr(error)}</p>}{message&&<p role="status">{tr(message)}</p>}
     </div>
   </CanvasEditorDialog>;
