@@ -4,9 +4,11 @@ import {
   chineseFieldName,
 } from "@drawdb/utils/fieldPresentation";
 import { fieldEnumValues } from "@drawdb/utils/fieldEnumValues";
+import { cardinalityOf } from "./cardinality.mjs";
+import { tr } from "../i18n/renderer";
 
 export default function EdaInspector({ selection, tables, actions }) {
-  const { net, table, field, alternatives } = selection;
+  const { net, table, field, alternatives, selectedRelation } = selection;
   return (
     <aside className="eda-inspector" aria-label="对象详情">
       <div className="eda-inspector-heading">
@@ -56,7 +58,14 @@ export default function EdaInspector({ selection, tables, actions }) {
             </span>
           </h3>
           <p className="eda-code">{net.name}</p>
+          <p className="eda-cardinality-note">
+            1 = 一条，N =
+            多条；仅表示关系基数，不代表实际数据量，也未推断最少条数。
+          </p>
           <button onClick={() => actions.trace(net)}>展开完整关系</button>
+          {selectedRelation != null && (
+            <button onClick={actions.focusRelation}>定位关系</button>
+          )}
           <button onClick={actions.cancelTrace}>取消追踪</button>
           <div className="eda-member-list">
             {net.members.map((relation) => {
@@ -65,10 +74,12 @@ export default function EdaInspector({ selection, tables, actions }) {
               const pairs = relation.fields?.length
                 ? relation.fields
                 : [relation];
+              const card = cardinalityOf(relation);
               return (
                 <article
                   key={relation.id}
                   data-net-member={String(relation.id)}
+                  data-selected={selectedRelation === relation.id}
                 >
                   <div className="eda-member-heading">
                     <button
@@ -87,6 +98,20 @@ export default function EdaInspector({ selection, tables, actions }) {
                       <i className="bi bi-pencil" aria-hidden="true" />
                     </button>
                   </div>
+                  <button
+                    className="eda-cardinality-pair"
+                    aria-label={`高亮关系 ${relation.name}`}
+                    aria-pressed={selectedRelation === relation.id}
+                    onClick={() => actions.selectRelation(relation.id)}
+                  >
+                    <strong>
+                      {card.start} : {card.end}
+                    </strong>
+                    <span>{tr(card.name)}</span>
+                  </button>
+                  <p className="eda-cardinality-tables">
+                    {source?.name} ({card.start}) — ({card.end}) {target?.name}
+                  </p>
                   <p>
                     {pairs
                       .map(

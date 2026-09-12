@@ -439,5 +439,13 @@
   "自动（优先减少交叉）": "Auto (minimize crossings)",
   "横向": "Horizontal",
   "纵向": "Vertical",
-  "显示导航小地图": "Show navigation minimap"
+  "显示导航小地图": "Show navigation minimap",
+  "显示关系基数（1 / N）": "Show cardinality (1 / N)",
+  "1 / N 表示一对一或一对多，不是实际记录数；线束的关系数量与基数无关。混合表示同一端口包含不同基数，问号表示尚未定义。": "1 / N describes relationship cardinality, not row counts. Bundle counts are separate. Mixed means different cardinalities share a port; ? means unspecified.",
+  "1 = 一条，N = 多条；仅表示关系基数，不代表实际数据量，也未推断最少条数。": "1 = one, N = many. Cardinality is not a row count; minimum participation is unspecified.",
+  "高亮关系 {{v0}}": "Highlight relationship {{v0}}",
+  "多对多": "Many-to-many",
+  "未标注基数": "Unspecified cardinality",
+  "混合": "Mixed",
+  "定位关系": "Focus relationship"
 }

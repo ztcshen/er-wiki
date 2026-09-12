@@ -10,6 +10,7 @@ export function cleanLocation(value = {}) {
     selectedTable: isId(value.selectedTable) ? value.selectedTable : null,
     selectedField: isId(value.selectedField) ? value.selectedField : null,
     selectedNet: typeof value.selectedNet === 'string' ? value.selectedNet.slice(0, 2000) : null,
+    selectedRelation: isId(value.selectedRelation) ? value.selectedRelation : null,
     expanded: Array.isArray(value.expanded) ? value.expanded.filter(x => typeof x === 'string').slice(0, 100) : [],
     labels: ['off', 'auto', 'all'].includes(value.labels) ? value.labels : 'off',
     bundle: value.bundle !== false,
@@ -42,6 +43,7 @@ export function restoreLocation(value, model) {
     return cleanLocation({ labels: location.labels, bundle: location.bundle, direction: location.direction });
   if (!ids.has(location.selectedTable)) { location.selectedTable = null; location.selectedField = null; }
   if (location.selectedField !== null && !model.tables.find(t => t.id === location.selectedTable)?.fields.some(f => f.id === location.selectedField)) location.selectedField = null;
+  if (!model.relationships?.some(r => r.id === location.selectedRelation)) location.selectedRelation = null;
   return location;
 }
 

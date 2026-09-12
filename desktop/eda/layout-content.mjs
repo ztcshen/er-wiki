@@ -35,5 +35,5 @@ export function refreshLayoutContent(result, model) {
     return net ? { ...n, ...(n.kind === 'label' ? { subtitle: net.name } : {}),
       color: groups.get(net.targetTableId)?.color || '#64748b' } : n;
   });
-  return { ...result, projection: { ...result.projection, nodes, nets } };
+  return { ...result, projection: { ...result.projection, nodes, nets, tableNames: model.tables.map(t=>({id:t.id,name:t.name})) } };
 }

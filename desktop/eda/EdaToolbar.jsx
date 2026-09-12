@@ -115,6 +115,17 @@ export default function EdaToolbar({
             content={
               <div className="eda-display-panel">
                 <strong>图形显示</strong>
+                <label className="eda-display-check">
+                  <input
+                    type="checkbox"
+                    checked={settings.edaCardinality !== false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setSettings((s) => ({ ...s, edaCardinality: checked }));
+                    }}
+                  />
+                  显示关系基数（1 / N）
+                </label>
                 <label>
                   布局方向
                   <select
@@ -182,6 +193,10 @@ export default function EdaToolbar({
                   </p>
                   <p>
                     虚线含待核关联；实线也不等同于物理外键。点击关系或标签可查看依据及原始成员。
+                  </p>
+                  <p>
+                    1 / N
+                    表示一对一或一对多，不是实际记录数；线束的关系数量与基数无关。混合表示同一端口包含不同基数，问号表示尚未定义。
                   </p>
                 </details>
               </div>

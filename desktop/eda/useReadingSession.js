@@ -16,7 +16,7 @@ export function useReadingSession(modelId, model, ready) {
   });
   const navigate = (level, domainId = '', tableId = null, selection = {}) => {
     setHistory(h => [...h.slice(-49), { location, view }]);
-    updateLocation({ level, domainId, tableId, selectedTable: tableId, selectedField: null, selectedNet: null, expanded: [], ...selection });
+    updateLocation({ level, domainId, tableId, selectedTable: tableId, selectedField: null, selectedNet: null, selectedRelation: null, expanded: [], ...selection });
   };
   const restore = entry => {
     const next = restoreLocation(entry.location, model);

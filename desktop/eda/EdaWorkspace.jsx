@@ -3,6 +3,7 @@ import { useDiagram, useSettings, useSelect, useLayout } from "@drawdb/hooks";
 import { ObjectType, Tab } from "@drawdb/data/constants";
 import { modelGroups } from "@drawdb/utils/tableGroups";
 import { domainsOf } from "./model.mjs";
+import { relationBounds } from "./cardinality.mjs";
 import { useReadingSession } from "./useReadingSession";
 import { useSchematicLayout } from "./useSchematicLayout";
 import { searchModel } from "./reading-state.mjs";
@@ -58,13 +59,22 @@ export default function EdaWorkspace({ modelId, ready }) {
   const { result, current: currentResult, busy, error } = schematic;
   const { view, setView } = reading;
   const { selectedNet, selectedTable, selectedField } = reading.location;
-  const setNet = reading.setPart("selectedNet"),
-    setTable = reading.setPart("selectedTable"),
+  const setRelation = reading.setPart("selectedRelation");
+  const setNet = (value) => {
+    reading.setPart("selectedNet")(value);
+    setRelation(null);
+  };
+  const setTable = reading.setPart("selectedTable"),
     setField = reading.setPart("selectedField");
   const domains = useMemo(() => domainsOf(model), [model]);
   const matches = useMemo(() => searchModel(model, search), [model, search]);
   const net = currentResult
     ? result?.projection.nets.find((n) => n.id === selectedNet)
+    : null;
+  const selectedRelation = net?.members.some(
+    (r) => r.id === reading.location.selectedRelation,
+  )
+    ? reading.location.selectedRelation
     : null;
   const infoTable = tables.find((table) => table.id === selectedTable);
   const fieldInfo = infoTable?.fields.find(
@@ -114,6 +124,14 @@ export default function EdaWorkspace({ modelId, ready }) {
     if (!currentResult) return;
     const next = focusNodeView(
       tableNode(id),
+      canvas.current?.getBoundingClientRect(),
+    );
+    if (next) setView(next);
+  };
+  const focusRelation = () => {
+    if (!currentResult || selectedRelation == null) return;
+    const next = focusNodeView(
+      relationBounds(result, selectedRelation),
       canvas.current?.getBoundingClientRect(),
     );
     if (next) setView(next);
@@ -206,6 +224,8 @@ export default function EdaWorkspace({ modelId, ready }) {
   const inspectorActions = {
     clear: clearSelection,
     selectNet: setNet,
+    selectRelation: setRelation,
+    focusRelation,
     editTable,
     inspectTable,
     canFocus: currentResult && !!tableNode(selectedTable),
@@ -221,6 +241,7 @@ export default function EdaWorkspace({ modelId, ready }) {
     trace: (value) =>
       navigate("table", "", value.targetTableId, {
         selectedNet: value.id,
+        selectedRelation,
         selectedTable: null,
         expanded: [...new Set([...reading.location.expanded, value.id])],
       }),
@@ -284,6 +305,8 @@ export default function EdaWorkspace({ modelId, ready }) {
             <EdaScene
               result={result}
               selectedNet={selectedNet}
+              selectedRelation={selectedRelation}
+              showCardinality={settings.edaCardinality !== false}
               view={view}
               onView={setView}
               onEdit={editTable}
@@ -296,10 +319,12 @@ export default function EdaWorkspace({ modelId, ready }) {
                   setFieldNets([]);
                 }
               }}
-              onNet={(value) => {
+              onNet={(value, relationId = null) => {
                 const ids = Array.isArray(value) ? value : [value];
                 setNet(ids[0] || null);
+                setRelation(relationId);
                 setTable(null);
+                setField(null);
                 setFieldNets(
                   result.projection.nets.filter((n) => ids.includes(n.id)),
                 );
@@ -406,6 +431,7 @@ export default function EdaWorkspace({ modelId, ready }) {
               table: infoTable,
               field: fieldInfo,
               alternatives: fieldNets,
+              selectedRelation,
             }}
             tables={tables}
             actions={inspectorActions}
@@ -419,6 +445,7 @@ export default function EdaWorkspace({ modelId, ready }) {
         current={currentResult && !busy && !error}
         location={reading.location}
         view={view}
+        showCardinality={settings.edaCardinality !== false}
       />
     </section>
   );

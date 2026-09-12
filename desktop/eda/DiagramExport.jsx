@@ -4,7 +4,7 @@ import { diagramSvg, svgToPng } from './export-diagram';
 import { tr } from '../i18n/renderer';
 import { createLayoutTask } from './layout-task.mjs';
 
-export default function DiagramExport({model,result,current,location,view}) {
+export default function DiagramExport({model,result,current,location,view,showCardinality=true}) {
   const [open,setOpen]=useState(false),[scope,setScope]=useState('view'),[format,setFormat]=useState('svg');
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
   const job=useRef(null);
@@ -26,7 +26,7 @@ export default function DiagramExport({model,result,current,location,view}) {
         viewport=[0,0,Math.max(300,selected.layout.width),Math.max(250,selected.layout.height)];
       }
       if(!selected)throw new Error('当前没有可以导出的图形');
-      const svg=diagramSvg(selected,viewport,getComputedStyle(document.querySelector('.eda-workspace')));
+      const svg=diagramSvg(selected,viewport,getComputedStyle(document.querySelector('.eda-workspace')),{showCardinality});
       let ok;
       if(format==='svg')ok=await window.erDesktop.exportAsset({name:'ER Diagram',extension:'svg',content:svg});
       else {
