@@ -76,7 +76,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
   for(const t of model.tables.filter(t=>visible.has(t.id)&&(level==='overview'||!t.hidden))){
     const fields=level==='domain'?[]:t.fields.filter(f=>level==='column'&&t.id===options.tableId||f.primary||referenced.get(t.id)?.has(f.id)||(Array.isArray(t.reviewOverviewFields)&&t.reviewOverviewFields.includes(f.name)));
     addNode({id:idOf('table',t.id),kind:'table',tableId:t.id,title:t.name,comment:t.comment||'',color:domainByTable.get(t.id)?.color||t.color||'#64748b',
-      domainName:domainByTable.get(t.id)?.name||'',width:360,height:fields.length?78+fields.length*30:110,fields,totalFields:t.fields.length});
+      domainName:domainByTable.get(t.id)?.name||'',domainUnassigned:domainByTable.get(t.id)?.id===ALL_DOMAIN,width:360,height:fields.length?78+fields.length*30:110,fields,totalFields:t.fields.length});
   }
   const tablePort=(tid,fids,side)=>{
     const n=nodes.get(idOf('table',tid));if(!n)return null;

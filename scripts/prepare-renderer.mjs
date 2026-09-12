@@ -20,8 +20,15 @@ fs.copyFileSync(path.join(root,'scripts/renderer-bootstrap.js'),path.join(source
 let main=execFileSync('git',['show','HEAD:src/main.jsx'],{cwd:source,encoding:'utf8'});
 main=main.replace('import { Analytics } from "@vercel/analytics/react";\n','').replace('    <Analytics />\n','');
 main='import { prepareDesktop } from "./desktop-bootstrap";\n'+main;
+main='import LocaleBridge from "er-wiki-locale-provider";\n'+main;
+main=main.replace('<LocaleProvider locale={en_US}>','<LocaleBridge>').replace('</LocaleProvider>','</LocaleBridge>');
 main=main.replace('const root = ReactDOM','await prepareDesktop();\n\nconst root = ReactDOM');
 fs.writeFileSync(path.join(source,'src/main.jsx'),main);
 fs.writeFileSync(path.join(source,'index.html'),'<!doctype html><html lang="zh"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>ER Wiki</title><link rel="stylesheet" href="/vendor/bootstrap-icons/font/bootstrap-icons.css"/><link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css"/></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>\n');
-for(const [name,destination]of [['monaco-editor/min/vs','monaco'],['bootstrap-icons/font','bootstrap-icons/font'],['@fortawesome/fontawesome-free/css','fontawesome/css'],['@fortawesome/fontawesome-free/webfonts','fontawesome/webfonts']])
-  fs.cpSync(path.join(root,'node_modules',name),path.join(source,'public/vendor',destination),{recursive:true});
+for(const [name,destination]of [['monaco-editor/min/vs','monaco'],['bootstrap-icons/font','bootstrap-icons/font'],['@fortawesome/fontawesome-free/css','fontawesome/css'],['@fortawesome/fontawesome-free/webfonts','fontawesome/webfonts']]){
+  const target=path.join(source,'public/vendor',destination);
+  // This is a generated vendor copy, never the npm cache or upstream source.
+  if(fs.existsSync(target)&&fs.lstatSync(target).isSymbolicLink())throw new Error('Refusing to replace a symlinked vendor directory.');
+  fs.rmSync(target,{recursive:true,force:true});
+  fs.cpSync(path.join(root,'node_modules',name),target,{recursive:true});
+}

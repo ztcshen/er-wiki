@@ -1,0 +1,15 @@
+{
+  "Invalid model document": "无效的模型文件",
+  "This model requires a newer ER Wiki version": "该模型需要更新版本的 ER Wiki",
+  "Unsupported model format": "不支持的模型格式",
+  "Invalid or oversized backup": "无效的备份，或文件超过 20 MB",
+  "Invalid backup model": "备份模型格式无效",
+  "Invalid backup ID": "无效的备份标识",
+  "Backup integrity check failed": "备份校验失败，未执行恢复",
+  "Update check timed out": "检查更新超时，请稍后重试或打开发布页面",
+  "Update response too large": "更新服务响应过大，已停止处理",
+  "Invalid release response": "更新服务返回了无效内容",
+  "Invalid export asset": "无效的导出内容或文件过大",
+  "Invalid export content": "导出内容无效或超过尺寸限制",
+  "PNG export failed": "PNG 导出失败，请尝试 SVG"
+}

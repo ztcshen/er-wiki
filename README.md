@@ -1,8 +1,8 @@
 # ER Wiki
 
 An offline-first desktop workspace for understanding and editing database models.
-Built with Electron, drawDB and ELK. The current interface is primarily Chinese;
-broader localization is a planned contribution area.
+Built with Electron, drawDB and ELK. The desktop interface supports English,
+Simplified Chinese and the system default without translating your model content.
 
 [![CI](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml/badge.svg)](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
@@ -17,7 +17,13 @@ broader localization is a planned contribution area.
 - Full-model overview plus domain, table and column inspection.
 - Centered table editing, annotations, enum values and explicit relation editing.
 - Local JSON import/export, separate model switching, undo/redo and save controls.
+- Local SQL parsing and preview before importing a new model.
+- Per-model reading positions, field/alias/enum search and reading bookmarks.
+- Stable geometry for text-only edits; structural edits trigger orthogonal layout.
+- Versioned JSON, automatic/manual local backups and restore-as-copy.
+- Pure-diagram SVG/PNG export for the viewport, domain or full model.
 - Display preferences are separate from saved model content.
+- Keyboard-first quick search (⌘/Ctrl+K), grouped actions and independently folding domains.
 - No hosted account, cloud-sharing service or application telemetry is required.
 
 ## Fictional fulfillment example
@@ -26,10 +32,27 @@ The included example models **products and warehouse stock → order reservation
 split fulfillment → parcel shipment → returns**. It has 13 tables and supports
 multi-warehouse allocation and partial shipments at the schema level.
 
-![Fictional fulfillment ER diagram](docs/images/fulfillment.svg)
+These are real screenshots of the local **0.2.0-preview.2 macOS desktop app**,
+loaded with the example JSON below. They are not a separately drawn mockup.
+
+![Actual ER Wiki desktop: all 13 fulfillment tables](docs/images/fulfillment-desktop-en.png)
+
+The same model in the actual table editor, including field names, types and display names:
+
+![Actual ER Wiki desktop: editing the orders table](docs/images/fulfillment-editor-en.png)
+
+Quick search uses the same model and real desktop UI:
+
+![Actual ER Wiki desktop: quick field lookup](docs/images/fulfillment-search-en.png)
 
 [Model JSON](examples/fulfillment.drawdb.json) · [Example DDL](examples/fulfillment.sql)
-· [Reading guide](examples/README.md)
+· [Reading guide](examples/README.md) · [SVG exported by the app](docs/images/fulfillment.svg)
+· [Snapshot provenance](docs/images/fulfillment-snapshot.json)
+
+[Desktop user guide](docs/USER_GUIDE.md) · [Installation and signing](docs/DESKTOP_RELEASE.md)
+
+Source version `0.2.0-preview.2` is a development checkpoint until a matching
+release is published. The Releases page remains the source of truth for downloads.
 
 This is an independently authored educational schema, not an export of a company
 database or Saleor's schema. [Saleor's operations overview](https://saleor.io/features/operations)
@@ -57,7 +80,8 @@ npm run package
 
 Artifacts are written under `desktop/release/<version>/`. macOS is the initial
 preview target. Windows/Linux packaging paths are not release-validated.
-Local macOS packages are ad-hoc signed, not Developer ID signed or notarized.
+Local macOS packages are ad-hoc signed by default. Developer ID signing and
+notarization are opt-in and require the maintainer's own credentials.
 
 The community build uses a separate **ER Wiki Community** application-data
 directory. It does not read an existing private development profile.
@@ -65,11 +89,16 @@ directory. It does not read an existing private development profile.
 ## Project layout
 
 - `desktop/`: Electron shell, EDA workspace and generic UI integration.
+- `desktop/native/`: IPC, operating-system menus, command lifecycle and session policy.
+- `desktop/build/`: normalized paths and the single pinned-upstream alias boundary.
 - `patches/`: modifications to pinned upstream drawDB.
 - `upstream.json`: original project URL and exact renderer commit.
 - `examples/`: fictional model and illustrative DDL; no row data.
 - `scripts/`: setup, offline assets, demo generation and publication guard.
 - `work/`: generated upstream checkout, ignored by this repository.
+
+See [workbench design and source references](docs/WORKBENCH_DESIGN.md) for the
+module boundaries and UI patterns adopted from similar open-source projects.
 
 ## Status and limits
 

@@ -2,8 +2,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { arrangeSchematic } from '../desktop/eda/layout.mjs';
-import { sectionsOf } from '../desktop/eda/metrics.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const groups=[
   {id:'catalog',name:'商品与库存',color:'#3276b9',tableIds:['products','warehouses','inventory']},
@@ -74,15 +72,6 @@ const sql=tables.map(table=>{
 }).join('\n\n');
 const constraints=relationships.map(r=>'ALTER TABLE '+quote(r.startTableId)+' ADD CONSTRAINT '+quote(r.name)+' FOREIGN KEY ('+quote(r.startFieldId.split('.')[1])+') REFERENCES '+quote(r.endTableId)+' ('+quote('id')+');').join('\n');
 fs.writeFileSync(path.join(root,'examples/fulfillment.sql'),'-- Fictional educational schema; not a production migration.\n'+sql+'\n\n'+constraints+'\n');
-const result=await arrangeSchematic({tables,relationships,groups},{level:'overview',labels:'off',bundle:true});
-const metadata=new Map(result.projection.nodes.map(n=>[n.id,n]));
-const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-const routes=result.layout.edges.flatMap(e=>sectionsOf(e).map(points=>'<path d="'+points.map((p,i)=>(i?'L':'M')+p.x+','+p.y).join(' ')+'" fill="none" stroke="#7991a8" stroke-width="2"/>')).join('');
-const nodes=result.layout.children.map(n=>{
-  const m=metadata.get(n.id),labels=m.fields||[];
-  if(m.kind==='hub'||m.kind==='junction')return '<line x1="'+n.x+'" y1="'+(n.y+n.height/2)+'" x2="'+(n.x+n.width)+'" y2="'+(n.y+n.height/2)+'" stroke="'+m.color+'" stroke-width="2"/><circle cx="'+(n.x+n.width/2)+'" cy="'+(n.y+n.height/2)+'" r="6" fill="'+m.color+'"/>';
-  return '<g transform="translate('+n.x+','+n.y+')"><rect width="'+n.width+'" height="'+n.height+'" rx="6" fill="white" stroke="#cfd8e3"/><rect width="'+n.width+'" height="4" fill="'+m.color+'"/><text x="12" y="26" font-size="15" font-weight="600">'+esc(m.title)+'</text><text x="12" y="49" font-size="11" fill="#64748b">'+esc(m.domainName)+'</text>'+labels.map((f,i)=>'<text x="12" y="'+(96+i*30)+'" font-size="11">'+esc(f.name)+'</text><text x="190" y="'+(96+i*30)+'" font-size="10" fill="#64748b">'+esc(f.type)+'</text>').join('')+'</g>';
-}).join('');
-fs.mkdirSync(path.join(root,'docs/images'),{recursive:true});
-fs.writeFileSync(path.join(root,'docs/images/fulfillment.svg'),'<svg xmlns="http://www.w3.org/2000/svg" width="1600" viewBox="0 0 '+result.layout.width+' '+result.layout.height+'"><rect width="100%" height="100%" fill="#f6f8fb"/><g font-family="Arial,sans-serif" fill="#243447">'+routes+nodes+'</g></svg>\n');
+// Documentation images must come from the packaged app, not a second renderer.
+// Run scripts/capture-demo.mjs after packaging to refresh PNG snapshots and SVG.
 console.log('Generated fictional fulfillment demo: '+tables.length+' tables, '+relationships.length+' relationships.');

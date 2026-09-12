@@ -1,13 +1,19 @@
 # Known limitations
 
-- The application is a local preview and primarily has a Chinese interface.
+- The application is a local preview. The desktop interface supports Chinese and English;
+  model content is intentionally not translated. Less-used upstream dialogs may retain upstream terminology.
 - Windows/Linux packaging has not been release-validated.
-- No Apple Developer ID signing, notarization or automatic updates are configured.
+- Default packages are ad-hoc signed. Developer ID signing and notarization require
+  maintainer credentials; that optional path has not been live-verified.
+- Update checking is explicit and downloads are manual, not automatic installation.
 - The upstream renderer is large and still includes legacy dependencies.
 - The CSP retains unsafe-eval for current upstream editor dependencies.
 - EDA layout chooses among heuristic candidates, not a global optimum.
 - Hub/label geometry is presentation data, not a database migration.
-- Full editing, enum, file-dialog and platform regression acceptance is pending.
+- Focused desktop workflows have checks; exhaustive editing/SQL dialect/platform
+  regression acceptance is not implied by those checks.
+- Reading bookmarks are local preferences, not part of model JSON exports.
+- Backups are local and bounded by retention; they do not replace off-device backups.
 - The local publication guard is a targeted pattern/path check, not proof that
   no secret or private fact exists. Human review and a maintained secret scanner
-  remain pre-publication requirements.
+  remain requirements for each new publication.

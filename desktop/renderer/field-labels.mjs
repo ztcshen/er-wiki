@@ -10,7 +10,7 @@ export function resolveFieldLabel(table,field,legacyLabel) {
     const value=field.comment.split(/[：:;；，,\n]/)[0].trim();
     if(useful(value,field.name))return value.slice(0,24);
   }
-  return '待核中文名';
+  return '—';
 }
 
 export function fieldCodeNote(table,field) {

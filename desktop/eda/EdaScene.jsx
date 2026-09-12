@@ -1,6 +1,11 @@
 import { useRef, useState } from 'react';
 import { sectionsOf } from './metrics.mjs';
-import { formatFieldType, chineseFieldName } from '../../work/drawdb/src/utils/fieldPresentation';
+import { formatFieldType, chineseFieldName } from '@drawdb/utils/fieldPresentation';
+import { tr } from '../i18n/renderer';
+
+const fitText=(value,width,size=11)=>{
+  let units=0,out='';for(const c of String(value||'')){units+=/[\u3400-\u9fff]/.test(c)?size:size*.58;if(units>width)return out+'…';out+=c;}return out;
+};
 
 const pathText=points=>points.map((p,i)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' ');
 export default function EdaScene({result,selectedNet,onNet,onNode,onEdit,onField,view,onView}){
@@ -52,19 +57,19 @@ export default function EdaScene({result,selectedNet,onNet,onNode,onEdit,onField
             <text x="10" y="21" className="eda-label-code">{m.title} · Net Label</text><text x="10" y="40" className="eda-small">{m.subtitle.slice(0,25)}</text></>:
           <><rect width={node.width} height={node.height} rx="5" fill="var(--wiki-card)" stroke="var(--wiki-line)" />
             <rect width={node.width} height="4" rx="2" fill={m.color}/>
-            <text x="12" y="26" className="eda-node-title">{m.title.length>40?m.title.slice(0,38)+'…':m.title}</text>
+            <text x="12" y="26" className="eda-node-title">{fitText(m.kind==='domain'&&m.domainId==='__unassigned__'?tr(m.title):m.title,node.width-24,14)}</text>
             {m.kind==='domain'?<><text x="12" y="55" className="eda-small">{m.tableIds.length} 张表 · {m.internal.length} 条内部关系</text><text x="12" y="90" className="eda-small">点击进入领域 →</text></>:
-              <><text x="12" y="47" className="eda-small">{m.domainName} · {m.totalFields} 个字段</text>
+              <><text x="12" y="47" className="eda-small">{fitText(m.domainUnassigned?tr(m.domainName):m.domainName,230)} · {m.totalFields} 个字段</text>
                 {m.fields.length===0?<text x="12" y="87" className="eda-small">点击查看表 / 关键字段 →</text>:
                   <><rect x="1" y="55" width={node.width-2} height="23" fill="var(--wiki-surface)"/>
-                    <text x="12" y="71" className="eda-small">字段名</text><text x="162" y="71" className="eda-small">类型</text><text x="270" y="71" className="eda-small">中文 / 含义</text>
+                    <text x="12" y="71" className="eda-small">字段名</text><text x="162" y="71" className="eda-small">类型</text><text x="270" y="71" className="eda-small">显示名称</text>
                     {m.fields.map((field,index)=><g key={field.id} data-eda-field={String(field.id)} data-eda-endpoint={endpoint(m.tableId,field.id)?'true':'false'} onClick={event=>{event.stopPropagation();onField(m.tableId,field.id);}}>
                       {endpoint(m.tableId,field.id)&&<rect x="1" y={78+index*30} width={node.width-2} height="30" fill="var(--eda-field-active)"/>}
                       <title>{field.name}: {field.comment||'未提供注释'}</title>
                       <line x1="0" x2={node.width} y1={78+index*30} y2={78+index*30} stroke="var(--wiki-line)"/>
-                      <text x="12" y={98+index*30} className="eda-field-name">{field.primary?'⚿ ':''}{field.name.slice(0,23)}</text>
+                      <text x="12" y={98+index*30} className="eda-field-name">{field.primary?'⚿ ':''}{fitText(field.name,field.primary?130:142)}</text>
                       <text x="162" y={98+index*30} className="eda-field-type"><title>{formatFieldType(field)}</title>{formatFieldType(field).slice(0,18)}</text>
-                      <text x="270" y={98+index*30} className="eda-small">{chineseFieldName(m.title,field.name,field).slice(0,8)}</text>
+                      <text x="270" y={98+index*30} className="eda-small"><title>{chineseFieldName(m.title,field.name,field)}</title>{fitText(chineseFieldName(m.title,field.name,field),78)}</text>
                     </g>)}
                   </>}
               </>}

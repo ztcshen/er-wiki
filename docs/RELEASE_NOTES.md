@@ -1,14 +1,29 @@
-# Initial community preview
+# 0.2.0-preview.2 — Keyboard-first workbench
 
-Local-first ER editing with orthogonal layout, shared buses, domain inspection
-and a fictional fulfillment model.
+- Quick search with cmdk, qualified field lookup, keyboard navigation and command-only mode.
+- Shared action catalogue for a shorter grouped menu and the complete command palette.
+- Independent directory folding and explicit focus-to-table without changing ER scope.
+- Native IPC/menu/session boundaries and smaller EDA presentation components.
+- Shared cancellable layout tasks and centralized upstream aliases / normalized build paths.
+- Open-source design references and updated real desktop snapshots.
+
+## Included desktop workflow improvements
+
+- English / Simplified Chinese / system language, including native menus.
+- Unified settings, local help, field aliases and field/enum search.
+- Per-model reading positions, bookmarks and back navigation.
+- Text-only edits retain layout geometry; structural changes rerun layout.
+- Versioned JSON with legacy import, local backups and restore-as-copy.
+- Local SQL import preview and pure SVG/PNG/clipboard diagram export.
+- Application icon, manual update checking and optional signing/notarization hooks.
 
 This is a prerelease. Initial artifacts target macOS; signing is ad-hoc rather
-than Apple Developer ID notarization. Windows/Linux, full localization and full
-editing regression acceptance remain pending.
+than Apple Developer ID notarization unless a maintainer explicitly configures
+signing. Windows/Linux and exhaustive regression acceptance remain pending.
 
 macOS may show an unidentified-developer warning. Follow your organization's
 security policy; do not bypass device-management restrictions to run this preview.
 
 No business data, user profiles or private database examples are included.
-Consult LICENSE, NOTICE, SECURITY.md and KNOWN_LIMITATIONS.md before use.
+Consult LICENSE, NOTICE, SECURITY.md and docs/KNOWN_LIMITATIONS.md before use.
+This file describes the source version; it is not evidence that a release has been published.

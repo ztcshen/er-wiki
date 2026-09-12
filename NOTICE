@@ -12,6 +12,7 @@ Major third-party components retain their own licenses:
 - Electron: MIT, with Chromium and other notices in the packaged distribution.
 - elkjs / Eclipse Layout Kernel: Eclipse Public License 2.0.
 - React and Monaco Editor: MIT.
+- cmdk command menu: MIT.
 - Bootstrap Icons: MIT.
 - Font Awesome Free: icons CC BY 4.0, fonts SIL OFL 1.1, code MIT.
 - Other dependencies: see their packaged or npm-distributed license notices.

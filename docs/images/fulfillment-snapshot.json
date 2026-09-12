@@ -1,0 +1,64 @@
+{
+  "capturedAt": "2026-09-12T05:43:50.933Z",
+  "application": "ER Wiki Community",
+  "applicationVersion": "0.2.0-preview.2",
+  "sourceCommit": "4e571cd30a405e25ac2d7f3a11c7958adca1531d",
+  "rendererSourceSha256": "dfbca01b26c1124aed3a7e46c7628d592af83e6fa166340e6215d0304f2ce8bf",
+  "runtimeSourceSha256": "e813b9ebc37c025fc0ed4d908d6f179f03de5630eb5ea57b314f4fee414578ec",
+  "model": "examples/fulfillment.drawdb.json",
+  "modelSha256": "1d5986663cfec07048702a83152d077ed87406261fd4e7159e3fe44b38a5f2f9",
+  "tables": 13,
+  "relationships": 19,
+  "method": "Unmodified Electron webContents screenshots; SVG exported through the application UI.",
+  "images": [
+    {
+      "file": "fulfillment-desktop-en.png",
+      "description": "en: actual desktop, all 13 tables",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-editor-en.png",
+      "description": "en: actual orders table editor, three columns",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-search-en.png",
+      "description": "en: actual quick search, qualified field lookup",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-desktop-zh.png",
+      "description": "zh: actual desktop, all 13 tables",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-editor-zh.png",
+      "description": "zh: actual orders table editor, three columns",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-search-zh.png",
+      "description": "zh: actual quick search, qualified field lookup",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    }
+  ],
+  "svg": "fulfillment.svg"
+}
