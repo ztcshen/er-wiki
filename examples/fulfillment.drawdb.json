@@ -2454,6 +2454,29 @@
             ]
           },
           {
+            "id": "amend-return",
+            "kind": "action",
+            "name": "补充申请资料",
+            "description": "补充同一退货申请的明细，不重新创建退货单。",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "read",
+                "fieldIds": [
+                  "returns.id",
+                  "returns.status"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
             "id": "receive-return",
             "kind": "action",
             "name": "登记退货收货",
@@ -2568,9 +2591,16 @@
           {
             "id": "r2",
             "from": "review-return",
-            "to": "request-return",
+            "to": "amend-return",
             "kind": "return",
             "label": "补充资料"
+          },
+          {
+            "id": "r9",
+            "from": "amend-return",
+            "to": "review-return",
+            "kind": "normal",
+            "label": "重新提交"
           },
           {
             "id": "r3",

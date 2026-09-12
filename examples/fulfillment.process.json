@@ -33,6 +33,7 @@
       "steps":[
         {"id":"request-return","kind":"action","name":"创建退货申请","bindings":[{"tableId":"orders","access":"read","fieldIds":["orders.id"]},{"tableId":"shipment_items","access":"read","fieldIds":["shipment_items.id","shipment_items.quantity"]},{"tableId":"returns","access":"create","fieldIds":["returns.order_id","returns.status"],"state":{"fieldId":"returns.status","to":"REQUESTED"}},{"tableId":"return_items","access":"create","fieldIds":["return_items.return_id","return_items.shipment_item_id","return_items.quantity"]}]},
         {"id":"review-return","kind":"decision","name":"审核是否通过？","bindings":[{"tableId":"returns","access":"read","fieldIds":["returns.status"]},{"tableId":"return_items","access":"read","fieldIds":["return_items.quantity"]}]},
+        {"id":"amend-return","kind":"action","name":"补充申请资料","description":"补充同一退货申请的明细，不重新创建退货单。","bindings":[{"tableId":"returns","access":"read","fieldIds":["returns.id","returns.status"]},{"tableId":"return_items","access":"update","fieldIds":["return_items.quantity"]}]},
         {"id":"receive-return","kind":"action","name":"登记退货收货","bindings":[{"tableId":"returns","access":"update","fieldIds":["returns.status"],"state":{"fieldId":"returns.status","from":"REQUESTED","to":"RECEIVED"}},{"tableId":"return_items","access":"update","fieldIds":["return_items.warehouse_id","return_items.disposition"]}]},
         {"id":"restock-check","kind":"decision","name":"能否重新销售？","bindings":[{"tableId":"return_items","access":"read","fieldIds":["return_items.disposition"]}]},
         {"id":"restock","kind":"action","name":"增加可售库存","bindings":[{"tableId":"inventory","access":"update","fieldIds":["inventory.on_hand","inventory.version"]},{"tableId":"return_items","access":"update","fieldIds":["return_items.disposition"],"state":{"fieldId":"return_items.disposition","to":"RESTOCK"}}]},
@@ -41,7 +42,8 @@
       ],
       "flows":[
         {"id":"r1","from":"request-return","to":"review-return","kind":"normal"},
-        {"id":"r2","from":"review-return","to":"request-return","kind":"return","label":"补充资料"},
+        {"id":"r2","from":"review-return","to":"amend-return","kind":"return","label":"补充资料"},
+        {"id":"r9","from":"amend-return","to":"review-return","kind":"normal","label":"重新提交"},
         {"id":"r3","from":"review-return","to":"receive-return","kind":"condition","label":"通过"},
         {"id":"r4","from":"receive-return","to":"restock-check","kind":"normal"},
         {"id":"r5","from":"restock-check","to":"restock","kind":"condition","label":"可售"},

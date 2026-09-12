@@ -31,7 +31,7 @@ try{
   await page.getByRole('button',{name:'关闭编辑器',exact:true}).click();
   await page.getByRole('combobox',{name:'混合视图范围'}).selectOption('all');await ready();assert.equal(await page.locator('[data-process-step]').count(),9);await capture('mixed-all.png');
   await page.getByRole('combobox',{name:'业务场景'}).selectOption('returns');await ready();
-  await page.getByRole('button',{name:'业务流程',exact:true}).click();await ready();assert.equal(await page.locator('[data-process-step]').count(),7);await capture('returns.png');
+  await page.getByRole('button',{name:'业务流程',exact:true}).click();await ready();assert.equal(await page.locator('[data-process-step]').count(),8);await capture('returns.png');
   await page.getByRole('button',{name:'ER 结构',exact:true}).click();await erReady();
   assert.equal(await page.locator('.process-original-er [data-eda-scene]').getAttribute('viewBox'),erView);
   const unchanged=await read();assert.deepEqual(unchanged.tables,original.tables);assert.deepEqual(unchanged.references,original.references);assert.deepEqual(unchanged.processModel,original.processModel);assert.equal(unchanged.lastModified.getTime(),original.lastModified.getTime());

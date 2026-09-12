@@ -5,6 +5,7 @@ test('explicit process metadata validates without inferring any flow from foreig
   const {validateProcessModel,bindingIssues}=await import('../process/definition.mjs'),d=document();
   assert.equal(validateProcessModel(null),null);assert.equal(validateProcessModel(d.processModel),d.processModel);
   assert.deepEqual(bindingIssues(d.processModel,d.tables),[]);
+  const returns=d.processModel.scenarios[1],amend=returns.steps.find(s=>s.id===returns.flows.find(f=>f.kind==='return').to);assert(amend.bindings.every(b=>b.access!=='create'));
   const bad=structuredClone(d.processModel);bad.scenarios[0].flows[0].to='missing';assert.throws(()=>validateProcessModel(bad),/endpoint/);
   bad.scenarios[0].flows[0].to=bad.scenarios[0].steps[1].id;bad.scenarios[0].steps[1].bindings[0].access='execute';assert.throws(()=>validateProcessModel(bad),/binding/);
 });
