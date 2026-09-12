@@ -1,0 +1,179 @@
+.structure-checks {
+  font-size: 12px;
+  color: var(--wiki-ink);
+}
+.structure-checks > p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--wiki-muted);
+  margin: 0 0 12px;
+}
+.checks-filters {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.checks-filters button,
+.checks-actions button {
+  font: inherit;
+  font-size: 11px;
+  border: 1px solid var(--wiki-line);
+  background: var(--wiki-card);
+  color: var(--wiki-ink);
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.checks-filters button[aria-pressed="true"] {
+  border-color: var(--eda-active);
+  color: var(--eda-active);
+  background: var(--wiki-surface);
+}
+.checks-results {
+  max-height: 48vh;
+  overflow: auto;
+}
+.checks-results article {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 10px;
+  border: 1px solid var(--wiki-line);
+  border-left: 3px solid #bd8c3c;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+.checks-results article[data-check-level="error"] {
+  border-left-color: var(--wiki-danger);
+}
+.checks-results strong {
+  font-weight: 550;
+  font-size: 12px;
+}
+.checks-results p {
+  margin: 5px 0 0;
+  color: var(--wiki-muted);
+  overflow-wrap: anywhere;
+}
+.checks-results small {
+  display: block;
+  margin-top: 5px;
+  color: var(--wiki-muted);
+}
+.checks-actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.checks-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.checks-empty {
+  padding: 30px 16px;
+  line-height: 1.7;
+  color: var(--wiki-muted);
+  text-align: center;
+}
+.eda-check-button[data-errors="true"] {
+  color: var(--wiki-danger) !important;
+}
+.relationship-fields {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+}
+.relationship-fields > label {
+  display: grid;
+  grid-template-columns: 85px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.relationship-fields select,
+.relationship-fields input {
+  font: inherit;
+  color: var(--wiki-ink);
+  border: 1px solid var(--wiki-line);
+  background: var(--wiki-card);
+  padding: 7px;
+  border-radius: 5px;
+  min-width: 0;
+  width: 100%;
+}
+.relationship-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr) 28px;
+  gap: 6px;
+  align-items: center;
+}
+.relationship-fields button {
+  font: inherit;
+  font-size: 11px;
+  padding: 6px 9px;
+  border: 1px solid var(--wiki-line);
+  border-radius: 5px;
+  background: var(--wiki-card);
+  color: var(--wiki-ink);
+  cursor: pointer;
+}
+.relationship-fields button:disabled {
+  opacity: 0.4;
+}
+.relationship-fields .relationship-add-pair {
+  justify-self: start;
+}
+.relationship-fields [role="alert"] {
+  font-size: 11px;
+  color: var(--wiki-danger);
+  margin: 3px 0;
+}
+.relationship-reminders {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--wiki-muted);
+  margin: 8px 0;
+}
+.relationship-endpoint-editor {
+  padding: 14px 0;
+  border-top: 1px solid var(--wiki-line);
+  margin-top: 12px;
+}
+.relationship-apply {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+.relationship-apply button {
+  background: #0f766e;
+  color: #fff;
+  border: 0;
+  border-radius: 5px;
+  font-size: 12px;
+  padding: 7px 11px;
+}
+.relationship-apply small {
+  color: var(--wiki-muted);
+  font-size: 10px;
+}
+.editable-enum-row input {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 11px;
+  padding: 5px;
+  border: 1px solid var(--wiki-line);
+  border-radius: 4px;
+  background: var(--wiki-card);
+  color: var(--wiki-ink);
+}
+.editable-enum-row button {
+  font-size: 10px;
+  margin: 2px 3px;
+  white-space: nowrap;
+}
+.editable-enum-row [role="alert"] {
+  font-size: 10px;
+  color: var(--wiki-danger);
+}

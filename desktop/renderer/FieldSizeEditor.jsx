@@ -59,6 +59,7 @@ export default function FieldSizeEditor({ table, field, inline = false }) {
     <div
       className={"desktop-field-size" + (inline ? " is-inline" : "")}
       data-size-editor={field.name}
+      data-editor-draft-invalid={error ? "true" : undefined}
     >
       <label>
         <span>{precision ? "精度" : "长度"}</span>

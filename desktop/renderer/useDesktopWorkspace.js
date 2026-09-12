@@ -29,6 +29,7 @@ export function useDesktopWorkspace(value) {
     const settleEditor = async () => {
       document.activeElement?.blur();
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      if(document.querySelector('[data-editor-draft-invalid="true"]'))throw new Error('请先修正无效的长度或精度，或按 Esc 取消输入。');
     };
     const leave = async () => {
       await settleEditor();
@@ -57,7 +58,10 @@ export function useDesktopWorkspace(value) {
       try {
         await settleEditor();
         if (!current.current.ready) throw new Error('模型尚未载入，请稍后重试');
-        if (action === 'export') {
+        if (action === 'save') {
+          if(current.current.readOnly)throw new Error('只读模式下不可保存模型');
+          await current.current.save(); ok = true;
+        } else if (action === 'export') {
           const { snapshot } = current.current;
           ok = await window.erDesktop.exportModel(snapshot.name, exportModel(snapshot));
           if (ok) Toast.success(tr('已导出模型文件；后续编辑不会自动更新该文件'));

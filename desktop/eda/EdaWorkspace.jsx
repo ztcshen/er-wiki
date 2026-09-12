@@ -4,6 +4,10 @@ import { ObjectType, Tab } from "@drawdb/data/constants";
 import { modelGroups } from "@drawdb/utils/tableGroups";
 import { domainsOf } from "./model.mjs";
 import { relationBounds } from "./cardinality.mjs";
+import { deriveNets } from "./model.mjs";
+import { resolveType } from "@drawdb/utils/customTypes";
+import { checkModel } from "../review/model-checks.mjs";
+import StructureChecks from "../review/StructureChecks";
 import { useReadingSession } from "./useReadingSession";
 import { useSchematicLayout } from "./useSchematicLayout";
 import { searchModel } from "./reading-state.mjs";
@@ -30,8 +34,14 @@ import "../process/process.css";
 import "./eda.css";
 
 export default function EdaWorkspace({ modelId, ready }) {
-  const { tables, relationships, reviewGroups, setGroupView, addTable } =
-    useDiagram();
+  const {
+    tables,
+    relationships,
+    reviewGroups,
+    setGroupView,
+    addTable,
+    database,
+  } = useDiagram();
   const { settings, setSettings } = useSettings();
   const { setSelectedElement, setBulkSelectedElements } = useSelect();
   const { layout, setLayout } = useLayout();
@@ -42,6 +52,8 @@ export default function EdaWorkspace({ modelId, ready }) {
     error: processReadingError,
   } = useProcessReader(modelId, ready);
   const [processConfigOpen, setProcessConfigOpen] = useState(false);
+  const [checksOpen, setChecksOpen] = useState(false);
+  const pendingRelation = useRef(null);
   const { scenario, activity } = processSelection(
     processModel,
     reader.scenarioId,
@@ -78,6 +90,11 @@ export default function EdaWorkspace({ modelId, ready }) {
     [tables, relationships, reviewGroups],
   );
   const reading = useReadingSession(modelId, model, ready);
+  const structureIssues = useMemo(
+    () =>
+      checkModel(model, { typeInfo: (type) => resolveType(database, type) }),
+    [model, database],
+  );
   const schematic = useSchematicLayout(model, reading, ready);
   const { result, current: currentResult, busy, error } = schematic;
   const { view, setView } = reading;
@@ -192,6 +209,15 @@ export default function EdaWorkspace({ modelId, ready }) {
     focusTable(pendingFocus.current);
     pendingFocus.current = null;
   }, [result, currentResult, focusRequest]);
+  useEffect(() => {
+    if (!currentResult || pendingRelation.current == null) return;
+    const next = focusNodeView(
+      relationBounds(result, pendingRelation.current),
+      canvas.current?.getBoundingClientRect(),
+    );
+    if (next) setView(next);
+    pendingRelation.current = null;
+  }, [result, currentResult, focusRequest]);
   const editTable = (id) => {
     if (!tables.some((table) => table.id === id)) return;
     setTools(null);
@@ -228,6 +254,11 @@ export default function EdaWorkspace({ modelId, ready }) {
   useEffect(() => {
     const handle = ({ detail }) => {
       const action = typeof detail === "string" ? detail : detail?.action;
+      if (action === "check-model") {
+        switchMode("er");
+        setChecksOpen(true);
+        return;
+      }
       if (
         reader.mode !== "er" &&
         ["fit", "zoom-in", "zoom-out", "arrange"].includes(action)
@@ -324,6 +355,52 @@ export default function EdaWorkspace({ modelId, ready }) {
       setFieldNets([]);
     },
   };
+  const editIssue = (issue) => {
+    setChecksOpen(false);
+    if (issue.target.relationshipId != null)
+      inspectorActions.editRelation(issue.target.relationshipId);
+    else if (issue.target.tableId != null) editTable(issue.target.tableId);
+  };
+  const locateIssue = (issue) => {
+    setChecksOpen(false);
+    const relation = relationships.find(
+      (r) => r.id === issue.target.relationshipId,
+    );
+    if (relation) {
+      const net = deriveNets(model).find((n) =>
+        n.members.some((r) => r.id === relation.id),
+      );
+      if (net) {
+        navigate("overview", "", null, {
+          selectedNet: net.id,
+          selectedRelation: relation.id,
+        });
+        pendingRelation.current = relation.id;
+        setFocusRequest((n) => n + 1);
+        return;
+      }
+      const table =
+        tables.find((t) => t.id === relation.startTableId) ||
+        tables.find((t) => t.id === relation.endTableId);
+      if (table) {
+        inspectTable(table.id);
+        pendingFocus.current = table.id;
+        setFocusRequest((n) => n + 1);
+      } else editIssue(issue);
+    } else if (issue.target.tableId != null) {
+      const table = tables.find((t) => t.id === issue.target.tableId);
+      if (!table) return;
+      const fid = table.fields.some((f) => f.id === issue.target.fieldId)
+        ? issue.target.fieldId
+        : null;
+      navigate("column", "", table.id, {
+        selectedTable: table.id,
+        selectedField: fid,
+      });
+      pendingFocus.current = table.id;
+      setFocusRequest((n) => n + 1);
+    }
+  };
   const viewSwitcher = (
     <div className="process-view-tabs" role="group" aria-label="模型视图切换">
       <button
@@ -392,6 +469,8 @@ export default function EdaWorkspace({ modelId, ready }) {
         className={`process-original-er ${reader.mode !== "er" ? "is-hidden" : ""}`}
       >
         <EdaToolbar
+          issues={structureIssues}
+          onCheck={() => setChecksOpen(true)}
           leading={reader.mode === "er" ? viewSwitcher : null}
           model={model}
           domains={domains}
@@ -638,6 +717,14 @@ export default function EdaWorkspace({ modelId, ready }) {
         readOnly={layout.readOnly}
       />
       <EdaEditors tools={tools} setTools={setTools} />
+      <StructureChecks
+        open={checksOpen}
+        onClose={() => setChecksOpen(false)}
+        issues={structureIssues}
+        onLocate={locateIssue}
+        onEdit={editIssue}
+        readOnly={layout.readOnly}
+      />
       {reader.mode === "er" && (
         <DiagramExport
           model={model}

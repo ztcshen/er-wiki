@@ -4,6 +4,15 @@ import { searchModel } from "../eda/reading-state.mjs";
 // Targets are fixed capabilities, never arbitrary IPC channels or JavaScript.
 export const commandCatalogue = [
   {
+    id: "model.check",
+    label: "结构检查",
+    group: "阅读",
+    icon: "check2-square",
+    target: "eda",
+    action: "check-model",
+    keywords: "check validate schema review diagnostics",
+  },
+  {
     id: "model.new",
     label: "新建空白模型",
     group: "模型",
@@ -36,7 +45,7 @@ export const commandCatalogue = [
     label: "保存模型",
     group: "模型",
     icon: "floppy",
-    target: "callback",
+    target: "workspace",
     action: "save",
     mutating: true,
     shortcut: "Mod+S",

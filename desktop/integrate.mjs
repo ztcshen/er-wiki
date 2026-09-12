@@ -33,7 +33,7 @@ export function integrateDesktop(here) {
         '      setTitle("Untitled diagram");\n      setLastSaved("");\n      setSaveState(State.NONE);');
       return replaceOnce(code, '  const moveToCloud = useCallback(async () => {', `
   useDesktopWorkspace({
-    save, navigate, lastSaved, autosave: settings.autosave,
+    save, navigate, lastSaved, autosave: settings.autosave, readOnly: layout.readOnly,
     ready: Boolean(isTemplate) || !loadedDiagramId || (diagramSource === "local" && viewOwnerIdRef.current === loadedDiagramId),
     isDirty: () => modelContent !== savedModelContentRef.current,
     snapshot: { diagramId: isTemplate ? undefined : loadedDiagramId, name: title, database, tables,
@@ -44,6 +44,8 @@ export function integrateDesktop(here) {
   const moveToCloud = useCallback(async () => {`);
     }
     if (id.endsWith('/src/components/EditorHeader/ControlPanel.jsx')) {
+      code=`import { workspaceCommand as desktopCommand } from ${JSON.stringify(sourceFile('renderer/commands.js'))};\n`+code;
+      code=replaceOnce(code,'  useHotkeys("mod+s", save, EDITOR_HOTKEY);','  useHotkeys("mod+s", () => { if (!layout.readOnly) desktopCommand("save"); }, { ...EDITOR_HOTKEY, enableOnFormTags: ["INPUT", "TEXTAREA", "SELECT"] });');
       code = replaceOnce(code, 'ignoreEventWhen: (e) => Boolean(e.target?.closest?.(".monaco-editor")),',
         'ignoreEventWhen: (e) => Boolean(e.target?.closest?.(".monaco-editor")) || (document.body.classList.contains("eda-reading") && !((e.metaKey || e.ctrlKey) && ["s", "z", "y", "o"].includes(e.key.toLowerCase()))),');
       code = `import DesktopHeader, { configureEdaMenu } from ${JSON.stringify(sourceFile('renderer/DesktopHeader.jsx'))};\n` + code;
@@ -101,9 +103,31 @@ export function integrateDesktop(here) {
         '      <DisplayNameEditor table={table} field={data}/><FieldCodeReference tableName={table.name} field={data}/>\n      <div className="font-semibold">{t("default_value")}</div>');
     }
     if(id.endsWith('/src/components/EditorCanvas/FieldEnumEditor.jsx')){
+      code=`import EditableEnumRow from ${JSON.stringify(sourceFile('review/EditableEnumRow.jsx'))};\nimport { defaultLiteral } from ${JSON.stringify(sourceFile('review/model-checks.mjs'))};\n`+code;
+      const start=code.indexOf('              {values.map((item) => ('),end=code.indexOf('              ))}',start);
+      if(start<0||end<start)throw new Error('Enum row editor anchor changed');
+      code=replaceOnce(code,code.slice(start,end+'              ))}'.length),
+        '              {values.map((item, index) => <EditableEnumRow key={String(item.value)+":"+index} item={item} index={index} values={values} onCommit={commit} readOnly={layout.readOnly} defaultValue={defaultValue} />)}');
+      code=replaceOnce(code,'  const defaultValue = field.default == null ? "" : String(field.default);','  const defaultValue = defaultLiteral(field.default) ?? "";');
+      code=replaceOnce(code,'values.some((v) => v.value === code)','values.some((v) => String(v.value) === code)');
       return `import { tr as translateSource } from ${JSON.stringify(sourceFile('i18n/renderer.js'))};\n`+code.replace('{definition.source}','{translateSource(definition.source)}');
     }
     if(id.endsWith('/src/components/EditorSidePanel/RelationshipsTab/RelationshipInfo.jsx')){
+      code=`import RelationshipEndpoints from ${JSON.stringify(sourceFile('review/RelationshipEndpoints.jsx'))};\nimport { swappedRelationship } from ${JSON.stringify(sourceFile('review/relationship-draft.mjs'))};\n`+code;
+      const a=code.indexOf('  const startFieldOptions ='),b=code.indexOf('  const changeCardinality =');
+      if(a<0||b<a)throw new Error('Relationship field editor anchors changed');
+      code=replaceOnce(code,code.slice(a,b),`  const swapKeys = () => {
+    if (layout.readOnly) return;
+    const redo = swappedRelationship(data);
+    const undo = Object.fromEntries(Object.keys(redo).map(key => [key, data[key]]));
+    setUndoStack(stack => [...stack, { action: Action.EDIT, element: ObjectType.RELATIONSHIP, component: "self", rid: data.id, undo, redo, message: t("swap") }]);
+    setRedoStack([]); updateRelationship(data.id, redo);
+  };
+
+`);
+      const start=code.indexOf('      <Card\n'),end=code.indexOf('      </Card>',start);
+      if(start<0||end<start)throw new Error('Relationship composite editor anchor changed');
+      code=replaceOnce(code,code.slice(start,end+'      </Card>'.length),'      <RelationshipEndpoints data={data} />');
       return replaceOnce(code,'            onClick={() => deleteRelationship(data.id)}','            aria-label={`删除关系 ${data.name}`}\n            onClick={() => deleteRelationship(data.id)}');
     }
     return null;

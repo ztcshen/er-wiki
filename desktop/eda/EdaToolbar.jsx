@@ -13,6 +13,8 @@ export default function EdaToolbar({
   busy,
   navigate,
   arrange,
+  issues = [],
+  onCheck,
 }) {
   const { tables, relationships } = model;
   const { level, selectedTable, tableId, domainId, labels, bundle, direction } =
@@ -102,6 +104,15 @@ export default function EdaToolbar({
           <span> · {relationships.length} 条关系</span>
         </span>
         <div className="eda-view-actions">
+          <button
+            className="eda-check-button"
+            data-errors={issues.some((issue) => issue.severity === "error")}
+            onClick={onCheck}
+            aria-label="结构检查"
+          >
+            <i className="bi bi-check2-square" aria-hidden="true" />
+            检查 <span>{issues.length}</span>
+          </button>
           <ReadingBookmarks session={reading} />
           <button
             onClick={arrange}
