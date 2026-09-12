@@ -80,6 +80,17 @@ body[theme-mode=dark] .eda-workspace{--eda-active:#7fc4f4;--eda-field-active:#20
 .eda-field-type{font-size:10px;fill:var(--wiki-type-number)}
 .eda-canvas-controls{position:absolute;bottom:12px;right:12px;display:flex;gap:2px;padding:3px;background:var(--wiki-card);border:1px solid var(--wiki-line);border-radius:8px;box-shadow:0 2px 10px #0000000b}
 .eda-canvas-controls button{width:30px;height:30px;padding:0;border:0;font-size:17px}
+.eda-canvas-controls .eda-scale-button{width:52px;font-size:11px;font-variant-numeric:tabular-nums}
+.eda-canvas{container-type:inline-size}
+.eda-minimap{position:absolute;bottom:12px;left:12px;width:184px;background:var(--wiki-card);border:1px solid var(--wiki-line);border-radius:8px;box-shadow:0 2px 10px #0000000b;overflow:hidden}
+.eda-minimap>span{display:block;padding:7px 9px 2px;font-size:10px;color:var(--wiki-muted)}
+.eda-minimap svg{display:block;height:108px;margin:6px;width:calc(100% - 12px);cursor:crosshair;touch-action:none}
+.eda-minimap svg:focus-visible{outline:2px solid var(--eda-active);outline-offset:-3px}
+.eda-minimap-viewport{fill:var(--eda-active);fill-opacity:.08;stroke:var(--eda-active);stroke-width:1.5}
+.eda-canvas[data-minimap=true] .eda-canvas-hint{left:210px}
+.eda-canvas .eda-metrics{top:12px;bottom:auto;right:auto;max-width:calc(100% - 24px)}
+@container(max-width:720px){.eda-canvas-hint{display:none}}
+@container(max-width:450px){.eda-minimap{width:136px}.eda-minimap svg{height:78px}}
 .eda-canvas-controls button[aria-label="适应窗口"]{font-size:13px}
 .eda-canvas-hint{position:absolute;left:14px;bottom:17px;font-size:10px;color:var(--wiki-muted);pointer-events:none}
 .eda-metrics{position:absolute;bottom:12px;left:12px;right:125px;padding:7px 10px;border:1px solid var(--wiki-line);border-radius:6px;background:var(--wiki-card);color:var(--wiki-muted);font-size:11px;pointer-events:none}
@@ -128,12 +139,14 @@ html[lang=en] .eda-controls>select{max-width:155px}html[lang=en] .desktop-more-m
 
 @media(max-width:1100px){
   .eda-body[data-directory=true]{grid-template-columns:195px minmax(0,1fr)}
-  .eda-body[data-inspector=true]{grid-template-columns:minmax(0,1fr)}
-  .eda-body[data-directory=true][data-inspector=true]{grid-template-columns:195px minmax(0,1fr)}
-  .eda-inspector{position:absolute;top:8px;bottom:8px;right:8px;width:292px;max-width:calc(100% - 16px);z-index:4;box-shadow:0 8px 32px #0003}
+  .eda-body[data-inspector=true]{grid-template-columns:minmax(0,1fr) 252px}
+  .eda-body[data-directory=true][data-inspector=true]{grid-template-columns:195px minmax(0,1fr) 252px}
   .desktop-save-status{margin-right:2px}.eda-scope-name{max-width:130px}
 }
 @media(max-width:760px){
+  .eda-body[data-inspector=true]{grid-template-columns:minmax(0,1fr)}
+  .eda-body[data-directory=true][data-inspector=true]{grid-template-columns:195px minmax(0,1fr)}
+  .eda-inspector{position:absolute;top:8px;bottom:8px;right:8px;width:252px;max-width:calc(100% - 16px);z-index:4;box-shadow:0 8px 32px #0003}
   .desktop-header{flex-wrap:wrap;gap:6px;padding:8px 10px}
   .desktop-header-identity{flex-basis:100%}.desktop-model-switcher{max-width:none}
   .desktop-header-actions{width:100%;justify-content:flex-end}

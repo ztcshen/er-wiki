@@ -1,4 +1,13 @@
-# 0.2.0-preview.2 — Keyboard-first workbench
+# 0.2.0-preview.3 — Diagram navigation
+
+- Optional navigation minimap with click, drag and keyboard movement.
+- Smooth cursor-anchored wheel zoom and a 100% reading-scale button.
+- Auto / Horizontal / Vertical orthogonal layout direction, remembered per model and bookmark.
+- Existing automatic-layout reading positions remain compatible after upgrade.
+- Navigation does not modify tables, relations or model save timestamps.
+- Updated screenshots from the actual packaged Electron application and fictional fulfillment model.
+
+## Keyboard-first workbench
 
 - Quick search with cmdk, qualified field lookup, keyboard navigation and command-only mode.
 - Shared action catalogue for a shorter grouped menu and the complete command palette.
@@ -26,4 +35,3 @@ security policy; do not bypass device-management restrictions to run this previe
 
 No business data, user profiles or private database examples are included.
 Consult LICENSE, NOTICE, SECURITY.md and docs/KNOWN_LIMITATIONS.md before use.
-This file describes the source version; it is not evidence that a release has been published.

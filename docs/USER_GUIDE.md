@@ -36,7 +36,13 @@ custom types and the timeline remain available in this catalogue.
 - **Domain overview** summarizes domains; open one to inspect its tables.
 - **Related tables** and **All fields** inspect a table and its neighboring relations.
 - Search matches table/field names, aliases, comments and enum values/meanings.
-- Drag the background to pan; scroll or use the controls to zoom.
+- Drag the background to pan; scrolling zooms around the pointer. The percentage
+  button returns to 100% reading scale; Fit restores the complete current scope.
+- Click or drag the navigation minimap to move without losing the big picture.
+  When focused, arrow keys pan and Home fits. Hide it under **Display** if needed.
+- **Display → Layout direction** offers Auto, Horizontal and Vertical. Auto keeps
+  the existing candidate search; an explicit direction restricts that search,
+  still prioritizing crossings, overlaps, wire length and bends in that order.
 - Bookmark a reading position with a descriptive name; use Back to return to the
   previous position. Deleted targets fall back safely to the overview.
 - Fold a domain with its chevron to simplify the directory. This does not filter
@@ -45,6 +51,9 @@ custom types and the timeline remain available in this catalogue.
 总图、领域、表和字段可以逐层查看。平移缩放、选择对象和书签按模型独立记忆，
 切换模型或重启后恢复，不会更新模型保存时间。书签最多 50 个，视图缓存最多 60 个。
 目录左侧的小箭头只折叠目录列表，不会改变 ER 图的表数量；点击分组名称才会进入该领域。
+滚轮以鼠标指向的位置为中心缩放；右下角比例按钮恢复 100%，适应窗口按钮查看当前范围全图。
+左下角小地图支持点击、拖动定位，聚焦后可用方向键移动、Home 返回全图；可在“显示”中关闭。
+“显示 → 布局方向”可选自动、横向、纵向，按模型和书签记忆；旧版自动布局的阅读位置仍保留。
 书签保存在这台电脑，不随模型 JSON 导出；这避免把个人阅读习惯混入共享模型。
 
 Bus / Hub aggregates references; identical Net Labels identify one logical net.

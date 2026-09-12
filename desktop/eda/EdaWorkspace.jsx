@@ -6,9 +6,15 @@ import { domainsOf } from "./model.mjs";
 import { useReadingSession } from "./useReadingSession";
 import { useSchematicLayout } from "./useSchematicLayout";
 import { searchModel } from "./reading-state.mjs";
-import { focusNodeView } from "./camera.mjs";
+import {
+  actualSizeView,
+  focusNodeView,
+  viewScale,
+  zoomAtPoint,
+} from "./camera.mjs";
 import { tr } from "../i18n/renderer";
 import EdaScene from "./EdaScene";
+import EdaMinimap from "./EdaMinimap";
 import EdaEditors from "./EdaEditors";
 import EdaToolbar from "./EdaToolbar";
 import EdaDirectory from "./EdaDirectory";
@@ -28,6 +34,17 @@ export default function EdaWorkspace({ modelId, ready }) {
     [focusRequest, setFocusRequest] = useState(0);
   const pendingFocus = useRef(null),
     canvas = useRef(null);
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) =>
+      setViewport({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      }),
+    );
+    observer.observe(canvas.current);
+    return () => observer.disconnect();
+  }, []);
   const model = useMemo(
     () => ({
       tables,
@@ -86,17 +103,7 @@ export default function EdaWorkspace({ modelId, ready }) {
     if (result && currentResult)
       setView([0, 0, result.layout.width || 800, result.layout.height || 500]);
   };
-  const zoomView = (factor) =>
-    setView((v) =>
-      v[2] * factor < 100 || v[2] * factor > 100000
-        ? v
-        : [
-            v[0] + (v[2] * (1 - factor)) / 2,
-            v[1] + (v[3] * (1 - factor)) / 2,
-            v[2] * factor,
-            v[3] * factor,
-          ],
-    );
+  const zoomView = (factor) => setView((v) => zoomAtPoint(v, factor));
   const tableNode = (id) => {
     const metadata = result?.projection.nodes.find(
       (n) => n.kind === "table" && n.tableId === id,
@@ -265,6 +272,7 @@ export default function EdaWorkspace({ modelId, ready }) {
         <div
           ref={canvas}
           className="eda-canvas"
+          data-minimap={settings.edaMinimap !== false}
           id="canvas"
           data-eda-ready={
             ready && result && currentResult && !busy && !error
@@ -332,6 +340,15 @@ export default function EdaWorkspace({ modelId, ready }) {
           )}
           {result && currentResult && !busy && !error && (
             <>
+              {settings.edaMinimap !== false && (
+                <EdaMinimap
+                  result={result}
+                  view={view}
+                  viewport={viewport}
+                  onView={setView}
+                  onFit={fitView}
+                />
+              )}
               {settings.edaMetrics === true ? (
                 <div className="eda-metrics">
                   交叉 {result.metrics.crossings} · 重叠{" "}
@@ -355,6 +372,14 @@ export default function EdaWorkspace({ modelId, ready }) {
                   onClick={() => zoomView(1.2)}
                 >
                   −
+                </button>
+                <button
+                  className="eda-scale-button"
+                  aria-label="原始大小（100%）"
+                  title="原始大小（100%）"
+                  onClick={() => setView((v) => actualSizeView(v, viewport))}
+                >
+                  {Math.round(viewScale(view, viewport) * 100)}%
                 </button>
                 <button
                   aria-label="适应窗口"

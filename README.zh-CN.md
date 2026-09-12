@@ -9,13 +9,14 @@
 [下载与发布说明](https://github.com/ztcshen/er-wiki/releases) ·
 [CI 状态](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
-当前源码版本为 `0.2.0-preview.2`，源码推送不代表已发布新安装包；下载以 Releases 为准。
+当前源码版本为 `0.2.0-preview.3`；已发布版本与安装包以 Releases 为准。
 
 ## 桌面工作流
 
 - 统一设置：语言、主题、自动保存、备份保留数量与手动检查更新。
 - ⌘/Ctrl+K 快速查找表、字段和操作；菜单按任务分组，目录分组可独立折叠。
 - 按模型恢复领域、选中表、缩放平移；支持阅读书签和返回上次位置。
+- 导航小地图、鼠标定点缩放、100% 阅读比例，以及自动／横向／纵向布局方向。
 - 搜索表、字段、别名、注释及枚举解释。
 - 修改显示名称、说明和枚举不重排整图；结构变化重新布局。
 - SQL 本机解析预览后导入新模型；JSON 带版本号并兼容旧文件。
@@ -33,10 +34,17 @@
 - 分仓履约、包裹及部分发货；
 - 退货申请、退货明细与入库处置。
 
-以下为本地 **0.2.0-preview.2 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
+以下为本地 **0.2.0-preview.3 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
 不是另一套绘图脚本生成的示意图。
 
 ![真实桌面界面：电商履约全部 13 张表](docs/images/fulfillment-desktop-zh.png)
+
+定位到字段，以正常比例阅读，并通过小地图保留位置参照：
+
+![真实桌面界面：字段详情和导航小地图](docs/images/fulfillment-focus-zh.png)
+
+<details>
+<summary>表编辑和快速查找截图</summary>
 
 同一模型的真实表编辑界面，展示字段名、类型、显示名称三列：
 
@@ -45,6 +53,8 @@
 同一模型的快速查找，可直接定位到表和字段：
 
 ![真实桌面界面：快速查找字段](docs/images/fulfillment-search-zh.png)
+
+</details>
 
 可直接查看 [DDL](examples/fulfillment.sql)、
 [模型 JSON](examples/fulfillment.drawdb.json)、[阅读说明](examples/README.md)、

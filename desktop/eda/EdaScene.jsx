@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { sectionsOf } from './metrics.mjs';
+import { clientPointToWorld, zoomAtPoint } from './camera.mjs';
 import { formatFieldType, chineseFieldName } from '@drawdb/utils/fieldPresentation';
 import { tr } from '../i18n/renderer';
 
@@ -10,6 +11,19 @@ const fitText=(value,width,size=11)=>{
 const pathText=points=>points.map((p,i)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' ');
 export default function EdaScene({result,selectedNet,onNet,onNode,onEdit,onField,view,onView}){
   const drag=useRef(null),svg=useRef(null);
+  const updateView=useRef(onView);updateView.current=onView;
+  useEffect(()=>{
+    const element=svg.current;
+    const wheel=event=>{
+      event.preventDefault();
+      const rect=element.getBoundingClientRect();
+      const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?rect.height:1);
+      const factor=Math.exp(Math.max(-.5,Math.min(.5,delta*.0015)));
+      updateView.current(previous=>zoomAtPoint(previous,factor,clientPointToWorld(previous,rect,event.clientX,event.clientY)));
+    };
+    element.addEventListener('wheel',wheel,{passive:false});
+    return()=>element.removeEventListener('wheel',wheel);
+  },[]);
   const [hover,setHover]=useState(null);
   const nodeMeta=new Map(result.projection.nodes.map(n=>[n.id,n])),edgeMeta=new Map(result.projection.edges.map(e=>[e.id,e]));
   const relationMeta=new Map(result.projection.nets.flatMap(n=>n.members.map(r=>[r.id,r])));
@@ -25,8 +39,6 @@ export default function EdaScene({result,selectedNet,onNet,onNode,onEdit,onField
     onPointerMove={event=>{if(!drag.current)return;const rect=svg.current.getBoundingClientRect(),d=drag.current;
       const scale=Math.max(d.view[2]/rect.width,d.view[3]/rect.height);onView([d.view[0]-(event.clientX-d.x)*scale,d.view[1]-(event.clientY-d.y)*scale,d.view[2],d.view[3]]);}}
     onPointerUp={()=>{drag.current=null;}} onPointerCancel={()=>{drag.current=null;}}
-    onWheel={event=>{const factor=Math.exp(Math.sign(event.deltaY)*.12);if(w*factor<100||w*factor>100000)return;
-      onView([x+w*(1-factor)/2,y+h*(1-factor)/2,w*factor,h*factor]);}}
     aria-label="EDA 正交原理图">
     <defs><pattern id="eda-grid" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".8" fill="var(--wiki-grid)" /></pattern></defs>
     <rect x={x} y={y} width={w} height={h} fill="url(#eda-grid)" />

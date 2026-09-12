@@ -14,7 +14,7 @@ export default function EdaToolbar({
   arrange,
 }) {
   const { tables, relationships } = model;
-  const { level, selectedTable, tableId, domainId, labels, bundle } =
+  const { level, selectedTable, tableId, domainId, labels, bundle, direction } =
     reading.location;
   const setSelectedTable = reading.setPart("selectedTable");
   const showDirectory = settings.edaDirectory !== false;
@@ -116,6 +116,20 @@ export default function EdaToolbar({
               <div className="eda-display-panel">
                 <strong>图形显示</strong>
                 <label>
+                  布局方向
+                  <select
+                    aria-label="布局方向"
+                    value={direction}
+                    onChange={(e) =>
+                      reading.setPart("direction")(e.target.value)
+                    }
+                  >
+                    <option value="AUTO">自动（优先减少交叉）</option>
+                    <option value="RIGHT">横向</option>
+                    <option value="DOWN">纵向</option>
+                  </select>
+                </label>
+                <label>
                   关系显示
                   <select
                     aria-label="Net Label 模式"
@@ -148,6 +162,17 @@ export default function EdaToolbar({
                     }}
                   />
                   显示布局指标
+                </label>
+                <label className="eda-display-check">
+                  <input
+                    type="checkbox"
+                    checked={settings.edaMinimap !== false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setSettings((s) => ({ ...s, edaMinimap: checked }));
+                    }}
+                  />
+                  显示导航小地图
                 </label>
                 <small>显示设置自动记忆，不修改模型保存时间。</small>
                 <details>

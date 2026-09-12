@@ -84,6 +84,11 @@ try{
     await page.locator('[data-edit-field="status"]').waitFor();
     await capture(`fulfillment-editor-${language}.png`,`${language}: actual orders table editor, three columns`);
     await closeEditor();
+    await page.getByRole('button',{name:/^(Quick search|快速查找)$/}).click();
+    await page.getByRole('combobox',{name:/^(Search actions or fields|搜索操作或表字段)$/}).fill('orders.status');
+    await page.getByRole('option',{name:/^orders\.status/}).click();await ready();
+    await page.waitForFunction(()=>Number(document.querySelector('[data-eda-scene]').getAttribute('viewBox').split(' ')[2])<1000);
+    await capture(`fulfillment-focus-${language}.png`,`${language}: actual focused field and navigation minimap`);
     await overview();
     await page.getByRole('button',{name:/^(Quick search|快速查找)$/}).click();
     await page.getByRole('combobox',{name:/^(Search actions or fields|搜索操作或表字段)$/}).fill('orders.status');
@@ -102,7 +107,7 @@ try{
   await page.getByRole('status').filter({hasText:'图形已导出'}).waitFor();
   const svg=await fs.readFile(exported,'utf8');
   assert.equal((svg.match(/data-node-kind="table"/g)||[]).length,demo.tables.length);
-  assert(svg.includes('显示名称'));assert(!svg.includes('eda-toolbar'));
+  assert(svg.includes('显示名称'));assert(!svg.includes('eda-toolbar'));assert(!svg.includes('eda-minimap'));
   await fs.copyFile(exported,path.join(output,'fulfillment.svg'));
   await closeEditor();
   const saved=await readModel();

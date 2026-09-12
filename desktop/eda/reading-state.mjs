@@ -12,12 +12,16 @@ export function cleanLocation(value = {}) {
     selectedNet: typeof value.selectedNet === 'string' ? value.selectedNet.slice(0, 2000) : null,
     expanded: Array.isArray(value.expanded) ? value.expanded.filter(x => typeof x === 'string').slice(0, 100) : [],
     labels: ['off', 'auto', 'all'].includes(value.labels) ? value.labels : 'off',
-    bundle: value.bundle !== false };
+    bundle: value.bundle !== false,
+    direction: ['RIGHT', 'DOWN'].includes(value.direction) ? value.direction : 'AUTO' };
 }
 
 export const scopeKey = value => {
   const v = cleanLocation(value);
-  return JSON.stringify([v.level, v.domainId, v.tableId, v.labels, v.bundle, v.expanded]);
+  const key = [v.level, v.domainId, v.tableId, v.labels, v.bundle, v.expanded];
+  // Keep existing AUTO keys so upgrades retain saved reading positions.
+  if (v.direction !== 'AUTO') key.push(v.direction);
+  return JSON.stringify(key);
 };
 
 export function normalizeReadingState(value) {
@@ -33,9 +37,9 @@ export function normalizeReadingState(value) {
 export function restoreLocation(value, model) {
   const location = cleanLocation(value);
   const ids = new Set(model.tables.map(t => t.id));
-  if (location.tableId !== null && !ids.has(location.tableId)) return cleanLocation({ labels: location.labels, bundle: location.bundle });
+  if (location.tableId !== null && !ids.has(location.tableId)) return cleanLocation({ labels: location.labels, bundle: location.bundle, direction: location.direction });
   if (location.level === 'domain' && location.domainId !== '__unassigned__' && !model.groups.some(g => g.id === location.domainId))
-    return cleanLocation({ labels: location.labels, bundle: location.bundle });
+    return cleanLocation({ labels: location.labels, bundle: location.bundle, direction: location.direction });
   if (!ids.has(location.selectedTable)) { location.selectedTable = null; location.selectedField = null; }
   if (location.selectedField !== null && !model.tables.find(t => t.id === location.selectedTable)?.fields.some(f => f.id === location.selectedField)) location.selectedField = null;
   return location;

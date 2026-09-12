@@ -11,7 +11,8 @@ export async function arrangeSchematic(model, options={}, elk){
   async function candidates(p){
     if(p.nodes.length>1500||p.edges.length>6000)throw new Error('当前视图过大，请先选择更小的领域');
     const results=[];
-    for(const [direction,seed]of [['RIGHT',11],['RIGHT',37],['DOWN',11],['DOWN',37]]){
+    const directions = ['RIGHT', 'DOWN'].includes(options.direction) ? [options.direction] : ['RIGHT', 'DOWN'];
+    for(const [direction,seed]of directions.flatMap(direction => [11, 37].map(seed => [direction, seed]))){
       const graph={id:'root',layoutOptions:{'elk.algorithm':'layered','elk.edgeRouting':'ORTHOGONAL',
         'elk.direction':direction,'elk.randomSeed':String(seed),'elk.layered.crossingMinimization.strategy':'LAYER_SWEEP',
         'elk.layered.crossingMinimization.greedySwitch.type':'TWO_SIDED','elk.spacing.nodeNode':'65',
