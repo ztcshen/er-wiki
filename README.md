@@ -24,6 +24,7 @@ Simplified Chinese and the system default without translating your model content
 - Pure-diagram SVG/PNG export for the viewport, domain or full model.
 - Display preferences are separate from saved model content.
 - Keyboard-first quick search (⌘/Ctrl+K), grouped actions and independently folding domains.
+- Navigation minimap, cursor-anchored zoom, 100% reading scale and remembered layout direction.
 - No hosted account, cloud-sharing service or application telemetry is required.
 
 ## Fictional fulfillment example
@@ -32,10 +33,17 @@ The included example models **products and warehouse stock → order reservation
 split fulfillment → parcel shipment → returns**. It has 13 tables and supports
 multi-warehouse allocation and partial shipments at the schema level.
 
-These are real screenshots of the local **0.2.0-preview.2 macOS desktop app**,
+These are real screenshots of the local **0.2.0-preview.3 macOS desktop app**,
 loaded with the example JSON below. They are not a separately drawn mockup.
 
 ![Actual ER Wiki desktop: all 13 fulfillment tables](docs/images/fulfillment-desktop-en.png)
+
+Focus on a field at reading size while keeping its context in the minimap:
+
+![Actual ER Wiki desktop: field details and navigation minimap](docs/images/fulfillment-focus-en.png)
+
+<details>
+<summary>Table editor and quick search</summary>
 
 The same model in the actual table editor, including field names, types and display names:
 
@@ -45,14 +53,15 @@ Quick search uses the same model and real desktop UI:
 
 ![Actual ER Wiki desktop: quick field lookup](docs/images/fulfillment-search-en.png)
 
+</details>
+
 [Model JSON](examples/fulfillment.drawdb.json) · [Example DDL](examples/fulfillment.sql)
 · [Reading guide](examples/README.md) · [SVG exported by the app](docs/images/fulfillment.svg)
 · [Snapshot provenance](docs/images/fulfillment-snapshot.json)
 
 [Desktop user guide](docs/USER_GUIDE.md) · [Installation and signing](docs/DESKTOP_RELEASE.md)
 
-Source version `0.2.0-preview.2` is a development checkpoint until a matching
-release is published. The Releases page remains the source of truth for downloads.
+The Releases page is the source of truth for published versions and downloads.
 
 This is an independently authored educational schema, not an export of a company
 database or Saleor's schema. [Saleor's operations overview](https://saleor.io/features/operations)

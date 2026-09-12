@@ -1,10 +1,10 @@
 {
-  "capturedAt": "2026-09-12T05:43:50.933Z",
+  "capturedAt": "2026-09-12T07:18:23.109Z",
   "application": "ER Wiki Community",
-  "applicationVersion": "0.2.0-preview.2",
-  "sourceCommit": "4e571cd30a405e25ac2d7f3a11c7958adca1531d",
-  "rendererSourceSha256": "dfbca01b26c1124aed3a7e46c7628d592af83e6fa166340e6215d0304f2ce8bf",
-  "runtimeSourceSha256": "e813b9ebc37c025fc0ed4d908d6f179f03de5630eb5ea57b314f4fee414578ec",
+  "applicationVersion": "0.2.0-preview.3",
+  "sourceCommit": "14c824bc7149c9f0698df7c4c25dbc01ddcc7b70",
+  "rendererSourceSha256": "c5ecd8144763d14ac52b97601d77f1fcc3db0640a5cf43394ff75fafc8eda83c",
+  "runtimeSourceSha256": "d73665c054fd9b2fe49403957206cab9adf7180cb268be5e7e7dd32748cc99f9",
   "model": "examples/fulfillment.drawdb.json",
   "modelSha256": "1d5986663cfec07048702a83152d077ed87406261fd4e7159e3fe44b38a5f2f9",
   "tables": 13,
@@ -22,6 +22,14 @@
     {
       "file": "fulfillment-editor-en.png",
       "description": "en: actual orders table editor, three columns",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-focus-en.png",
+      "description": "en: actual focused field and navigation minimap",
       "viewport": {
         "width": 1440,
         "height": 900
@@ -46,6 +54,14 @@
     {
       "file": "fulfillment-editor-zh.png",
       "description": "zh: actual orders table editor, three columns",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-focus-zh.png",
+      "description": "zh: actual focused field and navigation minimap",
       "viewport": {
         "width": 1440,
         "height": 900
