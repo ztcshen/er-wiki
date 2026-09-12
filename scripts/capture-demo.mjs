@@ -226,6 +226,8 @@ try {
     await page
       .getByRole("button", { name: /^(适应窗口|Fit to window)$/ })
       .click();
+    await page.getByRole("button", { name: /^(放大|Zoom in)$/, exact: true }).click();
+    await page.getByRole("button", { name: /^(放大|Zoom in)$/, exact: true }).click();
     await capture(
       `fulfillment-workspace-${language}.png`,
       `${language}: ER workspace, related tables and field browser`,
@@ -340,6 +342,8 @@ try {
     .click();
   await ready();
   await page.getByRole("button", { name: "适应窗口", exact: true }).click();
+  await page.getByRole("button", { name: "放大", exact: true }).click();
+  await page.getByRole("button", { name: "放大", exact: true }).click();
   await capture(
     "fulfillment-dark.png",
     "Actual desktop ER workspace in dark mode",
