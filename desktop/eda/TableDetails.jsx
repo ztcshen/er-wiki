@@ -13,6 +13,7 @@ export default function TableDetails({
   relationships,
   field,
   actions,
+  readOnly = false,
 }) {
   const [query, setQuery] = useState("");
   useEffect(() => setQuery(""), [table.id]);
@@ -32,12 +33,14 @@ export default function TableDetails({
         <span>{table.indices?.length || 0} 索引</span>
       </div>
       <div className="eda-detail-actions">
-        <button
-          className="eda-primary-button"
-          onClick={() => actions.editTable(table.id)}
-        >
-          编辑表
-        </button>
+        {!readOnly && (
+          <button
+            className="eda-primary-button"
+            onClick={() => actions.editTable(table.id)}
+          >
+            编辑表
+          </button>
+        )}
         <button onClick={() => actions.inspectTable(table.id)}>全部字段</button>
         <button
           disabled={!actions.canFocus}

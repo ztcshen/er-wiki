@@ -1,5 +1,7 @@
 # ER Wiki
 
+**[▶ 在线体验 ER Demo](https://ztcshen.github.io/er-wiki/)** — 无需安装和登录，仅包含虚构示例。
+
 一个本地优先的数据库模型桌面工作台，基于 Electron、drawDB 和 ELK。
 支持简体中文、English 和跟随系统，切换语言不会改写模型内容。
 社区版与原有业务工作区使用不同的数据目录。
@@ -34,6 +36,8 @@
 - 自动或手动本地备份，恢复为副本；SVG / PNG 导出当前视图、领域或完整总图。
 
 详见[使用说明](docs/USER_GUIDE.md)和[安装、签名与公证说明](docs/DESKTOP_RELEASE.md)。
+也可以[直接打开在线案例](https://ztcshen.github.io/er-wiki/)，体验缩放、分组、表字段搜索、枚举和关系追踪。
+在线版复用桌面 ER 组件，只提供阅读，不开放编辑、导入、保存或流程图。[实现与范围](site/README.md)。
 界面参考与模块划分见[工作台设计说明](docs/WORKBENCH_DESIGN.md)。
 
 ## 电商履约示例

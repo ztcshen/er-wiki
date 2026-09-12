@@ -8,6 +8,7 @@
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "build": "npm --prefix desktop run build",
+    "build:demo": "node site/build.mjs",
     "start": "npm --prefix desktop start",
     "package": "npm --prefix desktop run package",
     "demo": "node scripts/build-demo.mjs",
