@@ -12,7 +12,7 @@ const {
 } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
-const { ORIGIN, safeRoute } = require("./security.cjs");
+const { ORIGIN, safeRoute, isAppURL } = require("./security.cjs");
 const { atomicWrite } = require("./files.cjs");
 const { createPreferences } = require("./preferences.cjs");
 const { createBackupStore } = require("./backups.cjs");

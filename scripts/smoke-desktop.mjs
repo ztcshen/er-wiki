@@ -20,6 +20,13 @@ const page=await app.firstWindow();page.setDefaultTimeout(12000);page.on('pageer
 try{
   await page.locator('[data-eda-ready="true"]').waitFor({timeout:30000});
   assert.equal(await page.locator('[data-node-kind="table"]').count(),13);
+  const navigation=await app.evaluate(({BrowserWindow})=>{
+    const contents=BrowserWindow.getAllWindows()[0].webContents;
+    const check=url=>{let prevented=false;contents.emit('will-navigate',{preventDefault(){prevented=true;}},url);return prevented;};
+    return {external:check('https://example.invalid/'),local:check('erwiki://app/editor/diagrams/demo-fulfillment')};
+  });
+  assert.deepEqual(navigation,{external:true,local:false});
+  console.log('PASS: real native navigation handler blocks external destinations');
   console.log(JSON.stringify({stage:'initial',title:await page.title(),url:page.url(),profile,body:(await page.locator('body').innerText()).slice(0,2200)}));
   await page.screenshot({path:path.join(output,'initial.png')});
   const more=()=>page.getByRole('button',{name:/更多操作|More actions/}).click();
