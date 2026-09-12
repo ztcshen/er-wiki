@@ -28,7 +28,16 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   `table.field` and multi-word queries. Selecting a field in Quick search opens its
   related-table view and focuses the real table bounds.
 - The inspector offers an explicit **Focus in diagram** action. Camera movement is
-  separate from scope changes; the all-table overview remains available.
+  separate from scope changes; the all-table overview remains available. Focus
+  does not inflate small cards above 100% reading size.
+- A small optional SVG minimap reuses the computed ELK node positions. Pointer
+  zoom accounts for SVG letterboxing and keeps the pointed world location stable.
+  Navigation controls remain outside the exported diagram. Desktop detail panels
+  reserve space down to 980px instead of covering the navigation controls.
+- Auto direction compares the same four orthogonal candidates; an explicit
+  horizontal or vertical choice compares two seeds in that direction. The scoring
+  order is unchanged. Direction is a per-model reading preference, not model data;
+  default scope keys remain byte-compatible with previously saved camera positions.
 - Existing three-column cards, orthogonal routing, Bus/Hub/Net Labels, model editing,
   import/export and backup capabilities are retained.
 
@@ -54,9 +63,10 @@ desktop/
     EdaToolbar.jsx         reading controls
     EdaDirectory.jsx       domain tree and search results
     EdaInspector.jsx       table/field/relation details
+    EdaMinimap.jsx         navigate the existing layout, without a second layout engine
     useSchematicLayout.js  React layout lifecycle
     layout-task.mjs        shared worker deadline/cancellation
-    camera.mjs             pure focus geometry
+    camera.mjs             pure focus, pointer zoom and SVG coordinate geometry
   build/
     aliases.mjs            one upstream/React dependency boundary
     paths.mjs              platform-neutral path normalization

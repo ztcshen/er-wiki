@@ -430,5 +430,14 @@
   "高级": "Advanced",
   "配置自定义类型": "Configure custom types",
   "操作历史": "Action history",
-  "工作区": "Workspace"
+  "工作区": "Workspace",
+  "导航概览": "Overview map",
+  "导航小地图": "Navigation minimap",
+  "点击或拖动定位，方向键平移，Home 显示全图。": "Click or drag to navigate. Arrow keys pan; Home fits the diagram.",
+  "原始大小（100%）": "Actual size (100%)",
+  "布局方向": "Layout direction",
+  "自动（优先减少交叉）": "Auto (minimize crossings)",
+  "横向": "Horizontal",
+  "纵向": "Vertical",
+  "显示导航小地图": "Show navigation minimap"
 }

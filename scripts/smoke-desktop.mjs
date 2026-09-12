@@ -4,6 +4,7 @@ import os from 'node:os';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { checkNavigation } from './check-navigation.mjs';
 
 // Optional focused Electron smoke check. Uses an existing Playwright runtime;
 // it never starts a browser or touches the installed application's profile.
@@ -41,6 +42,8 @@ try{
     };
   }));
   const original=await record();
+  await checkNavigation({app,page,record,output});
+  if (!process.argv.includes('--navigation-only')) {
   await page.evaluate(()=>{window.__smokeScene=document.querySelector('[data-eda-scene]');});
   await item('Settings…');
   await page.locator('.desktop-more-menu').first().waitFor({state:'hidden'});
@@ -143,6 +146,7 @@ try{
   for(let i=1;i<headerBoxes.length;i++)assert(headerBoxes[i-1].right<=headerBoxes[i].left+1,'Header controls overlap');
   await page.screenshot({path:path.join(output,'compact.png'),animations:'disabled'});
   console.log('PASS: compact desktop header at 980px');
+  }
   assert.deepEqual(errors,[]);
   console.log('Focused Electron smoke passed. Artifacts: '+output);
 }catch(error){
