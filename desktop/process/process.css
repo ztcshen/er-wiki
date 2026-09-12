@@ -27,8 +27,7 @@
   color: var(--eda-active) !important;
   font-weight: 600;
 }
-.process-switchbar select,
-.process-toolbar select {
+.process-switchbar select {
   font: inherit;
   font-size: 12px;
   color: var(--wiki-ink);
@@ -52,7 +51,7 @@
   font-size: 11px;
   line-height: 1.65;
 }
-.process-canvas .eda-node:focus-visible {
+.process-canvas [data-diagram-interactive]:focus-visible {
   outline: 2px solid var(--eda-active);
   outline-offset: 3px;
 }
@@ -85,72 +84,11 @@
 }
 .process-body {
   display: grid;
-  grid-template-columns: 206px minmax(0, 1fr) 286px;
+  grid-template-columns: minmax(0, 1fr) 286px;
   gap: 8px;
   padding: 8px;
   flex: 1;
   min-height: 0;
-}
-.process-workspace[data-process-mode="flow"] .process-body {
-  grid-template-columns: minmax(0, 1fr) 286px;
-}
-.process-workspace[data-process-mode="flow"] .process-directory {
-  display: none;
-}
-.process-directory {
-  gap: 9px;
-}
-.process-directory p {
-  margin: 0;
-}
-.process-step-list {
-  overflow: auto;
-  min-height: 0;
-  flex: 1;
-}
-.process-step-list button {
-  display: grid;
-  grid-template-columns: 20px 1fr;
-  gap: 4px 6px;
-  width: 100%;
-  text-align: left;
-  padding: 10px 7px !important;
-  border: 0 !important;
-  background: transparent !important;
-  margin-bottom: 3px;
-}
-.process-step-list button > span {
-  grid-row: span 2;
-  font:
-    10px ui-monospace,
-    monospace;
-  color: var(--wiki-muted);
-  padding-top: 3px;
-}
-.process-step-list strong {
-  font-weight: 500;
-  font-size: 12px;
-}
-.process-step-list small {
-  font-size: 10px;
-  color: var(--wiki-muted);
-}
-.process-step-list button[data-related="true"] {
-  box-shadow: inset 3px 0 var(--eda-active);
-}
-.process-step-list button[aria-pressed="true"] {
-  background: var(--wiki-surface) !important;
-  color: var(--eda-active);
-}
-.process-evidence {
-  font-size: 11px;
-  color: var(--wiki-muted);
-  line-height: 1.65;
-  border-top: 1px solid var(--wiki-line);
-  padding-top: 8px;
-}
-.process-evidence summary {
-  cursor: pointer;
 }
 .process-legend {
   position: absolute;
@@ -252,7 +190,7 @@
 }
 @media (max-width: 1100px) {
   .process-body {
-    grid-template-columns: 170px minmax(0, 1fr) 244px;
+    grid-template-columns: minmax(0, 1fr) 244px;
   }
   .process-legend {
     top: 10px;
@@ -272,10 +210,7 @@
 }
 @media (max-width: 850px) {
   .process-body {
-    grid-template-columns: 145px minmax(0, 1fr);
-  }
-  .process-inspector {
-    display: none;
+    grid-template-columns: minmax(0, 1fr) 220px;
   }
   .process-switchbar {
     flex-wrap: wrap;

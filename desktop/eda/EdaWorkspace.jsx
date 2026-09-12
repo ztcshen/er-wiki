@@ -333,12 +333,6 @@ export default function EdaWorkspace({ modelId, ready }) {
           >
             业务流程
           </button>
-          <button
-            aria-pressed={reader.mode === "mixed"}
-            onClick={() => switchMode("mixed")}
-          >
-            混合对比
-          </button>
         </div>
         {scenario && (
           <select
@@ -579,7 +573,6 @@ export default function EdaWorkspace({ modelId, ready }) {
           setReader={setReader}
           ready={ready}
           selectedTable={selectedTable}
-          selectedField={selectedField}
           onSelectActivity={(id) =>
             setReader((state) => ({
               ...state,
@@ -587,10 +580,6 @@ export default function EdaWorkspace({ modelId, ready }) {
               activityId: id,
             }))
           }
-          onSelectTable={(id) => {
-            setTable(id);
-            setField(null);
-          }}
           onShowER={(id, fieldId = null) => {
             if (!tables.some((table) => table.id === id)) return;
             switchMode("er");

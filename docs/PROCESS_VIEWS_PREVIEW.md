@@ -1,15 +1,12 @@
-# Local process-view comparison / 本地流程视图对比
+# ER and process views / ER 与业务流程
 
-Version `0.2.0-preview.5` is a local preview, not a published release.
+Version `0.2.0-preview.6` is a local preview, not a published release.
 
 - **ER structure / ER 结构** retains the existing table/field editor, full-model
   overview, relationship cardinality, grouping and EDA routing.
 - **Process flow / 业务流程** shows explicit activities, decisions, events and
   conditional/return paths. Selecting an ER table chooses a related activity;
   mapped fields navigate back to their actual ER table and field.
-- **Mixed comparison / 混合对比** places activity nodes, data-access arrows and
-  real ER tables/relationships in one ELK-routed diagram. Choose Activity and
-  neighbors or Whole scenario to compare focus against context.
 
 The fictional fulfillment example includes Fulfillment and Returns scenarios.
 These definitions are manually authored illustrations, not mined event logs or
@@ -26,9 +23,17 @@ Use **Process configuration / 流程配置** to edit the explicit JSON definitio
 Applying configuration participates in model save/autosave, but this preview does
 not add process-config edits to the ER undo stack. Table edits retain existing
 undo behavior. Missing mapped tables/fields are reported, not silently removed.
-Diagram exports in process/mixed mode contain the current view.
+Process diagrams contain only activities and control flow. Table/field mappings
+stay in the activity details panel: click to inspect them in ER or open the
+existing table editor. Process SVG/PNG exports contain the current process view.
 
-This comparison does not provide a full BPMN editor, runtime simulation or a
+Older local previews' mixed-view preferences automatically fall back to Process
+flow. Scenario/activity selection and old process-view camera positions survive;
+obsolete mixed-view coordinates are discarded. The model and process definition
+are unchanged. Mixed nodes, data-access edges, layout options and UI have been
+removed rather than hidden behind a feature flag.
+
+This preview does not provide a full BPMN editor, runtime simulation or a
 workflow engine. Business models in the separate local business app were not
 migrated, uploaded or assigned invented processes.
 

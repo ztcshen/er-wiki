@@ -19,9 +19,7 @@ export default function ProcessInspector({
         <>
           <h3>{activity.name}</h3>
           <p>{activity.description || "此动作尚未补充说明。"}</p>
-          <p className="process-muted">
-            选择映射字段可切回 ER 并定位；读写箭头不是外键。
-          </p>
+          <p className="process-muted">点击表或字段，切回 ER 查看对应结构。</p>
           {activity.bindings.map((binding, index) => {
             const table = tables.find((table) => table.id === binding.tableId);
             return (

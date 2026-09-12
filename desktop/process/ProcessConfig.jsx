@@ -38,7 +38,7 @@ export default function ProcessConfig({
       visible={open}
       onClose={onClose}
       title="流程配置"
-      footerNote="流程配置随模型保存；本地对比版暂不接入撤销栈。"
+      footerNote="流程配置随模型保存；本地预览版暂不接入撤销栈。"
     >
       <div className="desktop-form process-config">
         <p>

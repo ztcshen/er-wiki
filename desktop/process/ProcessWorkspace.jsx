@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import EdaScene from "../eda/EdaScene";
 import DiagramExport from "../eda/DiagramExport";
 import { createLayoutTask } from "../eda/layout-task.mjs";
 import { zoomAtPoint, focusNodeView } from "../eda/camera.mjs";
 import { processViewKey } from "./reader.mjs";
-import { actionsForTable, bindingIssues } from "./definition.mjs";
-import { ProcessNode, ProcessEdge } from "./ProcessGlyphs";
+import { bindingIssues } from "./definition.mjs";
+import ProcessScene from "./ProcessScene";
 import ProcessInspector from "./ProcessInspector";
 import { tr } from "../i18n/renderer";
 
@@ -17,9 +16,7 @@ export default function ProcessWorkspace({
   reader,
   setReader,
   selectedTable,
-  selectedField,
   onSelectActivity,
-  onSelectTable,
   onShowER,
   onEditTable,
   onConfigure,
@@ -29,24 +26,10 @@ export default function ProcessWorkspace({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [revision, setRevision] = useState(0);
-  const [net, setNet] = useState(null),
-    [relation, setRelation] = useState(null);
   const canvas = useRef(null),
     job = useRef(null),
     serial = useRef(0);
-  const scopeActivity =
-    reader.mode === "mixed" && reader.mixedScope === "focused"
-      ? activity?.id
-      : "";
-  const options = useMemo(
-    () => ({
-      scenario,
-      mode: reader.mode,
-      scope: reader.mixedScope,
-      activityId: scopeActivity,
-    }),
-    [scenario, reader.mode, reader.mixedScope, scopeActivity],
-  );
+  const options = useMemo(() => ({ scenario }), [scenario]);
   const viewKey = processViewKey(reader),
     remembered = reader.views[viewKey],
     view = remembered || [0, 0, 1000, 700];
@@ -120,34 +103,14 @@ export default function ProcessWorkspace({
   };
   const focus = () => {
     if (!current || !activity) return;
-    const nodes = result.value.layout.children.filter((node) => {
-      const meta = result.value.projection.nodes.find(
-        (item) => item.id === node.id,
-      );
-      return (
-        meta.stepId === activity.id ||
-        (reader.mode === "mixed" &&
-          activity.bindings.some((binding) => binding.tableId === meta.tableId))
-      );
-    });
-    if (!nodes.length) return;
-    const x = Math.min(...nodes.map((node) => node.x)),
-      y = Math.min(...nodes.map((node) => node.y));
-    const next = focusNodeView(
-      {
-        x,
-        y,
-        width: Math.max(...nodes.map((node) => node.x + node.width)) - x,
-        height: Math.max(...nodes.map((node) => node.y + node.height)) - y,
-      },
-      canvas.current?.getBoundingClientRect(),
+    const meta = result.value.projection.nodes.find(
+      (node) => node.stepId === activity.id,
     );
+    const node = result.value.layout.children.find(
+      (node) => node.id === meta?.id,
+    );
+    const next = focusNodeView(node, canvas.current?.getBoundingClientRect());
     if (next) setView(next);
-  };
-  const select = (id) => {
-    onSelectActivity(id);
-    setNet(null);
-    setRelation(null);
   };
   const zoom = (factor) => setView((value) => zoomAtPoint(value, factor));
   useEffect(() => {
@@ -161,60 +124,21 @@ export default function ProcessWorkspace({
     window.addEventListener("erwiki-eda-command", handler);
     return () => window.removeEventListener("erwiki-eda-command", handler);
   });
-  const related = actionsForTable(scenario, selectedTable, selectedField),
-    issues = bindingIssues(definition, model.tables).filter(
-      (issue) => issue.scenarioId === scenario?.id,
-    );
-  const sceneProps = {
-    renderNode: (node, meta) => (
-      <ProcessNode node={node} meta={meta} selected={activity?.id} />
-    ),
-    renderEdge: (edge, meta) => (
-      <ProcessEdge
-        edge={edge}
-        meta={meta}
-        selected={activity?.id}
-        onSelect={select}
-      />
-    ),
-    highlightBindings: activity?.bindings || [],
-  };
+  const issues = bindingIssues(definition, model.tables).filter(
+    (issue) => issue.scenarioId === scenario?.id,
+  );
+  const sceneProps = { selected: activity?.id, onSelect: onSelectActivity };
   return (
-    <section className="process-workspace" data-process-mode={reader.mode}>
+    <section className="process-workspace" data-process-mode="flow">
       <div className="process-toolbar">
-        <span className="process-mode-description">
-          {reader.mode === "flow"
-            ? "方案 A · 独立流程视图"
-            : "方案 B · 混合 EDA 视图"}
-        </span>
+        <span className="process-mode-description">业务流程图</span>
         <span className="process-muted" title={scenario?.description}>
           流程定义 · 非执行日志
         </span>
-        {reader.mode === "mixed" && (
-          <select
-            aria-label="混合视图范围"
-            value={reader.mixedScope}
-            onChange={(event) =>
-              setReader((state) => ({
-                ...state,
-                mixedScope: event.target.value,
-              }))
-            }
-          >
-            <option value="focused">当前动作与邻居</option>
-            <option value="all">整个场景</option>
-          </select>
-        )}
         {current && (
           <span className="process-muted">
-            {result.value.projection.nodes.filter((node) => node.stepId).length}{" "}
-            个步骤 ·{" "}
-            {
-              result.value.projection.nodes.filter(
-                (node) => node.kind === "table",
-              ).length
-            }{" "}
-            / {model.tables.length} 表
+            {result.value.projection.nodes.length} 个步骤 ·{" "}
+            {result.value.projection.mappedTableIds.length} 个关联表
           </span>
         )}
         <button onClick={focus} disabled={!current}>
@@ -225,68 +149,16 @@ export default function ProcessWorkspace({
         </button>
       </div>
       <div className="process-body">
-        <aside className="eda-directory process-directory">
-          <div className="eda-directory-heading">
-            <strong>业务步骤</strong>
-            <span>{scenario?.steps.length || 0}</span>
-          </div>
-          <p className="process-muted">
-            {scenario?.evidence || "流程来自模型配置，非实际执行日志。"}
-          </p>
-          {selectedTable != null && (
-            <p className="process-context">
-              {model.tables.find((table) => table.id === selectedTable)?.name} ·{" "}
-              {related.length} 个关联动作
-            </p>
-          )}
-          <div className="process-step-list">
-            {scenario?.steps.map((step, index) => (
-              <button
-                key={step.id}
-                aria-pressed={step.id === activity?.id}
-                data-process-step-link={step.id}
-                data-related={related.some((item) => item.id === step.id)}
-                onClick={() => select(step.id)}
-              >
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step.name}</strong>
-                <small>
-                  {step.kind === "decision"
-                    ? "分支"
-                    : step.kind === "event"
-                      ? "事件"
-                      : "动作"}
-                </small>
-              </button>
-            ))}
-          </div>
-          <details className="process-evidence">
-            <summary>场景说明与边界</summary>
-            <p>{scenario?.description}</p>
-          </details>
-        </aside>
         <div
           className="eda-canvas process-canvas"
           ref={canvas}
           data-process-ready={current && !busy && !error ? "true" : undefined}
         >
           {current && (
-            <EdaScene
+            <ProcessScene
               result={result.value}
               view={view}
               onView={setView}
-              selectedNet={net}
-              selectedRelation={relation}
-              onNet={(ids, id) => {
-                setNet(Array.isArray(ids) ? ids[0] : ids);
-                setRelation(id);
-              }}
-              onNode={(meta) => {
-                if (meta.stepId) select(meta.stepId);
-                else if (meta.tableId != null) onSelectTable(meta.tableId);
-              }}
-              onEdit={onEditTable}
-              onField={onShowER}
               {...sceneProps}
             />
           )}
@@ -323,9 +195,8 @@ export default function ProcessWorkspace({
           {current && (
             <>
               <div className="process-legend">
-                <span>实线箭头：流程</span>
-                <span>彩色点线：读写</span>
-                {reader.mode === "mixed" && <span>1 / N：表关系</span>}
+                <span>箭头：流程顺序</span>
+                <span>表结构：点击右侧映射查看</span>
               </div>
               <div className="eda-canvas-controls">
                 <button aria-label="缩小流程" onClick={() => zoom(1.2)}>
@@ -364,6 +235,7 @@ export default function ProcessWorkspace({
         location={{}}
         view={view}
         viewOnly
+        Scene={ProcessScene}
         sceneProps={sceneProps}
       />
     </section>

@@ -1,11 +1,5 @@
 import { sectionsOf } from "../eda/metrics.mjs";
 import { useId } from "react";
-const COLORS = {
-  read: "#3276b9",
-  create: "#0f766e",
-  update: "#bd7a24",
-  delete: "#bc5772",
-};
 export const accessLabel = (access) =>
   ({ read: "读取", create: "创建", update: "更新", delete: "删除" })[access] ||
   access;
@@ -13,11 +7,7 @@ export function ProcessNode({ node, meta, selected }) {
   const active = meta.stepId === selected,
     fill = active ? "var(--eda-field-active)" : "var(--wiki-card)";
   return (
-    <g
-      data-process-step={meta.stepId}
-      data-selected={active}
-      opacity={meta.contextOnly ? 0.62 : 1}
-    >
+    <g data-process-step={meta.stepId} data-selected={active}>
       {meta.kind === "decision" ? (
         <path
           d={`M ${node.width / 2} 0 L ${node.width} ${node.height / 2} L ${node.width / 2} ${node.height} L 0 ${node.height / 2} Z`}
@@ -73,33 +63,26 @@ export function ProcessNode({ node, meta, selected }) {
   );
 }
 export function ProcessEdge({ edge, meta, selected, onSelect }) {
-  const binding = meta.kind === "process-binding",
-    active = binding
-      ? meta.stepId === selected
-      : meta.from === selected || meta.to === selected;
-  const color = binding
-    ? COLORS[meta.binding.access]
-    : meta.flowKind === "return"
-      ? "#865bb4"
-      : "#0f766e";
+  const active = meta.from === selected || meta.to === selected;
+  const color = meta.flowKind === "return" ? "#865bb4" : "#0f766e";
   const marker = "process-arrow-" + useId().replaceAll(":", "");
   return (
     <g
       data-process-edge={meta.id}
+      data-diagram-interactive
       data-edge-kind={meta.kind}
       data-flow-kind={meta.flowKind}
       data-selected={active}
-      opacity={!selected || active ? 1 : binding ? 0.25 : 0.65}
+      opacity={!selected || active ? 1 : 0.65}
       role="button"
       tabIndex={0}
-      aria-label={
-        binding
-          ? `${accessLabel(meta.binding.access)} ${String(meta.binding.tableId)}`
-          : meta.label || "流程连接"
-      }
-      onClick={() => onSelect(meta.stepId || meta.to)}
+      aria-label={meta.label || "流程连接"}
+      onClick={() => onSelect(meta.to)}
       onKeyDown={(event) => {
-        if (event.key === "Enter") onSelect(meta.stepId || meta.to);
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(meta.to);
+        }
       }}
     >
       <defs>
@@ -133,7 +116,6 @@ export function ProcessEdge({ edge, meta, selected, onSelect }) {
             fill="none"
             stroke={color}
             strokeWidth={active ? 1.8 : 1.3}
-            strokeDasharray={binding ? "3 3" : undefined}
             markerEnd={`url(#${marker})`}
             vectorEffect="non-scaling-stroke"
             pointerEvents="none"
@@ -157,9 +139,7 @@ export function ProcessEdge({ edge, meta, selected, onSelect }) {
             fill={color}
             fontSize="11"
           >
-            {binding
-              ? accessLabel(meta.binding.access)
-              : label.text.slice(0, 24)}
+            {label.text.slice(0, 24)}
           </text>
         </g>
       ))}

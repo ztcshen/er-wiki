@@ -36,6 +36,7 @@ export default function CardinalityLayer({
             key={badge.id}
             transform={`translate(${badge.x},${badge.y})`}
             data-eda-cardinality={badge.value}
+            data-diagram-interactive
             data-cardinality-table={String(badge.tableId)}
             data-rel-ids={JSON.stringify(badge.refs)}
             data-highlight={active ? "true" : "false"}
