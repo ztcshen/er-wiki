@@ -59,6 +59,19 @@ try{
   const archive=await app.evaluate(({app})=>app.getAppPath());
   const sourceHash=createHash('sha256').update(extractFile(archive,'source/desktop/eda/EdaScene.jsx')).digest('hex');
   assert.equal(sourceHash,createHash('sha256').update(await fs.readFile(path.join(root,'desktop/eda/EdaScene.jsx'))).digest('hex'));
+  const runtimeFiles=['desktop/main.cjs','desktop/preload.cjs','desktop/security.cjs','desktop/files.cjs',
+    'desktop/backups.cjs','desktop/preferences.cjs','desktop/updates.cjs','desktop/integrate.mjs','desktop/build.mjs',
+    'scripts/localize-ui.mjs','scripts/prepare-renderer.mjs','scripts/renderer-bootstrap.js'];
+  for(const directory of ['desktop/native','desktop/eda','desktop/renderer','desktop/i18n','desktop/build'])
+    for(const file of await fs.readdir(path.join(root,directory),{recursive:true}))
+      if(/\.(?:cjs|mjs|js|jsx|json|css)$/.test(file))runtimeFiles.push(directory+'/'+file.replaceAll('\\','/'));
+  const sourceDigests=[];
+  for(const file of runtimeFiles.sort()){
+    const actual=createHash('sha256').update(extractFile(archive,'source/'+file)).digest('hex');
+    assert.equal(actual,createHash('sha256').update(await fs.readFile(path.join(root,file))).digest('hex'),`Repackage before capture: ${file}`);
+    sourceDigests.push(file+':'+actual);
+  }
+  const runtimeSourceSha256=createHash('sha256').update(sourceDigests.join('\n')).digest('hex');
   for(const language of ['en','zh']){
     await more();await page.getByText(/^(Settings…|设置…)$/).click();
     await page.getByRole('combobox',{name:/^(Interface language|界面语言)$/}).selectOption(language);
@@ -96,7 +109,7 @@ try{
   assert.deepEqual(saved.tables,demo.tables);assert.deepEqual(saved.references,demo.relationships);assert.deepEqual(saved.reviewGroups,demo.reviewGroups);
   assert.equal(saved.lastModified.getTime(),initial.lastModified.getTime());assert.deepEqual(errors,[]);
   const manifest={capturedAt:new Date().toISOString(),application:'ER Wiki Community',applicationVersion:version,
-    sourceCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),rendererSourceSha256:sourceHash,
+    sourceCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),rendererSourceSha256:sourceHash,runtimeSourceSha256,
     model:'examples/fulfillment.drawdb.json',modelSha256:createHash('sha256').update(input).digest('hex'),tables:demo.tables.length,relationships:demo.relationships.length,
     method:'Unmodified Electron webContents screenshots; SVG exported through the application UI.',images,svg:'fulfillment.svg'};
   await fs.writeFile(path.join(output,'fulfillment-snapshot.json'),JSON.stringify(manifest,null,2)+'\n');

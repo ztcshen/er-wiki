@@ -86,38 +86,42 @@ export default function CommandPalette({ commands, model, runCommand }) {
                   ["table", "表与字段"],
                   ["command", "操作"],
                 ]
-            ).map(([kind, title]) => (
-              <Command.Group key={kind} heading={tr(title)}>
-                {results
-                  .filter((item) => item.kind === kind)
-                  .map((item) => (
-                    <Command.Item
-                      key={item.id}
-                      value={item.id}
-                      disabled={item.command?.disabled}
-                      onSelect={() => execute(item)}
-                    >
-                      <i
-                        className={`bi bi-${item.command?.icon || (item.fieldId === null ? "table" : "list-columns")}`}
-                        aria-hidden="true"
-                      />
-                      <div>
-                        <span>{item.label}</span>
-                        {item.description && <small>{item.description}</small>}
-                      </div>
-                      {item.command?.shortcut && (
-                        <kbd>
-                          {item.command.shortcut.replace(
-                            "Mod",
-                            navigator.platform.includes("Mac") ? "⌘" : "Ctrl",
+            )
+              .filter(([kind]) => results.some((item) => item.kind === kind))
+              .map(([kind, title]) => (
+                <Command.Group key={kind} heading={tr(title)}>
+                  {results
+                    .filter((item) => item.kind === kind)
+                    .map((item) => (
+                      <Command.Item
+                        key={item.id}
+                        value={item.id}
+                        disabled={item.command?.disabled}
+                        onSelect={() => execute(item)}
+                      >
+                        <i
+                          className={`bi bi-${item.command?.icon || (item.fieldId === null ? "table" : "list-columns")}`}
+                          aria-hidden="true"
+                        />
+                        <div>
+                          <span>{item.label}</span>
+                          {item.description && (
+                            <small>{item.description}</small>
                           )}
-                        </kbd>
-                      )}
-                      {item.command?.disabled && <small>当前不可用</small>}
-                    </Command.Item>
-                  ))}
-              </Command.Group>
-            ))}
+                        </div>
+                        {item.command?.shortcut && (
+                          <kbd>
+                            {item.command.shortcut.replace(
+                              "Mod",
+                              navigator.platform.includes("Mac") ? "⌘" : "Ctrl",
+                            )}
+                          </kbd>
+                        )}
+                        {item.command?.disabled && <small>当前不可用</small>}
+                      </Command.Item>
+                    ))}
+                </Command.Group>
+              ))}
           </Command.List>
           <footer>
             <span>↑ ↓ 选择 · Enter 打开 · Esc 关闭</span>
