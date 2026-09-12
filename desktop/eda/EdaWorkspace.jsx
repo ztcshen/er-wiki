@@ -283,9 +283,24 @@ export default function EdaWorkspace({ modelId, ready }) {
     clear: clearSelection,
     selectNet: setNet,
     selectRelation: setRelation,
+    selectRelated: (id) => {
+      const relatedNet = result?.projection.nets.find((n) =>
+        n.members.some((r) => r.id === id),
+      );
+      if (!relatedNet) return;
+      setNet(relatedNet.id);
+      setRelation(id);
+      setField(null);
+      setFieldNets([]);
+    },
     focusRelation,
     editTable,
     inspectTable,
+    inspectField: (tid, fid) => {
+      navigate("column", "", tid, { selectedTable: tid, selectedField: fid });
+      pendingFocus.current = tid;
+      setFocusRequest((n) => n + 1);
+    },
     canFocus: currentResult && !!tableNode(selectedTable),
     focus: () => focusTable(selectedTable),
     editRelation: (id) =>
@@ -309,64 +324,65 @@ export default function EdaWorkspace({ modelId, ready }) {
       setFieldNets([]);
     },
   };
+  const viewSwitcher = (
+    <div className="process-view-tabs" role="group" aria-label="模型视图切换">
+      <button
+        aria-pressed={reader.mode === "er"}
+        onClick={() => switchMode("er")}
+      >
+        ER 结构
+      </button>
+      <button
+        aria-pressed={reader.mode === "flow"}
+        onClick={() => switchMode("flow")}
+      >
+        业务流程
+      </button>
+    </div>
+  );
   return (
     <section
       className="eda-workspace"
       aria-label="EDA 分析工作台"
       data-eda-model={modelId}
     >
-      <div className="process-switchbar">
-        <div
-          className="process-view-tabs"
-          role="group"
-          aria-label="模型视图切换"
-        >
+      {reader.mode === "flow" && (
+        <div className="process-switchbar">
+          {viewSwitcher}
+          {scenario && (
+            <select
+              aria-label="业务场景"
+              value={scenario.id}
+              onChange={(event) => {
+                const next = processModel.scenarios.find(
+                  (value) => value.id === event.target.value,
+                );
+                setReader((state) => ({
+                  ...state,
+                  scenarioId: next.id,
+                  activityId:
+                    next.steps.find((step) => step.kind === "action")?.id ||
+                    next.steps[0]?.id ||
+                    "",
+                }));
+              }}
+            >
+              {processModel.scenarios.map((value) => (
+                <option value={value.id} key={value.id}>
+                  {value.name}
+                </option>
+              ))}
+            </select>
+          )}
+          {activity && <span className="process-context">{activity.name}</span>}
           <button
-            aria-pressed={reader.mode === "er"}
-            onClick={() => switchMode("er")}
+            className="process-config-button"
+            onClick={() => setProcessConfigOpen(true)}
           >
-            ER 结构
-          </button>
-          <button
-            aria-pressed={reader.mode === "flow"}
-            onClick={() => switchMode("flow")}
-          >
-            业务流程
+            流程配置
           </button>
         </div>
-        {scenario && (
-          <select
-            aria-label="业务场景"
-            value={scenario.id}
-            onChange={(event) => {
-              const next = processModel.scenarios.find(
-                (value) => value.id === event.target.value,
-              );
-              setReader((state) => ({
-                ...state,
-                scenarioId: next.id,
-                activityId:
-                  next.steps.find((step) => step.kind === "action")?.id ||
-                  next.steps[0]?.id ||
-                  "",
-              }));
-            }}
-          >
-            {processModel.scenarios.map((value) => (
-              <option value={value.id} key={value.id}>
-                {value.name}
-              </option>
-            ))}
-          </select>
-        )}
-        {activity && <span className="process-context">{activity.name}</span>}
-        <button
-          className="process-config-button"
-          onClick={() => setProcessConfigOpen(true)}
-        >
-          流程配置
-        </button>
-      </div>
+      )}
       {processReadingError && (
         <p className="eda-warning" role="alert">
           {tr(processReadingError)}
@@ -376,6 +392,7 @@ export default function EdaWorkspace({ modelId, ready }) {
         className={`process-original-er ${reader.mode !== "er" ? "is-hidden" : ""}`}
       >
         <EdaToolbar
+          leading={reader.mode === "er" ? viewSwitcher : null}
           model={model}
           domains={domains}
           reading={reading}
@@ -424,12 +441,13 @@ export default function EdaWorkspace({ modelId, ready }) {
             {result && currentResult && (
               <EdaScene
                 result={result}
+                selectedTable={selectedTable}
+                selectedField={selectedField}
+                scale={viewScale(view, viewport)}
+                semanticZoom={settings.edaSemanticZoom !== false}
                 selectedNet={selectedNet}
                 selectedRelation={selectedRelation}
                 showCardinality={settings.edaCardinality !== false}
-                highlightBindings={
-                  reader.activityId ? activity?.bindings || [] : []
-                }
                 view={view}
                 onView={setView}
                 onEdit={editTable}
@@ -440,6 +458,10 @@ export default function EdaWorkspace({ modelId, ready }) {
                     setNet(null);
                     setField(null);
                     setFieldNets([]);
+                    if (viewScale(view, viewport) < 0.55) {
+                      pendingFocus.current = node.tableId;
+                      setFocusRequest((n) => n + 1);
+                    }
                   }
                 }}
                 onNet={(value, relationId = null) => {
@@ -489,6 +511,16 @@ export default function EdaWorkspace({ modelId, ready }) {
             )}
             {result && currentResult && !busy && !error && (
               <>
+                <div className="eda-reading-legend" aria-label="ER 图例">
+                  <span className="eda-legend-dot" />
+                  {viewScale(view, viewport) < 0.55 &&
+                  settings.edaSemanticZoom !== false
+                    ? "总览 · 点击表放大阅读"
+                    : "字段视图"}
+                  <span>1 / N</span>
+                  <span className="eda-legend-dash" />
+                  待核关联
+                </div>
                 {settings.edaMinimap !== false && (
                   <EdaMinimap
                     result={result}
@@ -558,6 +590,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                 selectedRelation,
               }}
               tables={tables}
+              relationships={relationships}
               actions={inspectorActions}
             />
           )}
@@ -613,6 +646,10 @@ export default function EdaWorkspace({ modelId, ready }) {
           location={reading.location}
           view={view}
           showCardinality={settings.edaCardinality !== false}
+          sceneProps={{
+            scale: viewScale(view, viewport),
+            semanticZoom: settings.edaSemanticZoom !== false,
+          }}
         />
       )}
     </section>

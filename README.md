@@ -6,14 +6,17 @@ Simplified Chinese and the system default without translating your model content
 
 [![CI](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml/badge.svg)](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
-**Community preview.** [Source](https://github.com/ztcshen/er-wiki) ·
+**ER-first desktop workspace.** [Source](https://github.com/ztcshen/er-wiki) ·
 [Downloads and release notes](https://github.com/ztcshen/er-wiki/releases)
 
 [中文说明](README.zh-CN.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
-## Why this workspace
+## Explore the schema. Follow a relationship. Edit the model.
 
 - Orthogonal ER diagrams, shared relation buses and high-fanout junctions.
+- Zoom-aware table summaries: readable table names in the overview, fields when zoomed in.
+- Searchable field inspector with display names, types, enum values and related tables.
+- Consistent domain colors for internal relationships, neutral cross-domain wires and focused relation tracing.
 - Full-model overview plus domain, table and column inspection.
 - Centered table editing, annotations, enum values and explicit relation editing.
 - Local JSON import/export, separate model switching, undo/redo and save controls.
@@ -28,13 +31,21 @@ Simplified Chinese and the system default without translating your model content
 - 1 / N endpoint cardinality, individual relationship tracing and focus within bundles or Net Labels.
 - No hosted account, cloud-sharing service or application telemetry is required.
 
+## See the actual desktop
+
+The ER diagram is the primary workspace. The directory keeps business domains
+within reach; selecting a table opens its fields and related tables without
+creating another copy of the model.
+
+![ER workspace: related tables, field inspector and orthogonal relations](docs/images/fulfillment-workspace-en.png)
+
 ## Fictional fulfillment example
 
 The included example models **products and warehouse stock → order reservations →
 split fulfillment → parcel shipment → returns**. It has 13 tables and supports
 multi-warehouse allocation and partial shipments at the schema level.
 
-These are real screenshots of the local **0.2.0-preview.4 macOS desktop app**,
+These are real screenshots of the local **0.2.0 macOS desktop app**,
 loaded with the example JSON below. They are not a separately drawn mockup.
 
 ![Actual ER Wiki desktop: all 13 fulfillment tables](docs/images/fulfillment-desktop-en.png)
@@ -44,7 +55,11 @@ Read one-to-many endpoints and trace an individual relationship inside a bundle:
 ![Actual ER Wiki desktop: cardinality and individual relationship tracing](docs/images/fulfillment-cardinality-en.png)
 
 <details>
-<summary>Field details, table editor and quick search</summary>
+<summary>Domain drilldown, field details, table editing and quick search</summary>
+
+Inspect one business domain while retaining references to the surrounding model:
+
+![Actual ER Wiki desktop: domain drilldown](docs/images/fulfillment-domain-en.png)
 
 Focus on a field at reading size while keeping its context in the minimap:
 
@@ -59,6 +74,17 @@ Quick search uses the same model and real desktop UI:
 ![Actual ER Wiki desktop: quick field lookup](docs/images/fulfillment-search-en.png)
 
 </details>
+
+The same ER reading and editing tools are available in dark mode:
+
+![Actual ER Wiki desktop: dark ER workspace](docs/images/fulfillment-dark.png)
+
+### Optional process context
+
+Switch to a lightweight process view when an explicit definition is available.
+Activity mappings link back to actual ER tables and fields. ER relationships do
+not generate a workflow automatically. There is no mixed ER/process diagram,
+BPMN designer or workflow engine. See [process-view boundaries](docs/PROCESS_VIEWS.md).
 
 [Model JSON](examples/fulfillment.drawdb.json) · [Example DDL](examples/fulfillment.sql)
 · [Reading guide](examples/README.md) · [SVG exported by the app](docs/images/fulfillment.svg)
@@ -92,8 +118,8 @@ Create a package for the current OS/architecture:
 npm run package
 ```
 
-Artifacts are written under `desktop/release/<version>/`. macOS is the initial
-preview target. Windows/Linux packaging paths are not release-validated.
+Artifacts are written under `desktop/release/<version>/`. Published binary: **macOS Apple Silicon (ARM64)**. Windows/Linux packaging paths
+are not release-validated.
 Local macOS packages are ad-hoc signed by default. Developer ID signing and
 notarization are opt-in and require the maintainer's own credentials.
 
@@ -116,8 +142,8 @@ module boundaries and UI patterns adopted from similar open-source projects.
 
 ## Status and limits
 
-This is a preview, not a database migration engine or a certified financial
-modeling tool. Layout selection is heuristic, not a global optimum. A drawn
+This is a local schema reading/editing tool, not a database migration engine or
+a certified financial modeling tool. Layout selection is heuristic, not a global optimum. A drawn
 logical relationship is not automatically a database constraint.
 
 See [known limitations](docs/KNOWN_LIMITATIONS.md) and the

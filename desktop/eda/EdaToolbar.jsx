@@ -3,6 +3,7 @@ import ReadingBookmarks from "./ReadingBookmarks";
 
 export default function EdaToolbar({
   model,
+  leading,
   domains,
   reading,
   settings,
@@ -28,6 +29,7 @@ export default function EdaToolbar({
   return (
     <div className="eda-toolbar">
       <div className="eda-controls">
+        {leading}
         <button
           className="eda-icon-button"
           aria-label="返回上次阅读位置"
@@ -125,6 +127,17 @@ export default function EdaToolbar({
                     }}
                   />
                   显示关系基数（1 / N）
+                </label>
+                <label className="eda-display-check">
+                  <input
+                    type="checkbox"
+                    checked={settings.edaSemanticZoom !== false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setSettings((s) => ({ ...s, edaSemanticZoom: checked }));
+                    }}
+                  />
+                  缩小时突出表名
                 </label>
                 <label>
                   布局方向

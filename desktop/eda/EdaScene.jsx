@@ -1,10 +1,8 @@
 import { useState } from "react";
 import DiagramViewport from "../diagram/DiagramViewport";
 import { sectionsOf } from "./metrics.mjs";
-import {
-  formatFieldType,
-  chineseFieldName,
-} from "@drawdb/utils/fieldPresentation";
+import TableContent from "./TableContent";
+import { fitText, isCompact, relationColor } from "./presentation.mjs";
 import { tr } from "../i18n/renderer";
 import {
   matchesRelation,
@@ -12,17 +10,6 @@ import {
   relationCaption,
 } from "./cardinality.mjs";
 import CardinalityLayer from "./CardinalityLayer";
-
-const fitText = (value, width, size = 11) => {
-  let units = 0,
-    out = "";
-  for (const c of String(value || "")) {
-    units += /[\u3400-\u9fff]/.test(c) ? size : size * 0.58;
-    if (units > width) return out + "…";
-    out += c;
-  }
-  return out;
-};
 
 const pathText = (points) =>
   points.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" ");
@@ -37,7 +24,10 @@ export default function EdaScene({
   onField,
   view,
   onView,
-  highlightBindings = [],
+  selectedTable = null,
+  selectedField = null,
+  scale = 1,
+  semanticZoom = true,
 }) {
   const [hover, setHover] = useState(null);
   const nodeMeta = new Map(result.projection.nodes.map((n) => [n.id, n])),
@@ -52,12 +42,12 @@ export default function EdaScene({
     activeRelation != null
       ? [relationMeta.get(activeRelation)].filter(Boolean)
       : activeNet?.members || [];
+  const compact = semanticZoom && isCompact(scale);
+  const activeTables = new Set(
+    activeMembers.flatMap((r) => [r.startTableId, r.endTableId]),
+  );
   const endpoint = (tid, fid) =>
-    highlightBindings.some(
-      (b) =>
-        b.tableId === tid &&
-        (b.fieldIds.includes(fid) || b.state?.fieldId === fid),
-    ) ||
+    (selectedTable === tid && selectedField === fid) ||
     activeMembers.some((r) =>
       (r.fields || [r]).some(
         (p) =>
@@ -90,8 +80,11 @@ export default function EdaScene({
         : null,
     );
   const nodes = result.layout.children || [];
-  const netColor = (id) =>
-    result.projection.nodes.find((n) => n.netId === id)?.color || "#536f8b";
+  const domainByTable = new Map(
+    result.projection.domains.flatMap((domain) =>
+      domain.tableIds.map((id) => [id, domain]),
+    ),
+  );
   return (
     <DiagramViewport view={view} onView={onView} label="EDA 正交原理图">
       {(result.layout.edges || []).map((edge) => {
@@ -139,7 +132,9 @@ export default function EdaScene({
                   d={pathText(points)}
                   fill="none"
                   stroke={
-                    highlight ? "var(--eda-active)" : netColor(m.netIds[0])
+                    highlight
+                      ? "var(--eda-active)"
+                      : relationColor(m, relationMeta, domainByTable)
                   }
                   strokeDasharray={uncertain ? "6 4" : undefined}
                   strokeWidth={highlight ? 3 : m.kind === "bus" ? 2.8 : 1.5}
@@ -177,6 +172,15 @@ export default function EdaScene({
             data-net-id={m.netId || ""}
             data-highlight={lit ? "true" : "false"}
             className="eda-node"
+            data-selected={selectedTable === m.tableId}
+            data-detail={m.kind === "table" && compact ? "summary" : "fields"}
+            opacity={
+              m.kind === "table" &&
+              (active || activeRelation != null) &&
+              !activeTables.has(m.tableId)
+                ? 0.3
+                : 1
+            }
             role="button"
             tabIndex={0}
             aria-label={`${m.kind} ${m.title}`}
@@ -257,36 +261,30 @@ export default function EdaScene({
                 <rect
                   width={node.width}
                   height={node.height}
-                  rx="5"
+                  rx="8"
+                  vectorEffect="non-scaling-stroke"
                   fill="var(--wiki-card)"
                   stroke={
-                    highlightBindings.some((b) => b.tableId === m.tableId)
+                    selectedTable === m.tableId || activeTables.has(m.tableId)
                       ? "var(--eda-active)"
                       : "var(--wiki-line)"
                   }
                   strokeWidth={
-                    highlightBindings.some((b) => b.tableId === m.tableId)
+                    selectedTable === m.tableId || activeTables.has(m.tableId)
                       ? 2
                       : 1
                   }
-                  data-process-table-highlight={
-                    highlightBindings.some((b) => b.tableId === m.tableId)
-                      ? "true"
-                      : undefined
-                  }
                 />
                 <rect width={node.width} height="4" rx="2" fill={m.color} />
-                <text x="12" y="26" className="eda-node-title">
-                  {fitText(
-                    m.kind === "domain" && m.domainId === "__unassigned__"
-                      ? tr(m.title)
-                      : m.title,
-                    node.width - 24,
-                    14,
-                  )}
-                </text>
                 {m.kind === "domain" ? (
                   <>
+                    <text x="12" y="26" className="eda-node-title">
+                      {fitText(
+                        m.domainId === "__unassigned__" ? tr(m.title) : m.title,
+                        node.width - 24,
+                        14,
+                      )}
+                    </text>
                     <text x="12" y="55" className="eda-small">
                       {m.tableIds.length} 张表 · {m.internal.length} 条内部关系
                     </text>
@@ -295,101 +293,14 @@ export default function EdaScene({
                     </text>
                   </>
                 ) : (
-                  <>
-                    <text x="12" y="47" className="eda-small">
-                      {fitText(
-                        m.domainUnassigned ? tr(m.domainName) : m.domainName,
-                        230,
-                      )}{" "}
-                      · {m.totalFields} 个字段
-                    </text>
-                    {m.fields.length === 0 ? (
-                      <text x="12" y="87" className="eda-small">
-                        点击查看表 / 关键字段 →
-                      </text>
-                    ) : (
-                      <>
-                        <rect
-                          x="1"
-                          y="55"
-                          width={node.width - 2}
-                          height="23"
-                          fill="var(--wiki-surface)"
-                        />
-                        <text x="12" y="71" className="eda-small">
-                          字段名
-                        </text>
-                        <text x="162" y="71" className="eda-small">
-                          类型
-                        </text>
-                        <text x="270" y="71" className="eda-small">
-                          显示名称
-                        </text>
-                        {m.fields.map((field, index) => (
-                          <g
-                            key={field.id}
-                            data-eda-field={String(field.id)}
-                            data-eda-endpoint={
-                              endpoint(m.tableId, field.id) ? "true" : "false"
-                            }
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onField(m.tableId, field.id);
-                            }}
-                          >
-                            {endpoint(m.tableId, field.id) && (
-                              <rect
-                                x="1"
-                                y={78 + index * 30}
-                                width={node.width - 2}
-                                height="30"
-                                fill="var(--eda-field-active)"
-                              />
-                            )}
-                            <title>
-                              {field.name}: {field.comment || "未提供注释"}
-                            </title>
-                            <line
-                              x1="0"
-                              x2={node.width}
-                              y1={78 + index * 30}
-                              y2={78 + index * 30}
-                              stroke="var(--wiki-line)"
-                            />
-                            <text
-                              x="12"
-                              y={98 + index * 30}
-                              className="eda-field-name"
-                            >
-                              {field.primary ? "⚿ " : ""}
-                              {fitText(field.name, field.primary ? 130 : 142)}
-                            </text>
-                            <text
-                              x="162"
-                              y={98 + index * 30}
-                              className="eda-field-type"
-                            >
-                              <title>{formatFieldType(field)}</title>
-                              {formatFieldType(field).slice(0, 18)}
-                            </text>
-                            <text
-                              x="270"
-                              y={98 + index * 30}
-                              className="eda-small"
-                            >
-                              <title>
-                                {chineseFieldName(m.title, field.name, field)}
-                              </title>
-                              {fitText(
-                                chineseFieldName(m.title, field.name, field),
-                                78,
-                              )}
-                            </text>
-                          </g>
-                        ))}
-                      </>
-                    )}
-                  </>
+                  <TableContent
+                    node={node}
+                    meta={m}
+                    compact={compact}
+                    scale={scale}
+                    endpoint={endpoint}
+                    onField={onField}
+                  />
                 )}
               </>
             )}

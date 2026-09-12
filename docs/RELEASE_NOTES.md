@@ -1,52 +1,40 @@
-# 0.2.0-preview.4 — ER cardinality and relation tracing
+# v0.2.0 — ER-first desktop workbench
 
-- Display 1 / N at real table endpoints while keeping orthogonal routing.
-- Keep bundle relationship counts separate from cardinality; mixed endpoint values are shown explicitly.
-- Select one relationship within a bundle or Net Label network and trace only its complete path.
-- Inspect cardinality in the relationship panel and focus both endpoints, routed paths and complete Net Labels.
-- Remember the selected relationship without changing model content or reading-position keys.
-- Toggle cardinality under Display; include the same annotations in diagram exports.
-- Refresh bilingual screenshots from the packaged desktop with the fictional fulfillment model only.
+## ER reading and editing
 
-Cardinality describes the model's configured multiplicity, not live row counts or
-verified database constraints. Minimum participation is not inferred; unspecified
-cardinality is shown as a question mark. Private business models/configurations
-are not included in this community release.
+- Readable, zoom-aware table summaries in the full-model overview; zoom in for field rows.
+- Keep every table and original relationship in the overview. No schema edits or rerouting on zoom.
+- Click a summary to focus the table at reading scale without discarding the global scope.
+- Compact two-row workbench: the process scenario/configuration bar only appears in process view.
+- Searchable table field inspector with display names, types, primary keys and enum indicators.
+- Jump from inspector fields to their ER location, and from related tables to an individual relationship.
+- Consistent domain colors within groups and neutral cross-domain wires; selected paths and endpoint tables stand out.
+- Existing 1/N cardinality, Bus/Hub, Net Labels, centered editors, search, bookmarks and minimap remain available.
+- Field hover text includes explicitly configured enum values.
 
-## Diagram navigation
+## Optional process context
 
-- Optional navigation minimap with click, drag and keyboard movement.
-- Smooth cursor-anchored wheel zoom and a 100% reading-scale button.
-- Auto / Horizontal / Vertical orthogonal layout direction, remembered per model and bookmark.
-- Existing automatic-layout reading positions remain compatible after upgrade.
-- Navigation does not modify tables, relations or model save timestamps.
-- Updated screenshots from the actual packaged Electron application and fictional fulfillment model.
+- Keep ER and process views separate. Mixed comparison mode has been removed.
+- Explicit activity-to-table/field mappings can navigate back to ER or open the existing table editor.
+- Old mixed-view preferences migrate to process view without deleting model data.
+- Model JSON v2 preserves process definitions; older JSON remains importable.
+- Process configuration uses JSON and is not part of ER undo history. This is not a BPMN editor or execution engine.
 
-## Keyboard-first workbench
+## Real product screenshots
 
-- Quick search with cmdk, qualified field lookup, keyboard navigation and command-only mode.
-- Shared action catalogue for a shorter grouped menu and the complete command palette.
-- Independent directory folding and explicit focus-to-table without changing ER scope.
-- Native IPC/menu/session boundaries and smaller EDA presentation components.
-- Shared cancellable layout tasks and centralized upstream aliases / normalized build paths.
-- Open-source design references and updated real desktop snapshots.
+Updated bilingual screenshots of the packaged Electron app show the overview,
+domain drilldown, table/field inspector, relationship tracing, editing, search
+and dark mode. All screenshots and bundled examples use the fictional fulfillment
+model only. No private business models or application profiles are distributed.
 
-## Included desktop workflow improvements
+## Downloads and limitations
 
-- English / Simplified Chinese / system language, including native menus.
-- Unified settings, local help, field aliases and field/enum search.
-- Per-model reading positions, bookmarks and back navigation.
-- Text-only edits retain layout geometry; structural changes rerun layout.
-- Versioned JSON with legacy import, local backups and restore-as-copy.
-- Local SQL import preview and pure SVG/PNG/clipboard diagram export.
-- Application icon, manual update checking and optional signing/notarization hooks.
+This release provides a macOS Apple Silicon (ARM64) ZIP, corresponding project
+source, pinned drawDB source and SHA256 checksums. macOS packages are ad-hoc signed,
+not Apple Developer ID signed or notarized. Follow your device's security policy;
+do not disable system security protections to install the app.
 
-This is a prerelease. Initial artifacts target macOS; signing is ad-hoc rather
-than Apple Developer ID notarization unless a maintainer explicitly configures
-signing. Windows/Linux and exhaustive regression acceptance remain pending.
-
-macOS may show an unidentified-developer warning. Follow your organization's
-security policy; do not bypass device-management restrictions to run this preview.
-
-No business data, user profiles or private database examples are included.
-Consult LICENSE, NOTICE, SECURITY.md and docs/KNOWN_LIMITATIONS.md before use.
+Windows/Linux binaries are not release-validated. Model cardinality is not a live
+row count or proof of a physical database constraint. Layout remains heuristic.
+Close the old application before replacing it; models are kept separately in the
+ER Wiki Community application-data directory. Export important models before upgrading.

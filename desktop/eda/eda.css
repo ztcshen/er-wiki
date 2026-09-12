@@ -120,6 +120,34 @@ h3 .eda-detail-count{margin-left:10px}
 .eda-evidence small{display:block;color:var(--wiki-muted);line-height:1.6;padding:6px 0}
 .eda-evidence p{white-space:pre-line;font-size:12px}
 .eda-field-details{border-bottom:1px solid var(--wiki-line);margin-bottom:12px;padding-bottom:10px}
+.eda-controls>.process-view-tabs{margin-right:6px;flex-shrink:0}
+.eda-controls>.process-view-tabs button{padding:5px 10px!important;font-size:11px!important}
+.eda-node[data-selected=true]{filter:drop-shadow(0 3px 5px #0f766e18)}
+.eda-reading-legend{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:9px;font-size:10px;color:var(--wiki-muted);background:var(--wiki-card);border:1px solid var(--wiki-line);border-radius:20px;padding:7px 11px;pointer-events:none}
+.eda-reading-legend>span:not(:first-child){margin-left:5px}
+.eda-legend-dot{width:6px;height:6px;border-radius:50%;background:#0f766e}
+.eda-legend-dash{width:18px;border-top:1.5px dashed var(--wiki-muted)}
+.eda-table-stats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;color:var(--wiki-muted);font-size:10px}
+.eda-table-stats span{background:var(--wiki-surface);padding:4px 7px;border-radius:4px}
+.eda-section-title{display:flex;align-items:center;justify-content:space-between;color:var(--wiki-muted);margin:16px 0 8px;font-size:11px}
+.eda-section-title strong{font-weight:600;color:var(--wiki-ink)}
+.eda-field-browser input{width:100%;font-size:11px;margin-bottom:6px;background:var(--wiki-surface)}
+.eda-field-browser-list{max-height:310px;overflow:auto;border:1px solid var(--wiki-line);border-radius:6px}
+.eda-field-browser .eda-field-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 8px;width:100%;padding:9px;border:0;border-bottom:1px solid var(--wiki-line);border-radius:0;text-align:left;justify-content:stretch}
+.eda-field-item:last-child{border-bottom:0}
+.eda-field-item[aria-pressed=true]{background:var(--eda-field-active);box-shadow:inset 3px 0 var(--eda-active)}
+.eda-field-item-name{font:11px ui-monospace,monospace;overflow:hidden;text-overflow:ellipsis}
+.eda-field-item-name b{font:600 8px system-ui;color:#0f766e;background:#0f766e15;padding:2px 3px;border-radius:3px;margin-right:5px}
+.eda-field-item code{font-size:9px;color:var(--wiki-type-number);max-width:100px;overflow:hidden;text-overflow:ellipsis}
+.eda-field-item small{font-size:11px;color:var(--wiki-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eda-enum-indicator{color:var(--eda-active);font-size:9px;text-align:right}
+.eda-related-tables>button{width:100%;justify-content:space-between;font-size:11px;margin-bottom:5px;background:var(--wiki-surface);border:0}
+.eda-related-tables>button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eda-related-tables>button b{font-size:10px;white-space:nowrap;color:var(--eda-active)}
+.eda-enum-values{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.eda-enum-values p{font-size:11px;margin:0;padding:5px 7px;border-radius:4px;background:var(--wiki-surface)}
+.eda-enum-values code{color:var(--eda-active);margin-right:4px}
+@media(max-width:1100px){.eda-controls{flex-wrap:wrap}.eda-controls>.process-view-tabs button{padding:4px 7px!important}.eda-scope-name{max-width:110px}.eda-detail-actions{flex-wrap:wrap;gap:5px}.eda-reading-legend{font-size:9px;padding:6px 8px}}
 .field-code-reference{margin:8px 0;padding:8px 10px;border:1px solid var(--wiki-line);border-radius:5px;background:var(--wiki-surface);font-size:12px;overflow-wrap:anywhere}
 .field-code-reference summary{cursor:pointer;color:var(--wiki-muted);font-size:11px}
 .field-code-reference p{margin:8px 0 4px}

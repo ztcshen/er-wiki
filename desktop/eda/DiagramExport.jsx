@@ -80,7 +80,12 @@ export default function DiagramExport({
         selected,
         viewport,
         getComputedStyle(document.querySelector(".eda-workspace")),
-        { Scene, showCardinality, ...sceneProps },
+        {
+          Scene,
+          showCardinality,
+          ...sceneProps,
+          ...(scope !== "view" ? { scale: 1 } : {}),
+        },
       );
       let ok;
       if (format === "svg")

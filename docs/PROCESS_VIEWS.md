@@ -1,6 +1,6 @@
-# ER and process views / ER 与业务流程
+# ER and optional process context / ER 与辅助流程
 
-Version `0.2.0-preview.6` is a local preview, not a published release.
+Included as an optional companion to the ER workspace in version `0.2.0`.
 
 - **ER structure / ER 结构** retains the existing table/field editor, full-model
   overview, relationship cardinality, grouping and EDA routing.
@@ -20,7 +20,7 @@ documents remain importable. View choice, selection and camera positions are
 separate per-model reading preferences and do not change model save time.
 
 Use **Process configuration / 流程配置** to edit the explicit JSON definition.
-Applying configuration participates in model save/autosave, but this preview does
+Applying configuration participates in model save/autosave, but process editing does
 not add process-config edits to the ER undo stack. Table edits retain existing
 undo behavior. Missing mapped tables/fields are reported, not silently removed.
 Process diagrams contain only activities and control flow. Table/field mappings
@@ -33,7 +33,7 @@ obsolete mixed-view coordinates are discarded. The model and process definition
 are unchanged. Mixed nodes, data-access edges, layout options and UI have been
 removed rather than hidden behind a feature flag.
 
-This preview does not provide a full BPMN editor, runtime simulation or a
+The process view does not provide a full BPMN editor, runtime simulation or a
 workflow engine. Business models in the separate local business app were not
 migrated, uploaded or assigned invented processes.
 

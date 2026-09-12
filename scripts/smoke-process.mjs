@@ -165,10 +165,11 @@ try {
     unchanged.lastModified.getTime(),
     original.lastModified.getTime(),
   );
+  await page.getByRole("button", { name: "业务流程", exact: true }).click();
+  await ready();
   await page
     .getByRole("combobox", { name: "业务场景" })
     .selectOption("fulfillment");
-  await page.getByRole("button", { name: "业务流程", exact: true }).click();
   await ready();
   await page.locator('[data-process-step="create-order"]').click();
   await ready();

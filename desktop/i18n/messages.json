@@ -495,5 +495,17 @@
   "表结构：点击右侧映射查看": "Table structure: open a mapping on the right",
   "点击表或字段，切回 ER 查看对应结构。": "Select a table or field to inspect its structure in ER.",
   "流程视图导出当前画面，包含动作、条件和流程连接。": "Process export includes the current activities, decisions and flow connections.",
-  "流程配置随模型保存；本地预览版暂不接入撤销栈。": "Process configuration is saved with the model; this preview does not add it to undo history."
+  "流程配置随模型保存；本地预览版暂不接入撤销栈。": "Process configuration is saved with the model; this preview does not add it to undo history.",
+  "缩小时突出表名": "Emphasize table names when zoomed out",
+  "总览 · 点击表放大阅读": "Overview · Click a table to read",
+  "字段视图": "Field view",
+  "ER 图例": "ER legend",
+  "待核关联": "Unverified relation",
+  "表字段列表": "Table fields",
+  "筛选表字段": "Filter table fields",
+  "字段名或显示名称": "Field or display name",
+  "关联关系": "Related tables",
+  "枚举": "Enum",
+  "字段": "Fields",
+  "字段详情": "Field details"
 }
