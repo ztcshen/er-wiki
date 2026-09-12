@@ -1,4 +1,4 @@
-name: Draft prerelease
+name: Draft desktop release
 on:
   workflow_dispatch:
     inputs:
@@ -34,4 +34,7 @@ jobs:
       - name: Create draft only
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$RELEASE_TAG" desktop/release/assets/* --verify-tag --draft --prerelease --title "$RELEASE_TAG" --notes-file docs/RELEASE_NOTES.md
+        run: |
+          flags=(--verify-tag --draft)
+          if [[ "$RELEASE_TAG" == *-* ]]; then flags+=(--prerelease); fi
+          gh release create "$RELEASE_TAG" desktop/release/assets/* "${flags[@]}" --title "$RELEASE_TAG" --notes-file docs/RELEASE_NOTES.md

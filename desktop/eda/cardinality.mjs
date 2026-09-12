@@ -103,6 +103,7 @@ export function cardinalityBadges(result, selectedRelation = null) {
   );
   const groups = new Map();
   for (const edge of result.projection.edges) {
+    if (!edge.refs.length) continue;
     for (const [portIds, role] of [
       [edge.sources, "end"],
       [edge.targets, "start"],

@@ -2072,5 +2072,577 @@
       "y": 0
     },
     "zoom": 0.4
+  },
+  "processModel": {
+    "version": 1,
+    "scenarios": [
+      {
+        "id": "fulfillment",
+        "name": "订单履约 / Fulfillment",
+        "description": "虚构流程示意：库存不足取消，满足后占用、分仓并发货。不是从 DDL 或真实日志推导的流程；部分发货、支付和物流签收不在本场景中。",
+        "evidence": "人工编写的电商示例规则，仅用于视图对比。",
+        "steps": [
+          {
+            "id": "submitted",
+            "kind": "event",
+            "name": "订单提交",
+            "bindings": []
+          },
+          {
+            "id": "create-order",
+            "kind": "action",
+            "name": "创建订单",
+            "description": "读取客户与商品，创建订单主单及明细。",
+            "bindings": [
+              {
+                "tableId": "customers",
+                "access": "read",
+                "fieldIds": [
+                  "customers.id"
+                ]
+              },
+              {
+                "tableId": "products",
+                "access": "read",
+                "fieldIds": [
+                  "products.id",
+                  "products.sku"
+                ]
+              },
+              {
+                "tableId": "orders",
+                "access": "create",
+                "fieldIds": [
+                  "orders.id",
+                  "orders.customer_id",
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "to": "DRAFT"
+                }
+              },
+              {
+                "tableId": "order_items",
+                "access": "create",
+                "fieldIds": [
+                  "order_items.order_id",
+                  "order_items.product_id",
+                  "order_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "check-stock",
+            "kind": "decision",
+            "name": "库存是否足够？",
+            "description": "示例条件：on_hand - reserved ≥ 订单数量。",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "read",
+                "fieldIds": [
+                  "inventory.on_hand",
+                  "inventory.reserved"
+                ]
+              },
+              {
+                "tableId": "order_items",
+                "access": "read",
+                "fieldIds": [
+                  "order_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "reserve",
+            "kind": "action",
+            "name": "占用库存",
+            "description": "记录库存占用并确认订单，不等同实际出库。",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "update",
+                "fieldIds": [
+                  "inventory.reserved",
+                  "inventory.version"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "create",
+                "fieldIds": [
+                  "stock_reservations.order_item_id",
+                  "stock_reservations.inventory_id",
+                  "stock_reservations.quantity",
+                  "stock_reservations.status"
+                ],
+                "state": {
+                  "fieldId": "stock_reservations.status",
+                  "to": "RESERVED"
+                }
+              },
+              {
+                "tableId": "orders",
+                "access": "update",
+                "fieldIds": [
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "from": "DRAFT",
+                  "to": "CONFIRMED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "allocate",
+            "kind": "action",
+            "name": "分仓生成履约单",
+            "bindings": [
+              {
+                "tableId": "warehouses",
+                "access": "read",
+                "fieldIds": [
+                  "warehouses.id"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "read",
+                "fieldIds": [
+                  "stock_reservations.id"
+                ]
+              },
+              {
+                "tableId": "fulfillments",
+                "access": "create",
+                "fieldIds": [
+                  "fulfillments.id",
+                  "fulfillments.order_id",
+                  "fulfillments.warehouse_id",
+                  "fulfillments.status"
+                ],
+                "state": {
+                  "fieldId": "fulfillments.status",
+                  "to": "PLANNED"
+                }
+              },
+              {
+                "tableId": "fulfillment_items",
+                "access": "create",
+                "fieldIds": [
+                  "fulfillment_items.fulfillment_id",
+                  "fulfillment_items.order_item_id",
+                  "fulfillment_items.reservation_id",
+                  "fulfillment_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "ship",
+            "kind": "action",
+            "name": "登记包裹与发货",
+            "description": "简化演示：一次完成本次履约发货；并非已签收。",
+            "bindings": [
+              {
+                "tableId": "fulfillments",
+                "access": "update",
+                "fieldIds": [
+                  "fulfillments.status"
+                ],
+                "state": {
+                  "fieldId": "fulfillments.status",
+                  "from": "PLANNED",
+                  "to": "SHIPPED"
+                }
+              },
+              {
+                "tableId": "shipments",
+                "access": "create",
+                "fieldIds": [
+                  "shipments.id",
+                  "shipments.fulfillment_id",
+                  "shipments.status",
+                  "shipments.shipped_at"
+                ],
+                "state": {
+                  "fieldId": "shipments.status",
+                  "to": "IN_TRANSIT"
+                }
+              },
+              {
+                "tableId": "shipment_items",
+                "access": "create",
+                "fieldIds": [
+                  "shipment_items.shipment_id",
+                  "shipment_items.fulfillment_item_id",
+                  "shipment_items.quantity"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "update",
+                "fieldIds": [
+                  "stock_reservations.status"
+                ],
+                "state": {
+                  "fieldId": "stock_reservations.status",
+                  "from": "RESERVED",
+                  "to": "CONSUMED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "cancel",
+            "kind": "action",
+            "name": "取消未占用订单",
+            "bindings": [
+              {
+                "tableId": "orders",
+                "access": "update",
+                "fieldIds": [
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "from": "DRAFT",
+                  "to": "CANCELLED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "dispatched",
+            "kind": "event",
+            "name": "本次发货已登记",
+            "bindings": []
+          },
+          {
+            "id": "cancelled",
+            "kind": "event",
+            "name": "订单已取消",
+            "bindings": []
+          }
+        ],
+        "flows": [
+          {
+            "id": "f1",
+            "from": "submitted",
+            "to": "create-order",
+            "kind": "normal"
+          },
+          {
+            "id": "f2",
+            "from": "create-order",
+            "to": "check-stock",
+            "kind": "normal"
+          },
+          {
+            "id": "f3",
+            "from": "check-stock",
+            "to": "reserve",
+            "kind": "condition",
+            "label": "库存足够"
+          },
+          {
+            "id": "f4",
+            "from": "check-stock",
+            "to": "cancel",
+            "kind": "condition",
+            "label": "库存不足"
+          },
+          {
+            "id": "f5",
+            "from": "reserve",
+            "to": "allocate",
+            "kind": "normal"
+          },
+          {
+            "id": "f6",
+            "from": "allocate",
+            "to": "ship",
+            "kind": "normal"
+          },
+          {
+            "id": "f7",
+            "from": "ship",
+            "to": "dispatched",
+            "kind": "normal"
+          },
+          {
+            "id": "f8",
+            "from": "cancel",
+            "to": "cancelled",
+            "kind": "normal"
+          }
+        ]
+      },
+      {
+        "id": "returns",
+        "name": "退货处置 / Returns",
+        "description": "虚构售后示意：申请、审核、收货、可售入库或隔离。审核补充资料表现为回流，不涉及支付退款。",
+        "evidence": "人工编写的电商示例规则，非真实事件轨迹。",
+        "steps": [
+          {
+            "id": "request-return",
+            "kind": "action",
+            "name": "创建退货申请",
+            "bindings": [
+              {
+                "tableId": "orders",
+                "access": "read",
+                "fieldIds": [
+                  "orders.id"
+                ]
+              },
+              {
+                "tableId": "shipment_items",
+                "access": "read",
+                "fieldIds": [
+                  "shipment_items.id",
+                  "shipment_items.quantity"
+                ]
+              },
+              {
+                "tableId": "returns",
+                "access": "create",
+                "fieldIds": [
+                  "returns.order_id",
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "to": "REQUESTED"
+                }
+              },
+              {
+                "tableId": "return_items",
+                "access": "create",
+                "fieldIds": [
+                  "return_items.return_id",
+                  "return_items.shipment_item_id",
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "review-return",
+            "kind": "decision",
+            "name": "审核是否通过？",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "read",
+                "fieldIds": [
+                  "returns.status"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "read",
+                "fieldIds": [
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "amend-return",
+            "kind": "action",
+            "name": "补充申请资料",
+            "description": "补充同一退货申请的明细，不重新创建退货单。",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "read",
+                "fieldIds": [
+                  "returns.id",
+                  "returns.status"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "receive-return",
+            "kind": "action",
+            "name": "登记退货收货",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "update",
+                "fieldIds": [
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "from": "REQUESTED",
+                  "to": "RECEIVED"
+                }
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.warehouse_id",
+                  "return_items.disposition"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "restock-check",
+            "kind": "decision",
+            "name": "能否重新销售？",
+            "bindings": [
+              {
+                "tableId": "return_items",
+                "access": "read",
+                "fieldIds": [
+                  "return_items.disposition"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "restock",
+            "kind": "action",
+            "name": "增加可售库存",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "update",
+                "fieldIds": [
+                  "inventory.on_hand",
+                  "inventory.version"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.disposition"
+                ],
+                "state": {
+                  "fieldId": "return_items.disposition",
+                  "to": "RESTOCK"
+                }
+              }
+            ]
+          },
+          {
+            "id": "quarantine",
+            "kind": "action",
+            "name": "隔离待处置",
+            "bindings": [
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.disposition"
+                ],
+                "state": {
+                  "fieldId": "return_items.disposition",
+                  "to": "QUARANTINE"
+                }
+              }
+            ]
+          },
+          {
+            "id": "close-return",
+            "kind": "action",
+            "name": "关闭退货单",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "update",
+                "fieldIds": [
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "from": "RECEIVED",
+                  "to": "CLOSED"
+                }
+              }
+            ]
+          }
+        ],
+        "flows": [
+          {
+            "id": "r1",
+            "from": "request-return",
+            "to": "review-return",
+            "kind": "normal"
+          },
+          {
+            "id": "r2",
+            "from": "review-return",
+            "to": "amend-return",
+            "kind": "return",
+            "label": "补充资料"
+          },
+          {
+            "id": "r9",
+            "from": "amend-return",
+            "to": "review-return",
+            "kind": "normal",
+            "label": "重新提交"
+          },
+          {
+            "id": "r3",
+            "from": "review-return",
+            "to": "receive-return",
+            "kind": "condition",
+            "label": "通过"
+          },
+          {
+            "id": "r4",
+            "from": "receive-return",
+            "to": "restock-check",
+            "kind": "normal"
+          },
+          {
+            "id": "r5",
+            "from": "restock-check",
+            "to": "restock",
+            "kind": "condition",
+            "label": "可售"
+          },
+          {
+            "id": "r6",
+            "from": "restock-check",
+            "to": "quarantine",
+            "kind": "condition",
+            "label": "不可售"
+          },
+          {
+            "id": "r7",
+            "from": "restock",
+            "to": "close-return",
+            "kind": "normal"
+          },
+          {
+            "id": "r8",
+            "from": "quarantine",
+            "to": "close-return",
+            "kind": "normal"
+          }
+        ]
+      }
+    ]
   }
 }

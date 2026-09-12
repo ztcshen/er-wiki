@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { checkNavigation } from './check-navigation.mjs';
+import { checkErReading } from './check-er-reading.mjs';
 
 // Optional focused Electron smoke check. Uses an existing Playwright runtime;
 // it never starts a browser or touches the installed application's profile.
@@ -42,6 +43,7 @@ try{
     };
   }));
   const original=await record();
+  await checkErReading({page,record});
   await checkNavigation({app,page,record,output});
   if (!process.argv.includes('--navigation-only')) {
   await page.evaluate(()=>{window.__smokeScene=document.querySelector('[data-eda-scene]');});

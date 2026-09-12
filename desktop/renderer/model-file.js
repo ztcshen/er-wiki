@@ -37,6 +37,7 @@ export function importModel(json, filename) {
     database: data.database || 'generic', tables: data.tables, references: data.relationships,
     notes: data.notes, areas: data.subjectAreas, views: data.views || [],
     types: data.types || [], enums: data.enums || [], reviewGroups: modelGroups(data.reviewGroups, data.tables),
+    processModel: data.processModel ?? null,
     pan: validView ? transform.pan : { x: 1305, y: 961.5 }, zoom: validView ? transform.zoom : 0.4,
     gistId: '', loadedFromGistId: '', lastModified: new Date(),
   };
@@ -48,6 +49,7 @@ export function exportModel(snapshot) {
     reviewGroups: modelGroups(snapshot.reviewGroups, snapshot.tables),
     relationships: snapshot.references, notes: snapshot.notes, subjectAreas: snapshot.areas,
     views: snapshot.views || [], types: snapshot.types || [], enums: snapshot.enums || [],
+    processModel: snapshot.processModel ?? null,
     transform: { pan: snapshot.pan, zoom: snapshot.zoom },
   }), null, 2);
 }

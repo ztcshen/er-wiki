@@ -21,6 +21,12 @@ import EdaToolbar from "./EdaToolbar";
 import EdaDirectory from "./EdaDirectory";
 import EdaInspector from "./EdaInspector";
 import DiagramExport from "./DiagramExport";
+import { useProcessModel } from "../process/context";
+import { useProcessReader } from "../process/useProcessReader";
+import { actionsForTable, processSelection } from "../process/definition.mjs";
+import ProcessWorkspace from "../process/ProcessWorkspace";
+import ProcessConfig from "../process/ProcessConfig";
+import "../process/process.css";
 import "./eda.css";
 
 export default function EdaWorkspace({ modelId, ready }) {
@@ -29,6 +35,23 @@ export default function EdaWorkspace({ modelId, ready }) {
   const { settings, setSettings } = useSettings();
   const { setSelectedElement, setBulkSelectedElements } = useSelect();
   const { layout, setLayout } = useLayout();
+  const { processModel, setProcessModel } = useProcessModel();
+  const {
+    reader,
+    setReader,
+    error: processReadingError,
+  } = useProcessReader(modelId, ready);
+  const [processConfigOpen, setProcessConfigOpen] = useState(false);
+  const { scenario, activity } = processSelection(
+    processModel,
+    reader.scenarioId,
+    reader.activityId,
+  );
+  const processReader = {
+    ...reader,
+    scenarioId: scenario?.id || "",
+    activityId: activity?.id || "",
+  };
   const [tools, setTools] = useState(null),
     [search, setSearch] = useState("");
   const [fieldNets, setFieldNets] = useState([]),
@@ -59,6 +82,34 @@ export default function EdaWorkspace({ modelId, ready }) {
   const { result, current: currentResult, busy, error } = schematic;
   const { view, setView } = reading;
   const { selectedNet, selectedTable, selectedField } = reading.location;
+  const switchMode = (mode) => {
+    let nextScenario = scenario,
+      nextActivity = activity;
+    if (reader.mode === "er" && mode !== "er" && selectedTable != null) {
+      const match =
+        processModel?.scenarios.find(
+          (value) =>
+            value.id === scenario?.id &&
+            actionsForTable(value, selectedTable, selectedField).length,
+        ) ||
+        processModel?.scenarios.find(
+          (value) =>
+            actionsForTable(value, selectedTable, selectedField).length,
+        );
+      if (match) {
+        nextScenario = match;
+        const actions = actionsForTable(match, selectedTable, selectedField);
+        nextActivity =
+          actions.find((value) => value.id === activity?.id) || actions[0];
+      }
+    }
+    setReader((state) => ({
+      ...state,
+      mode,
+      scenarioId: nextScenario?.id || "",
+      activityId: nextActivity?.id || "",
+    }));
+  };
   const setRelation = reading.setPart("selectedRelation");
   const setNet = (value) => {
     reading.setPart("selectedNet")(value);
@@ -177,6 +228,13 @@ export default function EdaWorkspace({ modelId, ready }) {
   useEffect(() => {
     const handle = ({ detail }) => {
       const action = typeof detail === "string" ? detail : detail?.action;
+      if (
+        reader.mode !== "er" &&
+        ["fit", "zoom-in", "zoom-out", "arrange"].includes(action)
+      )
+        return;
+      if (["add-table", "focus-table", "overview"].includes(action))
+        switchMode("er");
       if (action === "add-table" && !layout.readOnly) {
         navigate("overview");
         const id = addTable();
@@ -225,9 +283,24 @@ export default function EdaWorkspace({ modelId, ready }) {
     clear: clearSelection,
     selectNet: setNet,
     selectRelation: setRelation,
+    selectRelated: (id) => {
+      const relatedNet = result?.projection.nets.find((n) =>
+        n.members.some((r) => r.id === id),
+      );
+      if (!relatedNet) return;
+      setNet(relatedNet.id);
+      setRelation(id);
+      setField(null);
+      setFieldNets([]);
+    },
     focusRelation,
     editTable,
     inspectTable,
+    inspectField: (tid, fid) => {
+      navigate("column", "", tid, { selectedTable: tid, selectedField: fid });
+      pendingFocus.current = tid;
+      setFocusRequest((n) => n + 1);
+    },
     canFocus: currentResult && !!tableNode(selectedTable),
     focus: () => focusTable(selectedTable),
     editRelation: (id) =>
@@ -251,202 +324,334 @@ export default function EdaWorkspace({ modelId, ready }) {
       setFieldNets([]);
     },
   };
+  const viewSwitcher = (
+    <div className="process-view-tabs" role="group" aria-label="模型视图切换">
+      <button
+        aria-pressed={reader.mode === "er"}
+        onClick={() => switchMode("er")}
+      >
+        ER 结构
+      </button>
+      <button
+        aria-pressed={reader.mode === "flow"}
+        onClick={() => switchMode("flow")}
+      >
+        业务流程
+      </button>
+    </div>
+  );
   return (
     <section
       className="eda-workspace"
       aria-label="EDA 分析工作台"
       data-eda-model={modelId}
     >
-      <EdaToolbar
-        model={model}
-        domains={domains}
-        reading={reading}
-        settings={settings}
-        setSettings={setSettings}
-        currentDomain={domains.find((d) => d.id === reading.location.domainId)}
-        visibleTableCount={visibleTableCount}
-        busy={busy}
-        navigate={navigate}
-        arrange={schematic.arrange}
-      />
-      {reading.error && (
-        <p role="alert" className="eda-warning">
-          {tr(reading.error)}
+      {reader.mode === "flow" && (
+        <div className="process-switchbar">
+          {viewSwitcher}
+          {scenario && (
+            <select
+              aria-label="业务场景"
+              value={scenario.id}
+              onChange={(event) => {
+                const next = processModel.scenarios.find(
+                  (value) => value.id === event.target.value,
+                );
+                setReader((state) => ({
+                  ...state,
+                  scenarioId: next.id,
+                  activityId:
+                    next.steps.find((step) => step.kind === "action")?.id ||
+                    next.steps[0]?.id ||
+                    "",
+                }));
+              }}
+            >
+              {processModel.scenarios.map((value) => (
+                <option value={value.id} key={value.id}>
+                  {value.name}
+                </option>
+              ))}
+            </select>
+          )}
+          {activity && <span className="process-context">{activity.name}</span>}
+          <button
+            className="process-config-button"
+            onClick={() => setProcessConfigOpen(true)}
+          >
+            流程配置
+          </button>
+        </div>
+      )}
+      {processReadingError && (
+        <p className="eda-warning" role="alert">
+          {tr(processReadingError)}
         </p>
       )}
       <div
-        className="eda-body"
-        data-directory={showDirectory}
-        data-inspector={showInspector}
+        className={`process-original-er ${reader.mode !== "er" ? "is-hidden" : ""}`}
       >
-        {showDirectory && (
-          <EdaDirectory
-            domains={domains}
-            tables={tables}
-            matches={matches}
-            search={search}
-            onSearch={setSearch}
-            reading={reading}
-            navigate={navigate}
-          />
+        <EdaToolbar
+          leading={reader.mode === "er" ? viewSwitcher : null}
+          model={model}
+          domains={domains}
+          reading={reading}
+          settings={settings}
+          setSettings={setSettings}
+          currentDomain={domains.find(
+            (d) => d.id === reading.location.domainId,
+          )}
+          visibleTableCount={visibleTableCount}
+          busy={busy}
+          navigate={navigate}
+          arrange={schematic.arrange}
+        />
+        {reading.error && (
+          <p role="alert" className="eda-warning">
+            {tr(reading.error)}
+          </p>
         )}
         <div
-          ref={canvas}
-          className="eda-canvas"
-          data-minimap={settings.edaMinimap !== false}
-          id="canvas"
-          data-eda-ready={
-            ready && result && currentResult && !busy && !error
-              ? "true"
-              : undefined
-          }
+          className="eda-body"
+          data-directory={showDirectory}
+          data-inspector={showInspector}
         >
-          {result && currentResult && (
-            <EdaScene
-              result={result}
-              selectedNet={selectedNet}
-              selectedRelation={selectedRelation}
-              showCardinality={settings.edaCardinality !== false}
-              view={view}
-              onView={setView}
-              onEdit={editTable}
-              onNode={(node) => {
-                if (node.kind === "domain") navigate("domain", node.domainId);
-                else {
-                  setTable(node.tableId);
-                  setNet(null);
-                  setField(null);
-                  setFieldNets([]);
-                }
-              }}
-              onNet={(value, relationId = null) => {
-                const ids = Array.isArray(value) ? value : [value];
-                setNet(ids[0] || null);
-                setRelation(relationId);
-                setTable(null);
-                setField(null);
-                setFieldNets(
-                  result.projection.nets.filter((n) => ids.includes(n.id)),
-                );
-              }}
-              onField={(tid, fid) => {
-                const found = result.projection.nets.filter(
-                  (n) =>
-                    (n.targetTableId === tid && n.targetFields.includes(fid)) ||
-                    n.members.some(
-                      (r) =>
-                        r.startTableId === tid &&
-                        (r.fields || [r]).some((p) => p.startFieldId === fid),
-                    ),
-                );
-                setFieldNets(found);
-                setNet(found[0]?.id || null);
-                setTable(tid);
-                setField(fid);
-              }}
+          {showDirectory && (
+            <EdaDirectory
+              domains={domains}
+              tables={tables}
+              matches={matches}
+              search={search}
+              onSearch={setSearch}
+              reading={reading}
+              navigate={navigate}
             />
           )}
-          {!tables.length && (
-            <div className="eda-state">
-              当前模型尚无表。使用“新增”添加表，或在“更多”中导入模型。
-            </div>
-          )}
-          {(busy || (result && !currentResult && !error)) && (
-            <div className="eda-state" role="status">
-              正在整理关系…<button onClick={schematic.cancel}>取消</button>
-            </div>
-          )}
-          {error && (
-            <div className="eda-state eda-error" role="alert">
-              {tr(error)}
-              <button onClick={schematic.arrange}>重试</button>
-              <button onClick={() => setTools("model")}>打开模型编辑</button>
-            </div>
-          )}
-          {result && currentResult && !busy && !error && (
-            <>
-              {settings.edaMinimap !== false && (
-                <EdaMinimap
-                  result={result}
-                  view={view}
-                  viewport={viewport}
-                  onView={setView}
-                  onFit={fitView}
-                />
-              )}
-              {settings.edaMetrics === true ? (
-                <div className="eda-metrics">
-                  交叉 {result.metrics.crossings} · 重叠{" "}
-                  {result.metrics.overlaps} · 线长 {result.metrics.length} ·
-                  转角 {result.metrics.bends}
-                  <small>
-                    按此顺序比较 {result.candidates.length} 个候选，非全局最优
-                  </small>
-                </div>
-              ) : (
-                !showInspector && (
-                  <span className="eda-canvas-hint">
-                    双击表编辑 · 拖动空白平移 · 滚轮缩放
-                  </span>
-                )
-              )}
-              <div className="eda-canvas-controls" aria-label="图形导航">
-                <button
-                  aria-label="缩小"
-                  title="缩小"
-                  onClick={() => zoomView(1.2)}
-                >
-                  −
-                </button>
-                <button
-                  className="eda-scale-button"
-                  aria-label="原始大小（100%）"
-                  title="原始大小（100%）"
-                  onClick={() => setView((v) => actualSizeView(v, viewport))}
-                >
-                  {Math.round(viewScale(view, viewport) * 100)}%
-                </button>
-                <button
-                  aria-label="适应窗口"
-                  title="适应窗口"
-                  onClick={fitView}
-                >
-                  <i className="bi bi-arrows-fullscreen" aria-hidden="true" />
-                </button>
-                <button
-                  aria-label="放大"
-                  title="放大"
-                  onClick={() => zoomView(1 / 1.2)}
-                >
-                  +
-                </button>
+          <div
+            ref={canvas}
+            className="eda-canvas"
+            data-minimap={settings.edaMinimap !== false}
+            id="canvas"
+            data-eda-ready={
+              ready && result && currentResult && !busy && !error
+                ? "true"
+                : undefined
+            }
+          >
+            {result && currentResult && (
+              <EdaScene
+                result={result}
+                selectedTable={selectedTable}
+                selectedField={selectedField}
+                scale={viewScale(view, viewport)}
+                semanticZoom={settings.edaSemanticZoom !== false}
+                selectedNet={selectedNet}
+                selectedRelation={selectedRelation}
+                showCardinality={settings.edaCardinality !== false}
+                view={view}
+                onView={setView}
+                onEdit={editTable}
+                onNode={(node) => {
+                  if (node.kind === "domain") navigate("domain", node.domainId);
+                  else {
+                    setTable(node.tableId);
+                    setNet(null);
+                    setField(null);
+                    setFieldNets([]);
+                    if (viewScale(view, viewport) < 0.55) {
+                      pendingFocus.current = node.tableId;
+                      setFocusRequest((n) => n + 1);
+                    }
+                  }
+                }}
+                onNet={(value, relationId = null) => {
+                  const ids = Array.isArray(value) ? value : [value];
+                  setNet(ids[0] || null);
+                  setRelation(relationId);
+                  setTable(null);
+                  setField(null);
+                  setFieldNets(
+                    result.projection.nets.filter((n) => ids.includes(n.id)),
+                  );
+                }}
+                onField={(tid, fid) => {
+                  const found = result.projection.nets.filter(
+                    (n) =>
+                      (n.targetTableId === tid &&
+                        n.targetFields.includes(fid)) ||
+                      n.members.some(
+                        (r) =>
+                          r.startTableId === tid &&
+                          (r.fields || [r]).some((p) => p.startFieldId === fid),
+                      ),
+                  );
+                  setFieldNets(found);
+                  setNet(found[0]?.id || null);
+                  setTable(tid);
+                  setField(fid);
+                }}
+              />
+            )}
+            {!tables.length && (
+              <div className="eda-state">
+                当前模型尚无表。使用“新增”添加表，或在“更多”中导入模型。
               </div>
-            </>
+            )}
+            {(busy || (result && !currentResult && !error)) && (
+              <div className="eda-state" role="status">
+                正在整理关系…<button onClick={schematic.cancel}>取消</button>
+              </div>
+            )}
+            {error && (
+              <div className="eda-state eda-error" role="alert">
+                {tr(error)}
+                <button onClick={schematic.arrange}>重试</button>
+                <button onClick={() => setTools("model")}>打开模型编辑</button>
+              </div>
+            )}
+            {result && currentResult && !busy && !error && (
+              <>
+                <div className="eda-reading-legend" aria-label="ER 图例">
+                  <span className="eda-legend-dot" />
+                  {viewScale(view, viewport) < 0.55 &&
+                  settings.edaSemanticZoom !== false
+                    ? "总览 · 点击表放大阅读"
+                    : "字段视图"}
+                  <span>1 / N</span>
+                  <span className="eda-legend-dash" />
+                  待核关联
+                </div>
+                {settings.edaMinimap !== false && (
+                  <EdaMinimap
+                    result={result}
+                    view={view}
+                    viewport={viewport}
+                    onView={setView}
+                    onFit={fitView}
+                  />
+                )}
+                {settings.edaMetrics === true ? (
+                  <div className="eda-metrics">
+                    交叉 {result.metrics.crossings} · 重叠{" "}
+                    {result.metrics.overlaps} · 线长 {result.metrics.length} ·
+                    转角 {result.metrics.bends}
+                    <small>
+                      按此顺序比较 {result.candidates.length} 个候选，非全局最优
+                    </small>
+                  </div>
+                ) : (
+                  !showInspector && (
+                    <span className="eda-canvas-hint">
+                      双击表编辑 · 拖动空白平移 · 滚轮缩放
+                    </span>
+                  )
+                )}
+                <div className="eda-canvas-controls" aria-label="图形导航">
+                  <button
+                    aria-label="缩小"
+                    title="缩小"
+                    onClick={() => zoomView(1.2)}
+                  >
+                    −
+                  </button>
+                  <button
+                    className="eda-scale-button"
+                    aria-label="原始大小（100%）"
+                    title="原始大小（100%）"
+                    onClick={() => setView((v) => actualSizeView(v, viewport))}
+                  >
+                    {Math.round(viewScale(view, viewport) * 100)}%
+                  </button>
+                  <button
+                    aria-label="适应窗口"
+                    title="适应窗口"
+                    onClick={fitView}
+                  >
+                    <i className="bi bi-arrows-fullscreen" aria-hidden="true" />
+                  </button>
+                  <button
+                    aria-label="放大"
+                    title="放大"
+                    onClick={() => zoomView(1 / 1.2)}
+                  >
+                    +
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          {showInspector && (
+            <EdaInspector
+              selection={{
+                net,
+                table: infoTable,
+                field: fieldInfo,
+                alternatives: fieldNets,
+                selectedRelation,
+              }}
+              tables={tables}
+              relationships={relationships}
+              actions={inspectorActions}
+            />
           )}
         </div>
-        {showInspector && (
-          <EdaInspector
-            selection={{
-              net,
-              table: infoTable,
-              field: fieldInfo,
-              alternatives: fieldNets,
-              selectedRelation,
-            }}
-            tables={tables}
-            actions={inspectorActions}
-          />
-        )}
       </div>
-      <EdaEditors tools={tools} setTools={setTools} />
-      <DiagramExport
-        model={model}
-        result={result}
-        current={currentResult && !busy && !error}
-        location={reading.location}
-        view={view}
-        showCardinality={settings.edaCardinality !== false}
+      {reader.mode !== "er" && (
+        <ProcessWorkspace
+          model={model}
+          definition={processModel}
+          scenario={scenario}
+          activity={activity}
+          reader={processReader}
+          setReader={setReader}
+          ready={ready}
+          selectedTable={selectedTable}
+          onSelectActivity={(id) =>
+            setReader((state) => ({
+              ...state,
+              scenarioId: scenario.id,
+              activityId: id,
+            }))
+          }
+          onShowER={(id, fieldId = null) => {
+            if (!tables.some((table) => table.id === id)) return;
+            switchMode("er");
+            navigate(
+              fieldId != null ? "column" : "overview",
+              "",
+              fieldId != null ? id : null,
+              { selectedTable: id, selectedField: fieldId },
+            );
+            pendingFocus.current = id;
+            setFocusRequest((value) => value + 1);
+          }}
+          onEditTable={editTable}
+          onConfigure={() => setProcessConfigOpen(true)}
+        />
+      )}
+      <ProcessConfig
+        open={processConfigOpen}
+        onClose={() => setProcessConfigOpen(false)}
+        definition={processModel}
+        onApply={setProcessModel}
+        tables={tables}
+        readOnly={layout.readOnly}
       />
+      <EdaEditors tools={tools} setTools={setTools} />
+      {reader.mode === "er" && (
+        <DiagramExport
+          model={model}
+          result={result}
+          current={currentResult && !busy && !error}
+          location={reading.location}
+          view={view}
+          showCardinality={settings.edaCardinality !== false}
+          sceneProps={{
+            scale: viewScale(view, viewport),
+            semanticZoom: settings.edaSemanticZoom !== false,
+          }}
+        />
+      )}
     </section>
   );
 }

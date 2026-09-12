@@ -1,3 +1,4 @@
+import TableDetails from "./TableDetails";
 import FieldCodeReference from "../renderer/FieldCodeReference";
 import {
   formatFieldType,
@@ -7,12 +8,17 @@ import { fieldEnumValues } from "@drawdb/utils/fieldEnumValues";
 import { cardinalityOf } from "./cardinality.mjs";
 import { tr } from "../i18n/renderer";
 
-export default function EdaInspector({ selection, tables, actions }) {
+export default function EdaInspector({
+  selection,
+  tables,
+  relationships,
+  actions,
+}) {
   const { net, table, field, alternatives, selectedRelation } = selection;
   return (
     <aside className="eda-inspector" aria-label="对象详情">
       <div className="eda-inspector-heading">
-        <strong>{net ? "关系详情" : "表详情"}</strong>
+        <strong>{net ? "关系详情" : field ? "字段详情" : "表详情"}</strong>
         <button
           className="eda-icon-button"
           aria-label="关闭详情"
@@ -27,16 +33,22 @@ export default function EdaInspector({ selection, tables, actions }) {
           <h3>{field.name}</h3>
           <code>{formatFieldType(field)}</code>
           <p>{chineseFieldName(table.name, field.name, field)}</p>
-          <p>{field.comment || "未提供注释"}</p>
+          <p>
+            {field.comment === chineseFieldName(table.name, field.name, field)
+              ? ""
+              : field.comment || "未提供注释"}
+          </p>
           <FieldCodeReference tableName={table.name} field={field} />
           <p>
             默认值：{field.default === "" ? "未设置" : String(field.default)}
           </p>
-          {fieldEnumValues(table.name, field).values.map((value) => (
-            <p key={value.value}>
-              <code>{value.value}</code> {value.label}
-            </p>
-          ))}
+          <div className="eda-enum-values">
+            {fieldEnumValues(table.name, field).values.map((value) => (
+              <p key={value.value}>
+                <code>{value.value}</code> {value.label}
+              </p>
+            ))}
+          </div>
         </section>
       )}
       {alternatives.length > 1 && (
@@ -139,34 +151,13 @@ export default function EdaInspector({ selection, tables, actions }) {
           </div>
         </>
       ) : table ? (
-        <>
-          <h3>{table.name}</h3>
-          <p className="eda-detail-count">
-            {table.fields.length} 字段 · {table.indices?.length || 0} 索引
-          </p>
-          <div className="eda-detail-actions">
-            <button
-              className="eda-primary-button"
-              onClick={() => actions.editTable(table.id)}
-            >
-              编辑表
-            </button>
-            <button onClick={() => actions.inspectTable(table.id)}>
-              全部字段
-            </button>
-            <button
-              disabled={!actions.canFocus}
-              onClick={actions.focus}
-              title="只调整视角，不改变查看范围"
-            >
-              定位到画布
-            </button>
-          </div>
-          <details className="eda-evidence" open>
-            <summary>表说明与来源</summary>
-            <p>{table.comment || "未提供表注释"}</p>
-          </details>
-        </>
+        <TableDetails
+          table={table}
+          tables={tables}
+          relationships={relationships}
+          field={field}
+          actions={actions}
+        />
       ) : null}
     </aside>
   );

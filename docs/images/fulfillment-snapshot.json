@@ -1,19 +1,27 @@
 {
-  "capturedAt": "2026-09-12T08:37:19.942Z",
+  "capturedAt": "2026-09-12T11:41:03.150Z",
   "application": "ER Wiki Community",
-  "applicationVersion": "0.2.0-preview.4",
-  "sourceCommit": "9714af12a4c37d0c3775db3a737d9860949aa559",
-  "rendererSourceSha256": "05e07c00744f59dc3c62333ed4b62d7fd6f28cf735e08e9ad7e5f3495e8026b8",
-  "runtimeSourceSha256": "1b1c16ff22c0460ca06a382710be7c0b00339050e200d1e84650a63c21533c76",
+  "applicationVersion": "0.2.0",
+  "sourceCommit": "b2cf20922a7387a4b202da9974ee8e0ead48af99",
+  "rendererSourceSha256": "bf1d3e2371c1b51e517f6cd62f9964b516b2f8b4802c3ba5581fed5262a12ae9",
+  "runtimeSourceSha256": "6d67977c07b29f5de20ec83b6651afbc9458e5e620e4c8df9320c2a1ddabeef0",
   "model": "examples/fulfillment.drawdb.json",
-  "modelSha256": "1d5986663cfec07048702a83152d077ed87406261fd4e7159e3fe44b38a5f2f9",
+  "modelSha256": "2b96df03cc76a96a0f22ea767ae1c918b066f0e9077f0c7dd7861b6bed45f8b4",
   "tables": 13,
   "relationships": 19,
   "method": "Unmodified Electron webContents screenshots; SVG exported through the application UI.",
   "images": [
     {
       "file": "fulfillment-desktop-en.png",
-      "description": "en: actual desktop, all 13 tables",
+      "description": "en: actual desktop, all 13 tables with semantic summaries",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-workspace-en.png",
+      "description": "en: ER workspace, related tables and field browser",
       "viewport": {
         "width": 1440,
         "height": 900
@@ -44,6 +52,14 @@
       }
     },
     {
+      "file": "fulfillment-domain-en.png",
+      "description": "en: domain drilldown with external relation labels",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
       "file": "fulfillment-search-en.png",
       "description": "en: actual quick search, qualified field lookup",
       "viewport": {
@@ -53,7 +69,15 @@
     },
     {
       "file": "fulfillment-desktop-zh.png",
-      "description": "zh: actual desktop, all 13 tables",
+      "description": "zh: actual desktop, all 13 tables with semantic summaries",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-workspace-zh.png",
+      "description": "zh: ER workspace, related tables and field browser",
       "viewport": {
         "width": 1440,
         "height": 900
@@ -84,8 +108,24 @@
       }
     },
     {
+      "file": "fulfillment-domain-zh.png",
+      "description": "zh: domain drilldown with external relation labels",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
       "file": "fulfillment-search-zh.png",
       "description": "zh: actual quick search, qualified field lookup",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-dark.png",
+      "description": "Actual desktop ER workspace in dark mode",
       "viewport": {
         "width": 1440,
         "height": 900

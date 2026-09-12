@@ -33,6 +33,11 @@ custom types and the timeline remain available in this catalogue.
 选中字段会定位到实际表卡片，表详情中的“定位到画布”只调整视角。
 
 - **All tables** includes every table, including isolated tables.
+- Zoomed-out views emphasize table names and field counts. Click a table to read it
+  at a useful scale; **Display → Emphasize table names when zoomed out** disables this
+  presentation if you prefer field rows at every scale. It never hides actual tables.
+- The table inspector lists searchable fields, display names, types and enums.
+  Select a field to locate it; choose a related table entry to trace that relationship.
 - **Domain overview** summarizes domains; open one to inspect its tables.
 - **Related tables** and **All fields** inspect a table and its neighboring relations.
 - Search matches table/field names, aliases, comments and enum values/meanings.
@@ -51,6 +56,8 @@ custom types and the timeline remain available in this catalogue.
 总图、领域、表和字段可以逐层查看。平移缩放、选择对象和书签按模型独立记忆，
 切换模型或重启后恢复，不会更新模型保存时间。书签最多 50 个，视图缓存最多 60 个。
 目录左侧的小箭头只折叠目录列表，不会改变 ER 图的表数量；点击分组名称才会进入该领域。
+缩小时表卡片突出表名与字段数，放大后恢复字段行。点击总览卡片可放大阅读，不删除其他表。
+“显示 → 缩小时突出表名”可以关闭分级显示；右侧表详情支持筛选字段、查看中文名、枚举和关联关系。
 滚轮以鼠标指向的位置为中心缩放；右下角比例按钮恢复 100%，适应窗口按钮查看当前范围全图。
 左下角小地图支持点击、拖动定位，聚焦后可用方向键移动、Home 返回全图；可在“显示”中关闭。
 “显示 → 布局方向”可选自动、横向、纵向，按模型和书签记忆；旧版自动布局的阅读位置仍保留。
@@ -82,6 +89,17 @@ the annotations without editing the model; diagram exports follow this setting.
 `?` 表示未定义，混合表示同一端口存在不同基数；不推断最少参与条数，也不代表真实数据量或物理约束。
 线束的“几条关系”与基数分开显示。点击分支、端点或 Net Label 可追踪单条关系，
 右侧“定位关系”会将两端表、路径和完整标签纳入视野。可在“显示”中关闭标记，导出也遵循该设置。
+组内连线使用领域颜色，跨领域连线保持中性色；选中关系会突出对应路径及两端表，其他对象降低强调。
+
+## Optional process context / 辅助流程
+
+The **ER structure / Process flow** switcher keeps the ER diagram as the primary
+workspace. Explicit scenarios link activities to table fields; selecting a mapping
+returns to ER. Process configuration uses JSON, without a BPMN editor or execution
+engine. See [process-view boundaries](PROCESS_VIEWS.md). There is no mixed mode.
+
+流程图只作为业务理解的辅助入口；有显式配置时才能展示，不从外键自动生成时序。
+动作可关联表和字段，仍复用原表编辑器。流程配置暂不进入 ER 撤销栈。
 
 ## Save and recover / 保存与恢复
 
@@ -100,7 +118,7 @@ snapshots per model, with an overall limit of 200. A successful new backup may
 remove older backups above those limits. These are not off-device backups;
 export JSON to your own backup location for disaster recovery.
 
-新格式含 `format: "er-wiki"` 和 `schemaVersion: 1`。旧 drawDB JSON 仍可导入。
+新格式含 `format: "er-wiki"` 和 `schemaVersion: 2`，保留流程定义。旧 drawDB JSON 与 v1 文件仍可导入。
 遇到高于当前支持版本的文件会拒绝导入并提示升级，不会尝试破坏性降级。
 
 ## Export / 导出
@@ -111,6 +129,7 @@ does not navigate the workspace. SVG preserves scalable geometry; PNG is capped
 at 8192 pixels per side and approximately 24 million pixels to limit memory use.
 
 “导出 ER 图”支持当前视图、当前领域或全部表总图；纯图导出不带工具按钮，也不改变阅读位置。
+当前视图导出遵循缩放分级显示；领域和完整总图导出包含相应投影的字段内容。
 大图优先选择 SVG。SQL 导出沿用上游能力，结果应人工检查，不会自动执行到数据库。
 
 ## Updates and feedback / 更新与反馈

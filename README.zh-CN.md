@@ -4,15 +4,25 @@
 支持简体中文、English 和跟随系统，切换语言不会改写模型内容。
 社区版与原有业务工作区使用不同的数据目录。
 
-**当前为社区预览版。**
+**以 ER 图为核心的桌面模型工作台。**
 [GitHub 仓库](https://github.com/ztcshen/er-wiki) ·
 [下载与发布说明](https://github.com/ztcshen/er-wiki/releases) ·
 [CI 状态](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
-当前源码版本为 `0.2.0-preview.4`；已发布版本与安装包以 Releases 为准。
+当前源码版本为 `0.2.0`；已发布版本与安装包以 Releases 为准。
+
+## 从结构总览，到表字段，再到单条关系
+
+左侧按业务领域组织表，中间专注 ER 图，右侧就地阅读字段、枚举和关联关系。
+阅读位置与模型内容分开保存，不会因为移动视角而修改模型。
+
+![真实桌面：ER 工作台、表字段列表与关联关系](docs/images/fulfillment-workspace-zh.png)
 
 ## 桌面工作流
 
+- 缩放分级显示：远看表名和结构，近看字段；总图始终保留全部表。
+- 表详情支持筛选字段、中文显示名、类型、枚举及关联表入口。
+- 组内关系使用领域色，跨领域连线保持中性色；选中关系突出两端表与对应路径。
 - 统一设置：语言、主题、自动保存、备份保留数量与手动检查更新。
 - ⌘/Ctrl+K 快速查找表、字段和操作；菜单按任务分组，目录分组可独立折叠。
 - 按模型恢复领域、选中表、缩放平移；支持阅读书签和返回上次位置。
@@ -35,7 +45,7 @@
 - 分仓履约、包裹及部分发货；
 - 退货申请、退货明细与入库处置。
 
-以下为本地 **0.2.0-preview.4 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
+以下为本地 **0.2.0 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
 不是另一套绘图脚本生成的示意图。
 
 ![真实桌面界面：电商履约全部 13 张表](docs/images/fulfillment-desktop-zh.png)
@@ -45,7 +55,11 @@
 ![真实桌面界面：关系基数与单条关系追踪](docs/images/fulfillment-cardinality-zh.png)
 
 <details>
-<summary>字段详情、表编辑和快速查找截图</summary>
+<summary>领域阅读、字段详情、表编辑和快速查找截图</summary>
+
+进入单个领域阅读，边界关系仍可追踪：
+
+![真实桌面：领域内的表与外部关系标签](docs/images/fulfillment-domain-zh.png)
 
 定位到字段，以正常比例阅读，并通过小地图保留位置参照：
 
@@ -60,6 +74,16 @@
 ![真实桌面界面：快速查找字段](docs/images/fulfillment-search-zh.png)
 
 </details>
+
+深色模式保留相同的 ER 阅读和编辑能力：
+
+![真实桌面：深色 ER 工作台](docs/images/fulfillment-dark.png)
+
+### 流程图只是辅助
+
+有显式配置时，可以切换到简单流程视图，通过动作关联对应表和字段。
+不会从外键自动推演业务时序，不提供混合图、BPMN 设计器或流程执行引擎。
+详见[流程视图边界](docs/PROCESS_VIEWS.md)。
 
 可直接查看 [DDL](examples/fulfillment.sql)、
 [模型 JSON](examples/fulfillment.drawdb.json)、[阅读说明](examples/README.md)、
@@ -77,7 +101,7 @@ npm start
 ```
 
 需要 Git、Node.js 22.18+。使用 `npm run package` 打包当前平台，
-安装包放在 `desktop/release/`。当前优先准备 macOS 预览包，
+安装包放在 `desktop/release/`。本次提供 **macOS Apple Silicon（ARM64）** 安装包，
 Windows/Linux 尚未发布验证。默认包使用临时签名；Developer ID 签名、公证入口
 已提供，需要维护者自己的证书与凭据才能执行。
 

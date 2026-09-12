@@ -11,7 +11,7 @@ const fixture = async () => JSON.parse(await fs.readFile(path.join(__dirname, '.
 test('legacy model migration preserves all user-authored fields and rejects future versions', async () => {
   const { migrateModelDocument } = await import('../renderer/model-format.mjs');
   const value = await fixture(), before = JSON.stringify(value), next = migrateModelDocument(value);
-  assert.equal(next.schemaVersion, 1); assert.deepEqual(next.tables, value.tables); assert.deepEqual(next.relationships, value.relationships);
+  assert.equal(next.schemaVersion, 2); assert.deepEqual(next.tables, value.tables); assert.deepEqual(next.relationships, value.relationships);
   assert.equal(JSON.stringify(value), before); assert.throws(() => migrateModelDocument({ ...value, schemaVersion: 999 }), /newer/);
   assert.deepEqual(migrateModelDocument(next), next);
 });

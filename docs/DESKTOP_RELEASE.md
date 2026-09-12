@@ -48,7 +48,7 @@ ER_WIKI_NOTARIZE=1 npm run package
 The command waits for notarization, staples the ticket, and validates it. Missing
 credentials fail closed. The Developer ID / notarization path is implemented but
 has not been exercised with real credentials in this development checkpoint.
-The default GitHub release workflow still produces an ad-hoc signed prerelease.
+The GitHub release workflow produces an ad-hoc signed draft. Tags with a prerelease suffix are marked as prereleases; publication is a separate maintainer action.
 
 ## Release boundary
 

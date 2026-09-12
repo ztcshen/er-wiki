@@ -11,7 +11,7 @@ export async function prepareDesktop(){
     await db.transaction('rw',db.diagrams,async()=>{
       if(!await db.diagrams.where('diagramId').equals('demo-fulfillment').first())
         await db.diagrams.add({diagramId:'demo-fulfillment',name:demo.title,database:demo.database,tables:demo.tables,references:demo.relationships,
-          reviewGroups:demo.reviewGroups,notes:[],areas:[],views:[],types:[],enums:[],pan:{x:0,y:0},zoom:0.4,gistId:'',loadedFromGistId:'',lastModified:new Date()});
+          reviewGroups:demo.reviewGroups,processModel:demo.processModel??null,notes:[],areas:[],views:[],types:[],enums:[],pan:{x:0,y:0},zoom:0.4,gistId:'',loadedFromGistId:'',lastModified:new Date()});
     });
     localStorage.setItem(marker,'installed');
   }

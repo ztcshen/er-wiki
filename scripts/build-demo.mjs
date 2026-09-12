@@ -60,7 +60,7 @@ const refs=[
 const relationships=refs.map(([child,column,parent],i)=>({id:'demo-rel-'+i,name:'fk_'+child+'_'+column,startTableId:child,startFieldId:child+'.'+column,endTableId:parent,endFieldId:parent+'.id',
   fields:[{startFieldId:child+'.'+column,endFieldId:parent+'.id'}],cardinality:'many_to_one',updateConstraint:'No action',deleteConstraint:'No action',color:'#64748b',
   reviewEvidence:{kind:'physical',description:'Explicit foreign key in the independently authored example DDL; not a real business database.',source:'examples/fulfillment.sql'}}));
-const model={title:'电商履约 · Fictional fulfillment',database:'mysql',tables,relationships,reviewGroups:groups,notes:[],subjectAreas:[],views:[],types:[],enums:[],transform:{pan:{x:0,y:0},zoom:0.4}};
+const model={title:'电商履约 · Fictional fulfillment',database:'mysql',tables,relationships,reviewGroups:groups,notes:[],subjectAreas:[],views:[],types:[],enums:[],transform:{pan:{x:0,y:0},zoom:0.4},processModel:JSON.parse(fs.readFileSync(path.join(root,'examples/fulfillment.process.json'),'utf8'))};
 fs.mkdirSync(path.join(root,'examples'),{recursive:true});
 fs.writeFileSync(path.join(root,'examples/fulfillment.drawdb.json'),JSON.stringify(model,null,2)+'\n');
 const quote=s=>'\x60'+s+'\x60';

@@ -13,10 +13,20 @@ export function integrateDesktop(here) {
     id=modulePath(id);
     if (id.endsWith('/src/components/Workspace.jsx')) {
       code=code.replaceAll('数据模型工作台 | drawDB','ER Wiki');
+      code = `import { ProcessProvider } from ${JSON.stringify(sourceFile('process/context.jsx'))};\n` + code;
+      code = replaceOnce(code, '  const { views, setViews } = useViews();', '  const { views, setViews } = useViews();\n  const [processModel, setProcessModel] = useState(null);');
+      code = replaceOnce(code, '  views: diagram.views ?? [],', '  views: diagram.views ?? [],\n  processModel: diagram.processModel ?? null,');
+      code = replaceOnce(code, 'notes, areas, views, types, enums, gistId, loadedFromGistId, reviewGroups,', 'notes, areas, views, types, enums, gistId, loadedFromGistId, reviewGroups, processModel,');
+      code = replaceOnce(code, 'loadedFromGistId, reviewGroups]);', 'loadedFromGistId, reviewGroups, processModel]);');
+      if (code.split('          views: views,').length !== 3) throw new Error('Process persistence anchors changed');
+      code = code.replaceAll('          views: views,', '          views: views,\n          processModel,');
+      code = code.replaceAll('    views,\n', '    views,\n    processModel,\n');
+      for (const source of ['diagram', 'template', 'parsed']) code = replaceOnce(code, `setViews(${source}.views ?? []);`, `setViews(${source}.views ?? []);\n      setProcessModel(${source}.processModel ?? null);`);
+      code = replaceOnce(code, '      setViews([]);', '      setViews([]);\n      setProcessModel(null);');
       code = `import EdaWorkspace from ${JSON.stringify(sourceFile('eda/EdaWorkspace.jsx'))};\n` + code;
       const start='      <div\n        className="wiki-workspace-layout',end='        <Slot name="right-panel" />\n      </div>';
       if(code.split(start).length!==2||code.split(end).length!==2||code.indexOf(end)<code.indexOf(start))throw new Error('Desktop integration anchor changed: workspace body');
-      code=replaceOnce(code,code.slice(code.indexOf(start),code.indexOf(end)+end.length),'      <EdaWorkspace key={loadedDiagramId || "blank"} modelId={loadedDiagramId || "blank"} ready={Boolean(isTemplate) || !loadedDiagramId || (diagramSource === "local" && viewOwnerIdRef.current === loadedDiagramId)} />');
+      code=replaceOnce(code,code.slice(code.indexOf(start),code.indexOf(end)+end.length),'      <ProcessProvider value={{ processModel, setProcessModel }}><EdaWorkspace key={loadedDiagramId || "blank"} modelId={loadedDiagramId || "blank"} ready={Boolean(isTemplate) || !loadedDiagramId || (diagramSource === "local" && viewOwnerIdRef.current === loadedDiagramId)} /></ProcessProvider>');
       code=code.replaceAll('new Date().toLocaleString()', 'new Date().toISOString()').replaceAll('new Date(diagram.lastModified).toLocaleString()', 'new Date(diagram.lastModified).toISOString()');
       code = `import { useDesktopWorkspace } from ${JSON.stringify(sourceFile('renderer/useDesktopWorkspace.js'))};\n` + code;
       code = replaceOnce(code, '      setTitle("Untitled diagram");',
@@ -27,7 +37,7 @@ export function integrateDesktop(here) {
     ready: Boolean(isTemplate) || !loadedDiagramId || (diagramSource === "local" && viewOwnerIdRef.current === loadedDiagramId),
     isDirty: () => modelContent !== savedModelContentRef.current,
     snapshot: { diagramId: isTemplate ? undefined : loadedDiagramId, name: title, database, tables,
-      references: relationships, notes, areas, views, types, enums, reviewGroups,
+      references: relationships, notes, areas, views, types, enums, reviewGroups, processModel,
       pan: latestViewRef.current.pan, zoom: latestViewRef.current.zoom },
   });
 
