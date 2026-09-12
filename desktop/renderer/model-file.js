@@ -1,9 +1,11 @@
 import { jsonDiagramIsValid } from '../../work/drawdb/src/utils/validateSchema';
 import { modelGroups, validateGroups } from '../../work/drawdb/src/utils/tableGroups';
 import { databases } from '../../work/drawdb/src/data/databases';
+import { migrateModelDocument, versionModelDocument } from './model-format.mjs';
+import { tr } from '../i18n/renderer';
 
 export function importModel(json, filename) {
-  const data = JSON.parse(json);
+  const data = migrateModelDocument(JSON.parse(json));
   if (!jsonDiagramIsValid(data) || !Object.hasOwn(databases, data.database || 'generic')) {
     throw new Error('不是有效的 drawDB 模型 JSON，请从浏览器的文件菜单导出 JSON 后重试');
   }
@@ -31,7 +33,7 @@ export function importModel(json, filename) {
     Number.isFinite(transform.pan?.y) && Number.isFinite(transform.zoom) &&
     transform.zoom >= 0.01 && transform.zoom <= 10;
   return {
-    diagramId: crypto.randomUUID(), name: `${data.title || filename.replace(/\.(json|ddb)$/i, '')} · 导入副本`,
+    diagramId: crypto.randomUUID(), name: `${data.title || filename.replace(/\.(json|ddb)$/i, '')} · ${tr('导入副本')}`,
     database: data.database || 'generic', tables: data.tables, references: data.relationships,
     notes: data.notes, areas: data.subjectAreas, views: data.views || [],
     types: data.types || [], enums: data.enums || [], reviewGroups: modelGroups(data.reviewGroups, data.tables),
@@ -41,11 +43,11 @@ export function importModel(json, filename) {
 }
 
 export function exportModel(snapshot) {
-  return JSON.stringify({
+  return JSON.stringify(versionModelDocument({
     title: snapshot.name, database: snapshot.database, tables: snapshot.tables,
     reviewGroups: modelGroups(snapshot.reviewGroups, snapshot.tables),
     relationships: snapshot.references, notes: snapshot.notes, subjectAreas: snapshot.areas,
     views: snapshot.views || [], types: snapshot.types || [], enums: snapshot.enums || [],
     transform: { pan: snapshot.pan, zoom: snapshot.zoom },
-  }, null, 2);
+  }), null, 2);
 }

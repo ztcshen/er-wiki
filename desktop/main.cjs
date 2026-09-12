@@ -5,6 +5,10 @@ const { pathToFileURL } = require('node:url');
 const { randomUUID } = require('node:crypto');
 const { ORIGIN, MAX_FILE_BYTES, isAppURL, assetPath, safeRoute, safeFilename, allowsPermission } = require('./security.cjs');
 const { atomicWrite, readModelFile } = require('./files.cjs');
+const { createPreferences } = require('./preferences.cjs');
+const { createBackupStore } = require('./backups.cjs');
+const { checkUpdates, RELEASES } = require('./updates.cjs');
+const APP_VERSION = require('./package.json').version;
 
 app.setName('ER Wiki');
 // Stable across upgrades and app locations, separate from every web browser.
@@ -21,6 +25,18 @@ let mayClose = false;
 let busyDialog = false;
 const pending = new Map();
 const stateFile = path.join(app.getPath('userData'), 'window-state.json');
+const preferences = createPreferences(path.join(app.getPath('userData'), 'preferences.json'), () => app.getLocale());
+const backups = createBackupStore(path.join(app.getPath('userData'), 'backups'));
+const tr = (text, values) => preferences.tr(text, values);
+function localized(value) {
+  if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? tr(v) : localized(v));
+  if (!value || typeof value !== 'object') return value;
+  const roles = { about:'关于 ER Wiki',hide:'隐藏 ER Wiki',hideOthers:'隐藏其他应用',unhide:'显示全部',quit:'退出 ER Wiki',
+    close:'关闭窗口',cut:'剪切',copy:'复制',paste:'粘贴',selectAll:'全选',togglefullscreen:'切换全屏',toggleDevTools:'开发者工具',minimize:'最小化',zoom:'缩放窗口',front:'全部置于前台' };
+  if(value.role && !value.label && roles[value.role])value={...value,label:roles[value.role]};
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key,
+    ['label', 'title', 'message', 'detail'].includes(key) && typeof item === 'string' ? tr(item) : localized(item)]));
+}
 let state = {};
 try {
   const parsed = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
@@ -35,7 +51,7 @@ function trusted(event) {
 }
 
 async function nativeDialog(work) {
-  if (busyDialog) throw new Error('请先关闭当前文件对话框');
+  if (busyDialog) throw new Error(tr('请先关闭当前文件对话框'));
   busyDialog = true;
   try { return await work(); } finally { busyDialog = false; }
 }
@@ -62,22 +78,23 @@ ipcMain.handle('desktop:request-close', event => {
 ipcMain.handle('desktop:confirm-leave', event => {
   trusted(event);
   return nativeDialog(async () => {
-    const { response } = await dialog.showMessageBox(window, {
+    const { response } = await dialog.showMessageBox(window, localized({
       type: 'question', message: '当前模型有尚未保存的修改',
       detail: '保存到桌面工作区后继续？视角记忆不会代替模型保存。',
       buttons: ['保存并继续', '取消', '不保存'], defaultId: 0, cancelId: 1,
       noLink: true,
-    });
+    }));
     return ['save', 'cancel', 'discard'][response];
   });
 });
-ipcMain.handle('desktop:open-model', event => {
+ipcMain.handle('desktop:open-model', (event, kind = 'json') => {
   trusted(event);
+  if (!['json', 'sql'].includes(kind)) throw new Error('Invalid import format');
   return nativeDialog(async () => {
-    const result = await dialog.showOpenDialog(window, {
+    const result = await dialog.showOpenDialog(window, localized({
       title: '导入模型副本（不覆盖已有模型）', properties: ['openFile'],
-      filters: [{ name: 'drawDB 模型', extensions: ['json', 'ddb'] }],
-    });
+      filters: [{ name: kind === 'sql' ? 'SQL DDL' : 'drawDB JSON', extensions: kind === 'sql' ? ['sql'] : ['json', 'ddb'] }],
+    }));
     if (result.canceled || !result.filePaths[0]) return null;
     return { name: path.basename(result.filePaths[0]), json: await readModelFile(result.filePaths[0]) };
   });
@@ -89,18 +106,55 @@ ipcMain.handle('desktop:export-model', (event, payload) => {
   const data = JSON.parse(payload.json);
   if (!Array.isArray(data.tables) || !Array.isArray(data.relationships)) throw new Error('Invalid model');
   return nativeDialog(async () => {
-    const result = await dialog.showSaveDialog(window, {
+    const result = await dialog.showSaveDialog(window, localized({
       title: '导出当前模型 JSON', defaultPath: safeFilename(payload.name),
       filters: [{ name: 'drawDB 模型', extensions: ['json'] }],
-    });
+    }));
     if (result.canceled || !result.filePath) return false;
     await atomicWrite(result.filePath, payload.json);
     return true;
   });
 });
 
+ipcMain.handle('desktop:get-preferences', event => { trusted(event); return { ...preferences.get(), version: APP_VERSION, platform: process.platform }; });
+ipcMain.handle('desktop:set-preferences', async (event, value) => {
+  trusted(event); const result = await preferences.update(value); installMenu();
+  window?.setTitle(tr('ER Wiki · 数据模型工作台'));
+  return result;
+});
+ipcMain.handle('desktop:create-backup', async (event, value, automatic = false) => {
+  trusted(event); if (automatic && !preferences.get().autoBackup) return null;
+  return backups.create(value, preferences.get().backupCount);
+});
+ipcMain.handle('desktop:list-backups', (event, modelId) => { trusted(event); if (typeof modelId !== 'string') throw new Error('Invalid model ID'); return backups.list(modelId); });
+ipcMain.handle('desktop:read-backup', (event, id) => { trusted(event); return backups.read(id); });
+ipcMain.handle('desktop:check-updates', event => { trusted(event); return checkUpdates(APP_VERSION); });
+ipcMain.handle('desktop:open-resource', (event, resource) => {
+  trusted(event);
+  if (resource === 'data') return shell.openPath(app.getPath('userData'));
+  const links = { releases: RELEASES, feedback: 'https://github.com/ztcshen/er-wiki/issues/new/choose', guide: 'https://github.com/ztcshen/er-wiki/blob/main/docs/USER_GUIDE.md' };
+  if (!Object.hasOwn(links, resource)) throw new Error('Unknown resource');
+  return shell.openExternal(links[resource]);
+});
+ipcMain.handle('desktop:export-asset', async (event, payload) => {
+  trusted(event);
+  if (!payload || !['svg', 'png', 'sql'].includes(payload.extension) || typeof payload.name !== 'string' || payload.name.length > 500 ||
+    typeof payload.content !== 'string' || Buffer.byteLength(payload.content) > MAX_FILE_BYTES * 4) throw new Error('Invalid export asset');
+  const bytes = payload.extension === 'png' ? Buffer.from(payload.content, 'base64') : Buffer.from(payload.content);
+  if (bytes.length > MAX_FILE_BYTES * 3 || payload.extension === 'png' && !bytes.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))) throw new Error('Invalid export content');
+  return nativeDialog(async () => {
+    const result = await dialog.showSaveDialog(window, { title: tr('导出图形或 SQL'),
+      defaultPath: safeFilename(payload.name).replace(/\.drawdb\.json$/, `.${payload.extension}`),
+      filters: [{ name: payload.extension.toUpperCase(), extensions: [payload.extension] }] });
+    if (result.canceled || !result.filePath) return false;
+    await atomicWrite(result.filePath, bytes); return true;
+  });
+});
+
 function installMenu() {
-  Menu.setApplicationMenu(Menu.buildFromTemplate([
+  app.setAboutPanelOptions({ applicationName: 'ER Wiki', applicationVersion: APP_VERSION,
+    copyright: 'Based on drawDB · AGPL-3.0', credits: tr('本地模型工作台，无云分享服务。') });
+  Menu.setApplicationMenu(Menu.buildFromTemplate(localized([
     ...(process.platform === 'darwin' ? [{ label: 'ER Wiki', submenu: [
       { role: 'about' }, { type: 'separator' }, { role: 'hide' }, { role: 'hideOthers' },
       { role: 'unhide' }, { type: 'separator' }, { role: 'quit' },
@@ -108,11 +162,12 @@ function installMenu() {
     { label: '文件', submenu: [
       { label: '导入模型副本…', accelerator: 'CmdOrCtrl+Shift+O', click: () => command('import') },
       { label: '导出当前模型 JSON…', accelerator: 'CmdOrCtrl+Shift+S', click: () => command('export') },
+      { label: '设置…', accelerator: 'CmdOrCtrl+,', click: () => { window?.webContents.send('desktop:command', { action: 'settings' }); } },
       { type: 'separator' },
       { label: '打开桌面数据目录', click: () => shell.openPath(app.getPath('userData')) },
       { label: '存储与备份说明', click: () => dialog.showMessageBox(window, {
-        type: 'info', message: '数据只保存在这台电脑',
-        detail: `桌面工作区与 Chrome 数据独立。浏览器的修改请先导出 JSON，再导入为副本。\n\n模型修改遵循自动保存开关；平移缩放只记视角。导出文件是独立快照，不会随编辑自动更新。\n\n数据目录：${app.getPath('userData')}`,
+        type: 'info', message: tr('数据只保存在这台电脑'),
+        detail: tr('模型保存在工作区；导出文件是独立快照。自动备份只备份已保存内容，恢复时创建副本。数据目录：{{v0}}', { v0: app.getPath('userData') }),
       }) },
       { type: 'separator' }, { role: process.platform === 'darwin' ? 'close' : 'quit' },
     ] },
@@ -125,8 +180,11 @@ function installMenu() {
       ...(!app.isPackaged ? [{ role: 'toggleDevTools' }] : []),
     ] },
     { label: '窗口', submenu: [{ role: 'minimize' }, { role: 'zoom' }, { role: 'front' }] },
-    { label: '帮助', submenu: [{ label: '关于 ER Wiki', click: () => app.showAboutPanel() }] },
-  ]));
+    { label: '帮助', submenu: [{ label: '关于 ER Wiki', click: () => app.showAboutPanel() },
+      { label: '使用说明', click: () => window?.webContents.send('desktop:command', { action: 'help' }) },
+      { label: '下载与更新', click: () => shell.openExternal(RELEASES) },
+      { label: '反馈问题', click: () => shell.openExternal('https://github.com/ztcshen/er-wiki/issues/new/choose') }] },
+  ])));
 }
 
 function createWindow() {
@@ -138,7 +196,7 @@ function createWindow() {
     bounds.x < a.x + a.width - 80 && bounds.y < a.y + a.height - 80);
   window = new BrowserWindow({
     width: 1440, height: 900, ...(visible ? bounds : {}), minWidth: 800, minHeight: 600,
-    title: 'ER Wiki · 数据模型工作台', backgroundColor: '#f6f9fc', show: false,
+    title: tr('ER Wiki · 数据模型工作台'), backgroundColor: '#f6f9fc', show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true,
       nodeIntegration: false, sandbox: true, webSecurity: true, spellcheck: false,
@@ -151,8 +209,8 @@ function createWindow() {
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('render-process-gone', () => {
     for (const finish of pending.values()) finish(false);
-    dialog.showMessageBox(window, { type: 'error', message: '编辑器进程已停止',
-      detail: '已保存的模型仍保留在桌面数据目录。请重新启动应用。', buttons: ['关闭应用'] })
+    dialog.showMessageBox(window, localized({ type: 'error', message: '编辑器进程已停止',
+      detail: '已保存的模型仍保留在桌面数据目录。请重新启动应用。', buttons: ['关闭应用'] }))
       .then(() => { mayClose = true; app.quit(); });
   });
   window.on('close', event => {
@@ -170,7 +228,7 @@ function createWindow() {
       await session.defaultSession.flushStorageData();
       mayClose = true;
       window.close();
-    }).catch(error => dialog.showErrorBox('未能安全关闭', error.message))
+    }).catch(error => dialog.showErrorBox(tr('未能安全关闭'), error.message))
       .finally(() => { closePending = false; });
   });
   window.on('closed', () => { window = null; });
@@ -185,6 +243,7 @@ if (!app.requestSingleInstanceLock()) {
     window?.show(); window?.focus();
   });
   app.whenReady().then(() => {
+    fs.mkdirSync(app.getPath('userData'), { recursive: true });
     const root = path.join(__dirname, 'dist');
     if (!fs.existsSync(path.join(root, 'index.html'))) throw new Error('请先运行 npm run build');
     const permissionContext = (contents, details) => ({
@@ -212,10 +271,8 @@ if (!app.requestSingleInstanceLock()) {
         return new Response(response.body, { status: response.status, headers });
       } catch { return new Response('Not found', { status: 404 }); }
     });
-    app.setAboutPanelOptions({ applicationName: 'ER Wiki', applicationVersion: app.getVersion(),
-      copyright: 'Based on drawDB · AGPL-3.0', credits: '本地模型工作台，无云分享服务。' });
     installMenu();
     createWindow();
-  }).catch(error => { dialog.showErrorBox('ER Wiki 启动失败', error.message); app.quit(); });
+  }).catch(error => { dialog.showErrorBox(tr('ER Wiki 启动失败'), error.message); app.quit(); });
 }
 app.on('window-all-closed', () => app.quit());

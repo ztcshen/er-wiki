@@ -10,57 +10,62 @@ import EdaEditors from './EdaEditors';
 import FieldCodeReference from '../renderer/FieldCodeReference';
 import { formatFieldType, chineseFieldName } from '../../work/drawdb/src/utils/fieldPresentation';
 import { fieldEnumValues } from '../../work/drawdb/src/utils/fieldEnumValues';
+import { useReadingSession } from './useReadingSession';
+import { geometryKey, refreshLayoutContent } from './layout-content.mjs';
+import { searchModel } from './reading-state.mjs';
+import ReadingBookmarks from './ReadingBookmarks';
+import DiagramExport from './DiagramExport';
+import { tr } from '../i18n/renderer';
 import './eda.css';
 
-const LEVELS=[['overview','全部表'],['system','领域概览'],['domain','领域内表'],['table','关联表'],['column','全部字段']];
-export default function EdaWorkspace(){
+export default function EdaWorkspace({ modelId, ready }){
+  const LEVELS=[['overview','全部表'],['system','领域概览'],['domain','领域内表'],['table','关联表'],['column','全部字段']];
   const {tables,relationships,reviewGroups,setGroupView,addTable}=useDiagram();
   const {settings,setSettings}=useSettings();const {setSelectedElement,setBulkSelectedElements}=useSelect();const {layout,setLayout}=useLayout();
   const [tools,setTools]=useState(null);
-  const [level,setLevel]=useState('overview'),[domainId,setDomain]=useState(''),[tableId,setTable]=useState(null);
-  const [selectedNet,setNet]=useState(null),[selectedTable,setSelectedTable]=useState(null),[expanded,setExpanded]=useState([]);
-  // Display preferences belong to the existing persistent settings store, not
-  // this component (which remounts on model changes) or the saved diagram model.
-  const bundle=typeof settings.edaBundle==='boolean'?settings.edaBundle:true;
-  const labels=['off','auto','all'].includes(settings.edaNetLabels)?settings.edaNetLabels:'off';
-  const [nonce,setNonce]=useState(0);
-  const [result,setResult]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[view,setView]=useState([0,0,1000,700]);
-  const [search,setSearch]=useState(''),[fieldNets,setFieldNets]=useState([]),[selectedField,setField]=useState(null);const viewCache=useRef(new Map()),sequence=useRef(0),job=useRef(null);
-  const viewKey=JSON.stringify([level,domainId,tableId,labels,bundle,expanded]);
   const model=useMemo(()=>({tables,relationships,groups:modelGroups(reviewGroups,tables)}),[tables,relationships,reviewGroups]);
-  const requestKey=useMemo(()=>({}),[model,viewKey,nonce]);
+  const reading=useReadingSession(modelId,model,ready);
+  const {level,domainId,tableId,selectedNet,selectedTable,selectedField,expanded,labels,bundle}=reading.location;
+  const setLevel=reading.setPart('level'),setDomain=reading.setPart('domainId'),setTable=reading.setPart('tableId');
+  const setNet=reading.setPart('selectedNet'),setSelectedTable=reading.setPart('selectedTable'),setExpanded=reading.setPart('expanded'),setField=reading.setPart('selectedField');
+  const {view,setView}=reading;
+  const [nonce,setNonce]=useState(0);
+  const [rawResult,setResult]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+  const result=useMemo(()=>refreshLayoutContent(rawResult,model),[rawResult,model]);
+  const [search,setSearch]=useState(''),[fieldNets,setFieldNets]=useState([]);const sequence=useRef(0),job=useRef(null);
+  const viewKey=JSON.stringify([level,domainId,tableId,labels,bundle,expanded]);
+  const shape=useMemo(()=>geometryKey(model,{level,domainId,tableId,labels,bundle,expanded}),[model,viewKey]);
+  const layoutModel=useMemo(()=>model,[shape]);
+  const requestKey=shape+viewKey+nonce;
   const [completedKey,setCompletedKey]=useState(null);
   const currentResult=completedKey===requestKey;
   const domains=useMemo(()=>domainsOf(model),[model]);
   useEffect(()=>{document.body.classList.add('eda-reading');setSelectedElement(s=>({...s,element:ObjectType.NONE,id:-1,open:false,openDialogue:false}));setBulkSelectedElements([]);
     return()=>document.body.classList.remove('eda-reading');},[setSelectedElement,setBulkSelectedElements]);
-  const navigate=(nextLevel,nextDomain='',nextTable=null)=>{
-    viewCache.current.set(viewKey,view);
-    if(nextLevel==='overview'){
-      nextDomain='';nextTable=null;setSearch('');
-      viewCache.current.delete(JSON.stringify(['overview','',null,labels,bundle,[]]));
-    }
-    setLevel(nextLevel);setDomain(nextDomain);setTable(nextTable);setExpanded([]);setNet(null);setSelectedTable(null);setFieldNets([]);setField(null);
-  };
+  const navigate=(...args)=>{setSearch('');setFieldNets([]);reading.navigate(...args);};
   useEffect(()=>{
-    if(!tables.length){setResult(null);return;}
+    if(!ready||!tables.length){setResult(null);return;}
     const id=++sequence.current;setBusy(true);setError('');
-    const worker=new Worker(new URL('./layout.worker.js',import.meta.url),{type:'module'});
+    let worker;
+    const delay=setTimeout(()=>{
+    worker=new Worker(new URL('./layout.worker.js',import.meta.url),{type:'module'});
     const timeout=setTimeout(()=>{worker.terminate();if(sequence.current===id){setBusy(false);setError('布局超时，请缩小领域或重试。原模型未改变。');}},25000);
     job.current={worker,timeout};
     worker.onmessage=({data})=>{
       if(data.id!==sequence.current)return;clearTimeout(timeout);worker.terminate();setBusy(false);
       if(data.error){setError(data.error);return;}
-      setResult(data.result);setCompletedKey(requestKey);setView(viewCache.current.get(viewKey)||[0,0,Math.max(300,data.result.layout.width||800),Math.max(250,data.result.layout.height||500)]);
+      setResult(data.result);setCompletedKey(requestKey);
+      if(!reading.rememberedView)setView([0,0,Math.max(300,data.result.layout.width||800),Math.max(250,data.result.layout.height||500)]);
     };
     worker.onerror=event=>{clearTimeout(timeout);worker.terminate();if(sequence.current===id){setBusy(false);setError(event.message||'布局引擎未能启动');}};
-    worker.postMessage({id,model,options:{level,domainId,tableId,bundle,labels,expanded}});
-    return()=>{clearTimeout(timeout);worker.terminate();if(job.current?.worker===worker)job.current=null;};
-  },[model,level,domainId,tableId,bundle,labels,expanded,nonce,tables.length,viewKey,requestKey]);
+    worker.postMessage({id,model:layoutModel,options:{level,domainId,tableId,bundle,labels,expanded}});
+    },150);
+    return()=>{clearTimeout(delay);worker?.terminate();if(job.current?.worker===worker){clearTimeout(job.current?.timeout);job.current=null;}};
+  },[layoutModel,ready,requestKey]);
   const net=currentResult?result?.projection.nets.find(n=>n.id===selectedNet):null;
   const infoTable=tables.find(t=>t.id===selectedTable);
   const fieldInfo=infoTable?.fields.find(f=>f.id===selectedField);
-  const matches=tables.filter(t=>`${t.name} ${t.comment||''}`.toLowerCase().includes(search.toLowerCase()));
+  const matches=useMemo(()=>searchModel(model,search),[model,search]);
   const currentDomain=domains.find(d=>d.id===domainId);
   const visibleTableCount=currentResult?result?.projection.nodes.filter(n=>n.kind==='table').length:null;
   const showDirectory=settings.edaDirectory!==false,showInspector=!!(net||infoTable);
@@ -86,20 +91,22 @@ export default function EdaWorkspace(){
     };
     window.addEventListener('erwiki-eda-command',handle);return()=>window.removeEventListener('erwiki-eda-command',handle);
   });
-  return <section className="eda-workspace" aria-label="EDA 分析工作台">
+  return <section className="eda-workspace" aria-label="EDA 分析工作台" data-eda-model={modelId}>
     <div className="eda-toolbar">
       <div className="eda-controls">
+        <button className="eda-icon-button" aria-label="返回上次阅读位置" title="返回上次阅读位置" disabled={!reading.canBack} onClick={reading.back}><i className="bi bi-arrow-left" aria-hidden="true"/></button>
         <button className="eda-icon-button" aria-label={showDirectory?'收起目录':'展开目录'} aria-pressed={showDirectory} title="显示或收起目录" onClick={()=>setSettings(s=>({...s,edaDirectory:s.edaDirectory===false}))}><i className="bi bi-layout-sidebar" aria-hidden="true"/></button>
         {level!=='overview'&&<button className="eda-back-button" aria-label="返回全部表总图" onClick={()=>navigate('overview')}><i className="bi bi-arrow-left" aria-hidden="true"/>总图</button>}
         <select aria-label="原理图层级" title="图形层级" value={level} onChange={e=>{const next=e.target.value,target=['table','column'].includes(next)?(selectedTable??tableId??tables[0]?.id):null;navigate(next,['overview','system'].includes(next)?'':domainId,target);if(target!=null)setSelectedTable(target);}}>{LEVELS.map(([key,name])=><option key={key} value={key}>{name}</option>)}</select>
         {currentDomain&&<span className="eda-scope-name" title={currentDomain.name}>{currentDomain.name}</span>}
-        <span className="eda-model-count" data-eda-scope title={`完整模型：${tables.length} 张表，${relationships.length} 条关系；前一个数字为当前视图可见表数`}>{level==='system'?`${domains.length} 个领域`:`${visibleTableCount??'…'} / ${tables.length} 表`}<span> · {relationships.length} 关系</span></span>
+        <span className="eda-model-count" data-eda-scope title={`完整模型：${tables.length} 张表，${relationships.length} 条关系；前一个数字为当前视图可见表数`}>{level==='system'?`${domains.length} 个领域`:`${visibleTableCount??'…'} / ${tables.length} 表`}<span> · {relationships.length} 条关系</span></span>
         <div className="eda-view-actions">
+          <ReadingBookmarks session={reading}/>
           <button onClick={()=>setNonce(n=>n+1)} disabled={busy||!tables.length} title="重新整理正交连线，不修改模型坐标"><i className="bi bi-diagram-3" aria-hidden="true"/>整理</button>
           <Popover trigger="click" position="bottomRight" content={<div className="eda-display-panel">
             <strong>图形显示</strong>
-            <label>关系显示<select aria-label="Net Label 模式" value={labels} onChange={e=>{const value=e.target.value;setSettings(s=>({...s,edaNetLabels:value}));}}><option value="off">全部连线</option><option value="auto">跨域 / 长线使用标签</option><option value="all">全部使用标签</option></select></label>
-            <label className="eda-display-check"><input type="checkbox" aria-label="Bus / Hub" checked={bundle} onChange={e=>{const checked=e.target.checked;setSettings(s=>({...s,edaBundle:checked}));}}/>合并关系线（Bus / Hub）</label>
+            <label>关系显示<select aria-label="Net Label 模式" value={labels} onChange={e=>reading.setPart('labels')(e.target.value)}><option value="off">全部连线</option><option value="auto">跨域 / 长线使用标签</option><option value="all">全部使用标签</option></select></label>
+            <label className="eda-display-check"><input type="checkbox" aria-label="Bus / Hub" checked={bundle} onChange={e=>reading.setPart('bundle')(e.target.checked)}/>合并关系线（Bus / Hub）</label>
             <label className="eda-display-check"><input type="checkbox" checked={settings.edaMetrics===true} onChange={e=>{const checked=e.target.checked;setSettings(s=>({...s,edaMetrics:checked}));}}/>显示布局指标</label>
             <small>显示设置自动记忆，不修改模型保存时间。</small>
             <details><summary>操作说明</summary><p>双击表编辑，拖动空白平移，滚轮缩放。点击领域深入查看，返回总图恢复全部表。</p><p>虚线含待核关联；实线也不等同于物理外键。点击关系或标签可查看依据及原始成员。</p></details>
@@ -107,20 +114,21 @@ export default function EdaWorkspace(){
         </div>
       </div>
     </div>
+    {reading.error&&<p role="alert" className="eda-warning">{tr(reading.error)}</p>}
     <div className="eda-body" data-directory={showDirectory} data-inspector={showInspector}>
       {showDirectory&&<aside className="eda-directory"><div className="eda-directory-heading"><strong>目录</strong><div className="eda-directory-tools"><GroupControls fit={()=>{}}/></div></div>
-        <label><span className="visually-hidden">定位表</span><input type="search" aria-label="EDA 搜索表" placeholder="搜索表名或说明" value={search} onChange={e=>setSearch(e.target.value)}/></label>
-        <div className="eda-directory-scroll">{search?matches.map(t=><button key={t.id} onClick={()=>navigate('column',domains.find(d=>d.tableIds.includes(t.id))?.id||'',t.id)}>{t.name}<small>{(t.comment||'').slice(0,40)}</small></button>):domains.map(d=><section key={d.id}>
-          <button className="eda-domain-heading" aria-pressed={domainId===d.id} style={{borderLeftColor:d.color}} onClick={()=>navigate('domain',d.id)}>{d.name}<small>{d.tableIds.length}</small></button>
+        <label><span className="visually-hidden">定位表或字段</span><input type="search" aria-label="搜索模型" placeholder="搜索表、字段、别名或枚举" value={search} onChange={e=>setSearch(e.target.value)}/></label>
+        <div className="eda-directory-scroll">{search?(<>{!matches.length&&<p>没有匹配结果</p>}{matches.slice(0,200).map(({table:t,field:f})=><button key={`${t.id}:${f?.id??''}`} onClick={()=>navigate('column',domains.find(d=>d.tableIds.includes(t.id))?.id||'',t.id,{selectedTable:t.id,selectedField:f?.id??null})}>{t.name}{f?`.${f.name}`:''}<small>{(f?.reviewChineseName||f?.comment||t.comment||'').slice(0,80)}</small></button>)}{matches.length>200&&<small>仅显示前 200 项，请缩小搜索范围。</small>}</>):domains.map(d=><section key={d.id}>
+          <button className="eda-domain-heading" aria-pressed={domainId===d.id} style={{borderLeftColor:d.color}} onClick={()=>navigate('domain',d.id)}>{d.id==='__unassigned__'?tr(d.name):d.name}<small>{d.tableIds.length}</small></button>
           {d.tableIds.map(id=>{const t=tables.find(t=>t.id===id);return <button key={id} className="eda-table-link" aria-current={selectedTable===id?'true':undefined} onClick={()=>{navigate('table',d.id,id);setSelectedTable(id);}} title={t.comment}>{t.name}</button>;})}
         </section>)}</div>
       </aside>}
-      <div className="eda-canvas" id="canvas" data-eda-ready={result&&currentResult&&!busy&&!error?'true':undefined}>
+      <div className="eda-canvas" id="canvas" data-eda-ready={ready&&result&&currentResult&&!busy&&!error?'true':undefined}>
         {result&&currentResult&&<EdaScene result={result} selectedNet={selectedNet} onNet={value=>{const ids=Array.isArray(value)?value:[value];setNet(ids[0]||null);setSelectedTable(null);setFieldNets(result.projection.nets.filter(n=>ids.includes(n.id)));}} onNode={pickNode} onEdit={editTable} view={view} onView={setView}
           onField={(tid,fid)=>{const found=result.projection.nets.filter(n=>n.targetTableId===tid&&n.targetFields.includes(fid)||n.members.some(r=>r.startTableId===tid&&(r.fields||[r]).some(p=>p.startFieldId===fid)));setFieldNets(found);setNet(found[0]?.id||null);setSelectedTable(tid);setField(fid);}}/>}
         {!tables.length&&<div className="eda-state">当前模型尚无表。使用“新增”添加表，或在“更多”中导入模型。</div>}
         {(busy||(result&&!currentResult&&!error))&&<div className="eda-state" role="status">正在整理关系…<button onClick={()=>{sequence.current++;job.current?.worker.terminate();clearTimeout(job.current?.timeout);job.current=null;setBusy(false);setResult(null);setError('已取消布局，原模型未改变。');}}>取消</button></div>}
-        {error&&<div className="eda-state eda-error" role="alert">{error}<button onClick={()=>setNonce(n=>n+1)}>重试</button><button onClick={()=>setTools('model')}>打开模型编辑</button></div>}
+        {error&&<div className="eda-state eda-error" role="alert">{tr(error)}<button onClick={()=>setNonce(n=>n+1)}>重试</button><button onClick={()=>setTools('model')}>打开模型编辑</button></div>}
         {result&&currentResult&&!busy&&!error&&<>
           {settings.edaMetrics===true?<div className="eda-metrics">交叉 {result.metrics.crossings} · 重叠 {result.metrics.overlaps} · 线长 {result.metrics.length} · 转角 {result.metrics.bends}<small>按此顺序比较 {result.candidates.length} 个候选，非全局最优</small></div>:!showInspector&&<span className="eda-canvas-hint">双击表编辑 · 拖动空白平移 · 滚轮缩放</span>}
           <div className="eda-canvas-controls" aria-label="图形导航"><button aria-label="缩小" title="缩小" onClick={()=>zoomView(1.2)}>−</button><button aria-label="适应窗口" title="适应窗口" onClick={fitView}><i className="bi bi-arrows-fullscreen" aria-hidden="true"/></button><button aria-label="放大" title="放大" onClick={()=>zoomView(1/1.2)}>+</button></div>
@@ -142,5 +150,6 @@ export default function EdaWorkspace(){
       </aside>}
     </div>
     <EdaEditors tools={tools} setTools={setTools}/>
+    <DiagramExport model={model} result={result} current={currentResult&&!busy&&!error} location={reading.location} view={view}/>
   </section>;
 }

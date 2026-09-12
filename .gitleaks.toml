@@ -23,6 +23,13 @@ regexTarget = "match"
 regexes = ['''^[A-Za-z_$][\w$]*\.KeybindingResolver=[A-Za-z_$][\w$]*\.NoMatchingKb=void\s*$''']
 
 [[rules.allowlists]]
+description = "Monaco 0.56 glyph atlas constructor expression"
+condition = "AND"
+paths = ['''(?:^|/)vendor/monaco/editor-[^/]+\.js$''']
+regexTarget = "match"
+regexes = ['''^[A-Za-z_$][\w$]*\.NKeyMap,this\._glyphInOrderSet=new\s*$''']
+
+[[rules.allowlists]]
 description = "SQL grammar property names in bundled parser"
 condition = "AND"
 paths = ['''(?:^|/)assets/index-[^/]+\.js$''']

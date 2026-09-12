@@ -1,8 +1,8 @@
 # ER Wiki
 
 An offline-first desktop workspace for understanding and editing database models.
-Built with Electron, drawDB and ELK. The current interface is primarily Chinese;
-broader localization is a planned contribution area.
+Built with Electron, drawDB and ELK. The desktop interface supports English,
+Simplified Chinese and the system default without translating your model content.
 
 [![CI](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml/badge.svg)](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
@@ -17,6 +17,11 @@ broader localization is a planned contribution area.
 - Full-model overview plus domain, table and column inspection.
 - Centered table editing, annotations, enum values and explicit relation editing.
 - Local JSON import/export, separate model switching, undo/redo and save controls.
+- Local SQL parsing and preview before importing a new model.
+- Per-model reading positions, field/alias/enum search and reading bookmarks.
+- Stable geometry for text-only edits; structural edits trigger orthogonal layout.
+- Versioned JSON, automatic/manual local backups and restore-as-copy.
+- Pure-diagram SVG/PNG export for the viewport, domain or full model.
 - Display preferences are separate from saved model content.
 - No hosted account, cloud-sharing service or application telemetry is required.
 
@@ -30,6 +35,11 @@ multi-warehouse allocation and partial shipments at the schema level.
 
 [Model JSON](examples/fulfillment.drawdb.json) · [Example DDL](examples/fulfillment.sql)
 · [Reading guide](examples/README.md)
+
+[Desktop user guide](docs/USER_GUIDE.md) · [Installation and signing](docs/DESKTOP_RELEASE.md)
+
+Source version `0.2.0-preview.1` is a local development checkpoint until a matching
+release is published. The Releases page remains the source of truth for downloads.
 
 This is an independently authored educational schema, not an export of a company
 database or Saleor's schema. [Saleor's operations overview](https://saleor.io/features/operations)
@@ -57,7 +67,8 @@ npm run package
 
 Artifacts are written under `desktop/release/<version>/`. macOS is the initial
 preview target. Windows/Linux packaging paths are not release-validated.
-Local macOS packages are ad-hoc signed, not Developer ID signed or notarized.
+Local macOS packages are ad-hoc signed by default. Developer ID signing and
+notarization are opt-in and require the maintainer's own credentials.
 
 The community build uses a separate **ER Wiki Community** application-data
 directory. It does not read an existing private development profile.

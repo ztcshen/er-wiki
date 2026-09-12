@@ -21,19 +21,19 @@ async function atomicWrite(target, contents) {
   }
 }
 
-async function readModelFile(target) {
+async function readModelFile(target, limit = MAX_FILE_BYTES) {
   const handle = await fs.open(target, 'r');
   try {
     const stat = await handle.stat();
-    if (!stat.isFile() || stat.size > MAX_FILE_BYTES) throw new Error('请选择不超过 20 MB 的模型 JSON 文件');
-    const buffer = Buffer.alloc(MAX_FILE_BYTES + 1);
+    if (!stat.isFile() || stat.size > limit) throw new Error('请选择不超过 20 MB 的模型 JSON 文件');
+    const buffer = Buffer.alloc(limit + 1);
     let size = 0;
     while (size < buffer.length) {
       const { bytesRead } = await handle.read(buffer, size, buffer.length - size, null);
       if (!bytesRead) break;
       size += bytesRead;
     }
-    if (size > MAX_FILE_BYTES) throw new Error('模型文件不能超过 20 MB');
+    if (size > limit) throw new Error('模型文件不能超过 20 MB');
     return buffer.subarray(0, size).toString('utf8');
   } finally { await handle.close(); }
 }

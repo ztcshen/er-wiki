@@ -1,10 +1,11 @@
 import { loader } from '@monaco-editor/react';
 import { db } from './data/db';
-import i18n from './i18n/i18n';
+import { initializeLanguage } from 'er-wiki-locale';
 import demo from './data/demo-fulfillment.json';
 
 loader.config({paths:{vs:'/vendor/monaco'}});
 export async function prepareDesktop(){
+  const legacyLanguage=localStorage.getItem('erwiki.community.settings')?localStorage.getItem('i18nextLng'):null;
   const marker='erwiki.builtin.demo-fulfillment';
   if(localStorage.getItem(marker)!=='installed'){
     await db.transaction('rw',db.diagrams,async()=>{
@@ -17,9 +18,9 @@ export async function prepareDesktop(){
   if(!localStorage.getItem('erwiki.community.settings')){
     const settings=JSON.parse(localStorage.getItem('settings')||'{}');
     localStorage.setItem('settings',JSON.stringify({...settings,tableWidth:420,showComments:false}));
-    await i18n.changeLanguage('zh');
     localStorage.setItem('erwiki.community.settings','1');
   }
+  await initializeLanguage(legacyLanguage);
   if(location.pathname==='/'||location.pathname==='/editor')
     history.replaceState({},'','/editor/diagrams/demo-fulfillment');
 }
