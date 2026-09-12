@@ -507,5 +507,14 @@
   "关联关系": "Related tables",
   "枚举": "Enum",
   "字段": "Fields",
-  "字段详情": "Field details"
+  "字段详情": "Field details",
+  "长度": "Length",
+  "精度": "Precision",
+  "字段长度 ": "Field length ",
+  "字段精度 ": "Field precision ",
+  "精度格式为 p 或 p,s；留空使用数据库默认值。": "Use p or p,s; leave blank for the database default.",
+  "长度必须是非负整数，原值未改变。": "Length must be a non-negative integer. The original value is unchanged.",
+  "例如 10,2；回车或离开输入框提交，Esc 取消。": "For example 10,2. Enter or blur to apply; Esc to cancel.",
+  "例如 256；回车或离开输入框提交，Esc 取消。": "For example 256. Enter or blur to apply; Esc to cancel.",
+  "修改字段长度或精度 {{v0}}.{{v1}}": "Change field length or precision {{v0}}.{{v1}}"
 }

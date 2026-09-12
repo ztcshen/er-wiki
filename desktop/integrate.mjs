@@ -82,11 +82,21 @@ export function integrateDesktop(here) {
     if(id.endsWith('/src/components/EditorSidePanel/TablesTab/TableField.jsx')){
       const anchor='chineseFieldName(table.name, data.name)';
       if(code.split(anchor).length!==3)throw new Error('Desktop field label anchor changed');
-      return code.replaceAll(anchor,'chineseFieldName(table.name, data.name, data)');
+      code=code.replaceAll(anchor,'chineseFieldName(table.name, data.name, data)');
+      code=`import FieldSizeEditor from ${JSON.stringify(sourceFile('renderer/FieldSizeEditor.jsx'))};\n`+code;
+      code=replaceOnce(code,'      onChange={changeType}','      disabled={layout.readOnly}\n      onChange={changeType}');
+      code=replaceOnce(code,'                {formatFieldType(data)}','                {formatFieldType(resolved.isSized || resolved.hasPrecision ? { ...data, size: "" } : data)}');
+      return replaceOnce(code,'          <div className="review-field-type" data-editor-cell="type">\n            {typeSelect}\n          </div>',
+        '          <div className="review-field-type" data-editor-cell="type">\n            <div className="desktop-type-cell">{typeSelect}<FieldSizeEditor table={table} field={data} inline /></div>\n          </div>');
     }
     if(id.endsWith('/src/components/EditorSidePanel/TablesTab/FieldDetails.jsx')){
       code=`import FieldCodeReference from ${JSON.stringify(sourceFile('renderer/FieldCodeReference.jsx'))};\n`+code;
       code=`import DisplayNameEditor from ${JSON.stringify(sourceFile('renderer/DisplayNameEditor.jsx'))};\n`+code;
+      code=`import FieldSizeEditor from ${JSON.stringify(sourceFile('renderer/FieldSizeEditor.jsx'))};\n`+code;
+      const sizeStart='      {resolved.isSized && (',sizeEnd='      {resolved.hasCheck && (';
+      if(code.split(sizeStart).length!==2||code.split(sizeEnd).length!==2||code.indexOf(sizeEnd)<code.indexOf(sizeStart))throw new Error('Desktop field size anchors changed');
+      code=replaceOnce(code,code.slice(code.indexOf(sizeStart),code.indexOf(sizeEnd)), '      <FieldSizeEditor table={table} field={data} />\n');
+      code=replaceOnce(code,'  InputNumber,\n','');
       return replaceOnce(code,'      <div className="font-semibold">{t("default_value")}</div>',
         '      <DisplayNameEditor table={table} field={data}/><FieldCodeReference tableName={table.name} field={data}/>\n      <div className="font-semibold">{t("default_value")}</div>');
     }
