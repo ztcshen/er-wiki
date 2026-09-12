@@ -31,10 +31,18 @@ The included example models **products and warehouse stock → order reservation
 split fulfillment → parcel shipment → returns**. It has 13 tables and supports
 multi-warehouse allocation and partial shipments at the schema level.
 
-![Fictional fulfillment ER diagram](docs/images/fulfillment.svg)
+These are real screenshots of the local **0.2.0-preview.1 macOS desktop app**,
+loaded with the example JSON below. They are not a separately drawn mockup.
+
+![Actual ER Wiki desktop: all 13 fulfillment tables](docs/images/fulfillment-desktop-en.png)
+
+The same model in the actual table editor, including field names, types and display names:
+
+![Actual ER Wiki desktop: editing the orders table](docs/images/fulfillment-editor-en.png)
 
 [Model JSON](examples/fulfillment.drawdb.json) · [Example DDL](examples/fulfillment.sql)
-· [Reading guide](examples/README.md)
+· [Reading guide](examples/README.md) · [SVG exported by the app](docs/images/fulfillment.svg)
+· [Snapshot provenance](docs/images/fulfillment-snapshot.json)
 
 [Desktop user guide](docs/USER_GUIDE.md) · [Installation and signing](docs/DESKTOP_RELEASE.md)
 

@@ -1,0 +1,47 @@
+{
+  "capturedAt": "2026-09-12T03:54:29.292Z",
+  "application": "ER Wiki Community",
+  "applicationVersion": "0.2.0-preview.1",
+  "sourceCommit": "ea674feb0ead9c6790a21e9c4fd163143768d394",
+  "rendererSourceSha256": "ece6515141588af4c4d0ae030a04d436904a9c00f446ec112ab1ebe9ea3b7e99",
+  "model": "examples/fulfillment.drawdb.json",
+  "modelSha256": "1d5986663cfec07048702a83152d077ed87406261fd4e7159e3fe44b38a5f2f9",
+  "tables": 13,
+  "relationships": 19,
+  "method": "Unmodified Electron webContents screenshots; SVG exported through the application UI.",
+  "images": [
+    {
+      "file": "fulfillment-desktop-en.png",
+      "description": "en: actual desktop, all 13 tables",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-editor-en.png",
+      "description": "en: actual orders table editor, three columns",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-desktop-zh.png",
+      "description": "zh: actual desktop, all 13 tables",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "file": "fulfillment-editor-zh.png",
+      "description": "zh: actual orders table editor, three columns",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    }
+  ],
+  "svg": "fulfillment.svg"
+}
