@@ -33,7 +33,7 @@
 - 分仓履约、包裹及部分发货；
 - 退货申请、退货明细与入库处置。
 
-以下为本地 **0.2.0-preview.1 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
+以下为本地 **0.2.0-preview.2 macOS 桌面应用的真实截图**，加载的就是下方示例 JSON，
 不是另一套绘图脚本生成的示意图。
 
 ![真实桌面界面：电商履约全部 13 张表](docs/images/fulfillment-desktop-zh.png)
@@ -41,6 +41,10 @@
 同一模型的真实表编辑界面，展示字段名、类型、显示名称三列：
 
 ![真实桌面界面：编辑 orders 表](docs/images/fulfillment-editor-zh.png)
+
+同一模型的快速查找，可直接定位到表和字段：
+
+![真实桌面界面：快速查找字段](docs/images/fulfillment-search-zh.png)
 
 可直接查看 [DDL](examples/fulfillment.sql)、
 [模型 JSON](examples/fulfillment.drawdb.json)、[阅读说明](examples/README.md)、
