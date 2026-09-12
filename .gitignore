@@ -2,6 +2,8 @@ node_modules
 work/
 desktop/node_modules
 desktop/dist/
+site/dist/
+site/generated/
 desktop/release/
 desktop/test-results/
 .env

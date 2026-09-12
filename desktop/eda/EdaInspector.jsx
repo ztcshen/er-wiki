@@ -13,6 +13,7 @@ export default function EdaInspector({
   tables,
   relationships,
   actions,
+  readOnly = false,
 }) {
   const { net, table, field, alternatives, selectedRelation } = selection;
   return (
@@ -101,14 +102,16 @@ export default function EdaInspector({
                     >
                       {source?.name}
                     </button>
-                    <button
-                      className="eda-icon-button"
-                      aria-label={`编辑关系 ${relation.name}`}
-                      title="编辑关系"
-                      onClick={() => actions.editRelation(relation.id)}
-                    >
-                      <i className="bi bi-pencil" aria-hidden="true" />
-                    </button>
+                    {!readOnly && (
+                      <button
+                        className="eda-icon-button"
+                        aria-label={`编辑关系 ${relation.name}`}
+                        title="编辑关系"
+                        onClick={() => actions.editRelation(relation.id)}
+                      >
+                        <i className="bi bi-pencil" aria-hidden="true" />
+                      </button>
+                    )}
                   </div>
                   <button
                     className="eda-cardinality-pair"
@@ -157,6 +160,7 @@ export default function EdaInspector({
           relationships={relationships}
           field={field}
           actions={actions}
+          readOnly={readOnly}
         />
       ) : null}
     </aside>

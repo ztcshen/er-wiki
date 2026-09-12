@@ -29,6 +29,10 @@ jobs:
       - run: npm run scan
       - run: npm test
       - run: npm run build
+      - run: npm run build:demo
+      - run: node site/verify.mjs
       - run: npm run scan -- --include-dist
       - name: Scan built renderer
         run: '"$RUNNER_TEMP/gitleaks" dir --config .gitleaks.toml --redact=100 --no-banner desktop/dist'
+      - name: Scan static demo
+        run: '"$RUNNER_TEMP/gitleaks" dir --config .gitleaks.toml --redact=100 --no-banner site/dist'

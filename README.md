@@ -1,5 +1,7 @@
 # ER Wiki
 
+**[▶ Try the Live ER Demo](https://ztcshen.github.io/er-wiki/)** — no installation or sign-in. Read-only, fictional data only.
+
 An offline-first desktop workspace for understanding and editing database models.
 Built with Electron, drawDB and ELK. The desktop interface supports English,
 Simplified Chinese and the system default without translating your model content.
@@ -91,6 +93,11 @@ BPMN designer or workflow engine. See [process-view boundaries](docs/PROCESS_VIE
 · [Snapshot provenance](docs/images/fulfillment-snapshot.json)
 
 [Desktop user guide](docs/USER_GUIDE.md) · [Installation and signing](docs/DESKTOP_RELEASE.md)
+
+The [online demo](https://ztcshen.github.io/er-wiki/) reuses the desktop ER renderer,
+field inspector and minimap. Explore tables, domains, enums and 1/N relations in a
+browser. Editing, imports, persistence and process views remain desktop features.
+See [demo scope and build instructions](site/README.md).
 
 The Releases page is the source of truth for published versions and downloads.
 

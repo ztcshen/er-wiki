@@ -1,0 +1,526 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+body {
+  --wiki-ink: #18334d;
+  --wiki-muted: #71839b;
+  --wiki-line: #dce6ef;
+  --wiki-card: #fff;
+  --wiki-surface: #f3f7fb;
+  --wiki-background: #f6f9fc;
+  --wiki-canvas: #f8fafc;
+  --wiki-grid: #c4d8e5;
+  --wiki-type-number: #a47725;
+  --wiki-danger: #b94545;
+  --wiki-primary: #0f766e;
+  background: var(--wiki-background);
+  color: var(--wiki-ink);
+}
+body[theme-mode="dark"] {
+  --wiki-ink: #e0e9f4;
+  --wiki-muted: #a1b0c5;
+  --wiki-line: #334155;
+  --wiki-card: #1e293b;
+  --wiki-surface: #253248;
+  --wiki-background: #101b2d;
+  --wiki-canvas: #0f172a;
+  --wiki-grid: #304762;
+  --wiki-type-number: #e4b75c;
+  --wiki-danger: #f1a0a0;
+  --wiki-primary: #75cec3;
+}
+a {
+  color: var(--wiki-primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+button,
+select,
+input {
+  font: inherit;
+}
+button,
+a,
+select,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--eda-active);
+  outline-offset: 3px;
+}
+.demo-page {
+  height: 100dvh;
+  min-height: 520px;
+  overflow: hidden;
+}
+.demo-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  background: var(--wiki-card);
+  border-bottom: 1px solid var(--wiki-line);
+  flex-shrink: 0;
+}
+.demo-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--wiki-ink);
+  font-weight: 650;
+  font-size: 18px;
+  white-space: nowrap;
+}
+.demo-brand:hover {
+  text-decoration: none;
+}
+.demo-brand img {
+  width: 32px;
+  height: 32px;
+}
+.demo-brand small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--wiki-muted);
+  margin-left: 7px;
+}
+.demo-readonly {
+  font-size: 10px;
+  background: #0f766e12;
+  color: var(--wiki-primary);
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.demo-header nav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 12px;
+}
+.demo-header .demo-download {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0f766e;
+  color: white;
+  font-weight: 550;
+  white-space: nowrap;
+}
+.demo-header select {
+  font-size: 11px !important;
+  padding: 6px !important;
+}
+.demo-header > button {
+  font-size: 20px !important;
+  border: 0 !important;
+  width: 30px !important;
+  padding: 2px !important;
+}
+.demo-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--wiki-line);
+  background: var(--wiki-card);
+  flex-shrink: 0;
+}
+.demo-identity {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-right: auto;
+}
+.demo-identity strong {
+  font-size: 13px;
+}
+.demo-identity > span {
+  font-size: 11px;
+  color: var(--wiki-muted);
+}
+.demo-toolbar select {
+  max-width: 215px;
+  font-size: 11px !important;
+}
+.demo-toolbar button {
+  font-size: 11px !important;
+}
+.demo-toolbar button[aria-pressed="true"] {
+  background: var(--wiki-surface);
+  border-color: var(--eda-active);
+  color: var(--eda-active);
+}
+.demo-toolbar .demo-directory-button {
+  display: none;
+}
+.demo-count {
+  font-size: 11px;
+  color: var(--wiki-muted);
+  white-space: nowrap;
+}
+.demo-layout {
+  display: grid;
+  grid-template-columns: 218px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  padding: 10px;
+  gap: 10px;
+}
+.demo-layout[data-details="true"] {
+  grid-template-columns: 218px minmax(0, 1fr) 292px;
+}
+.demo-directory {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--wiki-card);
+  border: 1px solid var(--wiki-line);
+  border-radius: 8px;
+  padding: 13px;
+}
+.demo-directory-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+.demo-directory-title small {
+  color: var(--wiki-muted);
+  font-weight: 400;
+  background: var(--wiki-surface);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.demo-directory .demo-close-directory {
+  display: none;
+}
+.demo-directory input {
+  width: 100%;
+  font-size: 11px;
+  background: var(--wiki-surface);
+  padding: 9px 10px;
+  margin-bottom: 10px;
+}
+.demo-tree {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.demo-tree > p {
+  font-size: 12px;
+  color: var(--wiki-muted);
+}
+.demo-tree button {
+  width: 100%;
+  border: 0;
+  text-align: left;
+  justify-content: flex-start;
+  background: transparent;
+  font-size: 11px;
+}
+.demo-tree .demo-group {
+  border-left: 3px solid;
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  margin: 13px 0 6px;
+  padding: 5px 7px;
+  gap: 8px;
+}
+.demo-group strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+.demo-group > span {
+  margin-left: auto;
+  color: var(--wiki-muted);
+  font-size: 10px;
+}
+.demo-table-link {
+  padding: 7px 8px 7px 15px !important;
+  gap: 8px !important;
+  white-space: nowrap;
+}
+.demo-table-link > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.demo-table-link[aria-current="true"] {
+  background: var(--wiki-surface);
+  color: var(--eda-active);
+}
+.demo-tree .demo-search-result {
+  display: block;
+  padding: 9px 5px;
+  overflow-wrap: anywhere;
+}
+.demo-search-result span,
+.demo-search-result small {
+  display: block;
+}
+.demo-search-result small {
+  font-size: 10px;
+  color: var(--wiki-muted);
+  margin-top: 4px;
+}
+.demo-directory footer {
+  border-top: 1px solid var(--wiki-line);
+  padding-top: 10px;
+  margin-top: 10px;
+  font-size: 10px;
+  line-height: 1.65;
+  color: var(--wiki-muted);
+}
+.demo-directory footer p {
+  margin: 0 0 7px;
+}
+.demo-canvas {
+  min-height: 0;
+}
+.demo-legend {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--wiki-line);
+  border-radius: 20px;
+  background: var(--wiki-card);
+  font-size: 10px;
+  color: var(--wiki-muted);
+  pointer-events: none;
+}
+.demo-status-dot {
+  width: 5px;
+  height: 5px;
+  background: #0f766e;
+  border-radius: 50%;
+}
+.demo-legend small {
+  font-size: 10px;
+}
+.demo-layout .eda-inspector {
+  position: static;
+  width: auto;
+  max-width: none;
+  font-size: 12px;
+}
+.demo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 7px 18px 9px;
+  font-size: 10px;
+  color: var(--wiki-muted);
+}
+.demo-footer details {
+  position: relative;
+  flex-shrink: 0;
+}
+.demo-footer summary {
+  cursor: pointer;
+}
+.demo-footer details p {
+  position: absolute;
+  bottom: 22px;
+  right: 0;
+  width: 260px;
+  border: 1px solid var(--wiki-line);
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--wiki-card);
+  box-shadow: 0 5px 20px #0001;
+  line-height: 1.7;
+}
+.demo-scrim {
+  display: none !important;
+}
+.demo-failure {
+  padding: 40px;
+  max-width: 680px;
+  line-height: 1.7;
+}
+.demo-page .eda-detail-actions button i.bi::before {
+  content: "⌖";
+  font-style: normal;
+}
+@media (max-width: 1100px) {
+  .demo-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+  .demo-layout[data-details="true"] {
+    grid-template-columns: 190px minmax(0, 1fr) 260px;
+  }
+  .demo-identity > span {
+    display: none;
+  }
+  .demo-header {
+    gap: 10px;
+  }
+  .demo-count {
+    display: none;
+  }
+  .demo-header nav {
+    gap: 12px;
+  }
+}
+@media (max-width: 760px) {
+  .demo-header {
+    padding: 10px 12px;
+    gap: 9px;
+  }
+  .demo-brand {
+    font-size: 16px;
+  }
+  .demo-brand small,
+  .demo-readonly {
+    display: none;
+  }
+  .demo-header nav {
+    font-size: 11px;
+    gap: 10px;
+  }
+  .demo-header .demo-download {
+    padding: 7px 9px;
+  }
+  .demo-toolbar {
+    padding: 8px 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .demo-toolbar .demo-directory-button {
+    display: inline-flex;
+  }
+  .demo-identity {
+    width: 100%;
+    margin: 0 0 4px;
+  }
+  .demo-identity > span {
+    display: inline;
+    font-size: 10px;
+    margin-left: auto;
+  }
+  .demo-toolbar select {
+    max-width: 158px;
+    flex: 1;
+    min-width: 90px;
+  }
+  .demo-toolbar .demo-details-toggle {
+    margin-left: auto;
+  }
+  .demo-layout,
+  .demo-layout[data-details="true"] {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 5px;
+    gap: 0;
+  }
+  .demo-directory {
+    display: none;
+  }
+  .demo-layout[data-directory="true"] .demo-directory {
+    display: flex;
+    position: absolute;
+    inset: 5px auto 5px 5px;
+    width: min(300px, calc(100% - 30px));
+    z-index: 5;
+    box-shadow: 0 10px 35px #0003;
+  }
+  .demo-directory .demo-close-directory {
+    display: inline-flex;
+    margin-left: auto;
+    border: 0;
+    padding: 0;
+    width: 28px;
+    font-size: 20px;
+  }
+  .demo-layout .eda-inspector {
+    position: absolute;
+    inset: 5px 5px 5px auto;
+    width: min(320px, calc(100% - 20px));
+    max-width: calc(100% - 10px);
+    z-index: 4;
+    box-shadow: 0 10px 35px #0003;
+  }
+  .demo-layout[data-directory="true"] .demo-scrim {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    background: #0a172a40;
+    border: 0;
+    border-radius: 0;
+    z-index: 4;
+  }
+  .demo-layout .eda-minimap {
+    width: 124px;
+  }
+  .demo-layout .eda-minimap svg {
+    height: 76px;
+  }
+  .demo-canvas .eda-canvas-controls {
+    right: 7px;
+    bottom: 10px;
+  }
+  .demo-canvas .eda-canvas-controls button {
+    width: 27px;
+  }
+  .demo-canvas .eda-scale-button {
+    width: 44px !important;
+  }
+  .demo-footer {
+    font-size: 9px;
+    padding: 7px 9px;
+  }
+  .demo-footer > span {
+    max-width: 76%;
+    line-height: 1.5;
+  }
+}
+@media (max-width: 430px) {
+  .demo-header {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+  }
+  .demo-header nav {
+    grid-row: 2;
+    grid-column: 1/-1;
+    justify-content: space-between;
+    margin: 0;
+  }
+  .demo-header .demo-download {
+    font-size: 11px;
+  }
+  .demo-brand small {
+    display: inline;
+    font-size: 10px;
+  }
+  .demo-toolbar .demo-identity > span {
+    font-size: 9px;
+  }
+  .demo-legend small {
+    display: none;
+  }
+}
