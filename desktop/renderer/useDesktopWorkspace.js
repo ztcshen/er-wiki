@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Toast } from '@douyinfe/semi-ui';
-import { db } from '../../work/drawdb/src/data/db';
+import { db } from '@drawdb/data/db';
 import { importModel, exportModel } from './model-file';
 import { tr } from '../i18n/renderer';
-import { openPanel } from './commands';
+import { openPanel, openCommandPalette } from './commands';
 
 export function useDesktopWorkspace(value) {
   const current = useRef(value);
@@ -48,6 +48,7 @@ export function useDesktopWorkspace(value) {
       return true;
     };
     const run = async ({ id, action, route, targetId, json, name, backupId, resolve }) => {
+      if (action === 'palette') { openCommandPalette(); return; }
       if (action === 'settings' || action === 'help') { openPanel(action); return; }
       if (busy) { if (id) window.erDesktop.commandResult(id, false); resolve?.({ok:false,error:tr('请等待当前操作完成')}); return; }
       busy = true;
@@ -81,7 +82,7 @@ export function useDesktopWorkspace(value) {
           await window.erDesktop.createBackup({modelId:snapshot.diagramId||'blank',name:snapshot.name,json:exportModel(snapshot)});
           ok = true;
         } else if (action === 'export-sql') {
-          const { exportSQL } = await import('../../work/drawdb/src/utils/exportSQL');
+          const { exportSQL } = await import('@drawdb/utils/exportSQL');
           const snapshot = current.current.snapshot;
           const sql = exportSQL({...snapshot,relationships:snapshot.references});
           if (!sql) throw new Error('当前数据库类型不支持 SQL 导出，请使用 JSON');

@@ -26,7 +26,8 @@ export function normalizeReadingState(value) {
   const bookmarks = (Array.isArray(v.bookmarks) ? v.bookmarks : []).filter(b => b && typeof b.id === 'string' && typeof b.name === 'string')
     .slice(-50).map(b => ({ id: b.id.slice(0, 100), name: b.name.slice(0, 120), location: cleanLocation(b.location),
       view: validView(b.view) ? b.view : null }));
-  return { version: 1, location: cleanLocation(v.location), views, bookmarks };
+  const collapsedDomains = Array.isArray(v.collapsedDomains) ? [...new Set(v.collapsedDomains.filter(isId))].slice(0, 2000) : [];
+  return { version: 1, location: cleanLocation(v.location), views, bookmarks, collapsedDomains };
 }
 
 export function restoreLocation(value, model) {
@@ -50,13 +51,13 @@ export function saveReadingState(storage, modelId, state) {
 }
 
 export function searchModel(model, query) {
-  const needle = query.trim().toLocaleLowerCase();
-  if (!needle) return [];
+  const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return [];
   const result = [];
   for (const table of model.tables) {
-    const contains = values => values.some(v => String(v ?? '').toLocaleLowerCase().includes(needle));
+    const contains = values => { const text = values.map(v => String(v ?? '')).join(' ').toLocaleLowerCase(); return terms.every(term => text.includes(term)); };
     if (contains([table.name, table.comment, table.reviewChineseName])) result.push({ table, field: null });
-    for (const field of table.fields) if (contains([field.name, field.comment, field.reviewChineseName,
+    for (const field of table.fields) if (contains([`${table.name}.${field.name}`, field.name, field.comment, field.reviewChineseName,
       ...(field.reviewEnumValues || []).flatMap(v => [v.value, v.label])])) result.push({ table, field });
   }
   return result;

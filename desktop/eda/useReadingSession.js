@@ -29,6 +29,9 @@ export function useReadingSession(modelId, model, ready) {
   };
   const openBookmark = bookmark => { setHistory(h => [...h.slice(-49), { location, view }]); restore(bookmark); };
   const removeBookmark = id => setState(s => ({ ...s, bookmarks: s.bookmarks.filter(b => b.id !== id) }));
+  const toggleDomain = id => setState(s => ({ ...s, collapsedDomains: s.collapsedDomains.includes(id)
+    ? s.collapsedDomains.filter(value => value !== id) : [...s.collapsedDomains, id] }));
+  const expandDomains = () => setState(s => ({ ...s, collapsedDomains: [] }));
   useEffect(() => {
     if (!ready) return;
     const valid = restoreLocation(latest.current.location, model);
@@ -44,5 +47,6 @@ export function useReadingSession(modelId, model, ready) {
     if (ready) try { saveReadingState(localStorage, modelId, latest.current); } catch { /* In-session error is shown above. */ }
   }, [modelId, ready]);
   return { location, setPart, view, setView, rememberedView, navigate, back, canBack: !!history.length,
-    bookmarks: state.bookmarks, addBookmark, openBookmark, removeBookmark, error };
+    bookmarks: state.bookmarks, addBookmark, openBookmark, removeBookmark, error,
+    collapsedDomains: state.collapsedDomains, toggleDomain, expandDomains };
 }

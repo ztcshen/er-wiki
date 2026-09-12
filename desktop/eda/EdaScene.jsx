@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { sectionsOf } from './metrics.mjs';
-import { formatFieldType, chineseFieldName } from '../../work/drawdb/src/utils/fieldPresentation';
+import { formatFieldType, chineseFieldName } from '@drawdb/utils/fieldPresentation';
 import { tr } from '../i18n/renderer';
 
 const fitText=(value,width,size=11)=>{

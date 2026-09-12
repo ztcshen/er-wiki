@@ -23,6 +23,15 @@ are user-authored model content and are deliberately not translated.
 
 ## Read / 阅读
 
+Press **⌘/Ctrl + K** or choose Quick search in the header. Search an action, table,
+qualified field name or alias, then use ↑/↓ and Enter to open it. Prefix the query
+with `>` to show actions only. Less common operations such as SQL export, DBML,
+custom types and the timeline remain available in this catalogue.
+
+按 **⌘/Ctrl + K** 快速查找操作、表或字段，输入 `orders status`、`orders.status`
+或业务别名都可以定位。输入 `>` 只查操作；“更多 → 所有操作”也可进入完整操作清单。
+选中字段会定位到实际表卡片，表详情中的“定位到画布”只调整视角。
+
 - **All tables** includes every table, including isolated tables.
 - **Domain overview** summarizes domains; open one to inspect its tables.
 - **Related tables** and **All fields** inspect a table and its neighboring relations.
@@ -30,9 +39,12 @@ are user-authored model content and are deliberately not translated.
 - Drag the background to pan; scroll or use the controls to zoom.
 - Bookmark a reading position with a descriptive name; use Back to return to the
   previous position. Deleted targets fall back safely to the overview.
+- Fold a domain with its chevron to simplify the directory. This does not filter
+  the diagram or remove tables; the fold state is remembered per model.
 
 总图、领域、表和字段可以逐层查看。平移缩放、选择对象和书签按模型独立记忆，
 切换模型或重启后恢复，不会更新模型保存时间。书签最多 50 个，视图缓存最多 60 个。
+目录左侧的小箭头只折叠目录列表，不会改变 ER 图的表数量；点击分组名称才会进入该领域。
 书签保存在这台电脑，不随模型 JSON 导出；这避免把个人阅读习惯混入共享模型。
 
 Bus / Hub aggregates references; identical Net Labels identify one logical net.

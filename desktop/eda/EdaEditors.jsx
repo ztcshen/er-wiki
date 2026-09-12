@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useDiagram, useLayout, useSelect } from '../../work/drawdb/src/hooks';
-import { ObjectType, Cardinality, Constraint, defaultRelationshipColor } from '../../work/drawdb/src/data/constants';
-import { areFieldsCompatible } from '../../work/drawdb/src/utils/utils';
-import CanvasEditorDialog from '../../work/drawdb/src/components/EditorCanvas/CanvasEditorDialog';
-import TableInfo from '../../work/drawdb/src/components/EditorSidePanel/TablesTab/TableInfo';
-import RelationshipInfo from '../../work/drawdb/src/components/EditorSidePanel/RelationshipsTab/RelationshipInfo';
-import SidePanel from '../../work/drawdb/src/components/EditorSidePanel/SidePanel';
+import { useDiagram, useLayout, useSelect } from '@drawdb/hooks';
+import { ObjectType, Cardinality, Constraint, defaultRelationshipColor } from '@drawdb/data/constants';
+import { areFieldsCompatible } from '@drawdb/utils/utils';
+import CanvasEditorDialog from '@drawdb/components/EditorCanvas/CanvasEditorDialog';
+import TableInfo from '@drawdb/components/EditorSidePanel/TablesTab/TableInfo';
+import RelationshipInfo from '@drawdb/components/EditorSidePanel/RelationshipsTab/RelationshipInfo';
+import SidePanel from '@drawdb/components/EditorSidePanel/SidePanel';
 
 export default function EdaEditors({ tools, setTools }) {
   const { tables, relationships } = useDiagram();

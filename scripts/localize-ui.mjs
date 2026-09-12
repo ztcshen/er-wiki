@@ -1,15 +1,17 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import { modulePath } from '../desktop/build/paths.mjs';
 
 // Compile source-authored UI strings only. Never walk rendered DOM or model data.
 export function createUiLocalizer(root, { collect } = {}) {
   const require = createRequire(path.join(root, 'package.json'));
   const babel = require('@babel/core'), t = babel.types;
   const catalogue = JSON.parse(fs.readFileSync(path.join(root, 'desktop/i18n/messages.json'), 'utf8'));
-  const runtime = path.join(root, 'desktop/i18n/renderer.js');
+  const runtime = modulePath(path.join(root, 'desktop/i18n/renderer.js'));
   return (code, id) => {
-    if (!id.endsWith('.jsx') || (!id.startsWith(path.join(root, 'desktop')) && !id.startsWith(path.join(root, 'work/drawdb/src/components')))) return code;
+    id=modulePath(id);
+    if (!id.endsWith('.jsx') || (!id.startsWith(modulePath(path.join(root, 'desktop'))+'/') && !id.startsWith(modulePath(path.join(root, 'work/drawdb/src/components'))+'/'))) return code;
     if (!/[\u3400-\u9fff]/.test(code)) return code;
     let changed = false;
     const call = (message, values = []) => {

@@ -1,4 +1,4 @@
-import i18n from '../../work/drawdb/src/i18n/i18n';
+import i18n from '@drawdb/i18n/i18n';
 import { useTranslation } from 'react-i18next';
 import messages from './messages.json';
 import errorsZh from './errors.zh.json';

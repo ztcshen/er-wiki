@@ -1,6 +1,6 @@
-import { jsonDiagramIsValid } from '../../work/drawdb/src/utils/validateSchema';
-import { modelGroups, validateGroups } from '../../work/drawdb/src/utils/tableGroups';
-import { databases } from '../../work/drawdb/src/data/databases';
+import { jsonDiagramIsValid } from '@drawdb/utils/validateSchema';
+import { modelGroups, validateGroups } from '@drawdb/utils/tableGroups';
+import { databases } from '@drawdb/data/databases';
 import { migrateModelDocument, versionModelDocument } from './model-format.mjs';
 import { tr } from '../i18n/renderer';
 

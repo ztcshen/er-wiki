@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import CanvasEditorDialog from '../../work/drawdb/src/components/EditorCanvas/CanvasEditorDialog';
+import CanvasEditorDialog from '@drawdb/components/EditorCanvas/CanvasEditorDialog';
 import SettingsDialog from './SettingsDialog';
 import BackupPanel from './BackupPanel';
 import SqlImport from './SqlImport';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSettings } from '../../work/drawdb/src/hooks';
+import { useSettings } from '@drawdb/hooks';
 import { setLanguage, tr } from '../i18n/renderer';
 
 export default function SettingsDialog() {

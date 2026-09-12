@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import CanvasEditorDialog from '../../work/drawdb/src/components/EditorCanvas/CanvasEditorDialog';
+import CanvasEditorDialog from '@drawdb/components/EditorCanvas/CanvasEditorDialog';
 import { diagramSvg, svgToPng } from './export-diagram';
 import { tr } from '../i18n/renderer';
+import { createLayoutTask } from './layout-task.mjs';
 
 export default function DiagramExport({model,result,current,location,view}) {
   const [open,setOpen]=useState(false),[scope,setScope]=useState('view'),[format,setFormat]=useState('svg');
@@ -9,15 +10,12 @@ export default function DiagramExport({model,result,current,location,view}) {
   const job=useRef(null);
   useEffect(()=>{
     const listener=({detail})=>{if(detail==='export-diagram'||detail==='copy-image'){setOpen(true);setScope('view');setFormat(detail==='copy-image'?'clipboard':'svg');setError('');setMessage('');}};
-    window.addEventListener('erwiki-eda-command',listener);return()=>{window.removeEventListener('erwiki-eda-command',listener);job.current?.terminate();};
+    window.addEventListener('erwiki-eda-command',listener);return()=>{window.removeEventListener('erwiki-eda-command',listener);job.current?.cancel();};
   },[]);
-  const arrange=options=>new Promise((resolve,reject)=>{
-    const worker=new Worker(new URL('./layout.worker.js',import.meta.url),{type:'module'});job.current=worker;
-    const finish=(value,error)=>{clearTimeout(timer);worker.terminate();job.current=null;error?reject(error):resolve(value);};
-    const timer=setTimeout(()=>finish(null,new Error('布局超时，请缩小领域或重试。原模型未改变。')),25000);
-    worker.onmessage=({data})=>finish(data.result,data.error?new Error(data.error):null);
-    worker.onerror=e=>finish(null,new Error(e.message));worker.postMessage({id:1,model,options});
-  });
+  const arrange=options=>{
+    const task=createLayoutTask(()=>new Worker(new URL('./layout.worker.js',import.meta.url),{type:'module'}),model,options);
+    job.current=task;return task.promise.finally(()=>{if(job.current===task)job.current=null;});
+  };
   const run=async()=>{
     setBusy(true);setError('');setMessage('');
     try {

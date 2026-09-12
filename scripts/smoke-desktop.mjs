@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const { _electron }=await import(process.env.ER_WIKI_PLAYWRIGHT_MODULE||'playwright');
 const require=createRequire(path.join(root,'desktop/package.json'));
+const version=JSON.parse(await fs.readFile(path.join(root,'desktop/package.json'),'utf8')).version;
 const output=process.env.ER_WIKI_SMOKE_OUTPUT||await fs.mkdtemp(path.join(os.tmpdir(),'er-wiki-smoke-'));
 await fs.mkdir(output,{recursive:true});
 const profile=await fs.mkdtemp(path.join(os.tmpdir(),'er-wiki-smoke-profile-'));
@@ -36,7 +37,7 @@ try{
   await page.evaluate(()=>{window.__smokeScene=document.querySelector('[data-eda-scene]');});
   await item('Settings…');
   await page.locator('.desktop-more-menu').first().waitFor({state:'hidden'});
-  assert.equal((await page.evaluate(()=>window.erDesktop.getPreferences())).version,'0.2.0-preview.1');
+  assert.equal((await page.evaluate(()=>window.erDesktop.getPreferences())).version,version);
   await page.getByRole('combobox',{name:'Interface language'}).selectOption('zh');
   await page.getByRole('button',{name:'保存模型',exact:true}).waitFor();
   assert.equal(await app.evaluate(({Menu})=>Menu.getApplicationMenu().items.some(i=>i.label==='文件')),true);
@@ -48,6 +49,20 @@ try{
   await page.getByRole('button',{name:'Close editor',exact:true}).click();
   const translated=await record();assert.deepEqual(translated.tables,original.tables);assert.equal(translated.lastModified.getTime(),original.lastModified.getTime());
   console.log('PASS: language, native menus, same editing session, unchanged model');
+
+  await page.getByRole('button',{name:'Collapse group 商品与库存',exact:true}).click();
+  assert.equal(await page.locator('.eda-directory').getByRole('button',{name:'products',exact:true}).count(),0);
+  assert.equal(await page.locator('[data-node-kind="table"]').count(),13);
+  await page.getByRole('button',{name:'Quick search',exact:true}).click();
+  await page.getByRole('combobox',{name:'Search actions or fields'}).fill('products.sku');
+  await page.getByRole('option',{name:/^products\.sku/}).waitFor();
+  await page.getByRole('combobox',{name:'Search actions or fields'}).press('Enter');
+  await page.waitForFunction(()=>document.querySelector('[data-eda-field-details] h3')?.textContent==='sku');await ready();
+  await page.waitForFunction(()=>Number(document.querySelector('[data-eda-scene]')?.getAttribute('viewBox').split(' ')[2])<1000);
+  await page.getByRole('combobox',{name:'Schematic level'}).selectOption('overview');await ready();
+  await page.getByRole('button',{name:'Expand group 商品与库存',exact:true}).click();
+  assert.deepEqual((await record()).tables,original.tables);
+  console.log('PASS: directory folding keeps global tables; keyboard palette finds and focuses a field');
 
   await page.getByRole('searchbox',{name:'Search model'}).fill('订单状态');
   await page.getByRole('button',{name:/^orders\.status/}).click();await ready();
@@ -106,12 +121,21 @@ try{
   await page.getByRole('button',{name:'Close editor',exact:true}).click();
   assert.equal(await page.locator('[data-eda-scene]').getAttribute('viewBox'),remembered);
   await page.screenshot({path:path.join(output,'reading-en.png')});
-  await more();await page.getByText('View',{exact:true}).hover();await page.getByText('DBML view',{exact:true}).click();
+  await page.getByRole('button',{name:'Quick search',exact:true}).click();
+  await page.getByRole('combobox',{name:'Search actions or fields'}).fill('DBML editor');
+  await page.getByRole('option',{name:'DBML editor',exact:true}).click();
   await page.locator('.monaco-editor').first().waitFor({timeout:20000});
   await page.getByRole('button',{name:'Close editor',exact:true}).click();
   console.log('PASS: offline Monaco model editor');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   console.log('PASS: full-model SVG/PNG exports without changing reading position');
+  await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].setContentSize(980,760));
+  await page.getByRole('button',{name:'Quick search',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  const headerBoxes=await page.locator('.desktop-header-identity,.desktop-quick-search,.desktop-header-actions').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};}));
+  for(let i=1;i<headerBoxes.length;i++)assert(headerBoxes[i-1].right<=headerBoxes[i].left+1,'Header controls overlap');
+  await page.screenshot({path:path.join(output,'compact.png'),animations:'disabled'});
+  console.log('PASS: compact desktop header at 980px');
   assert.deepEqual(errors,[]);
   console.log('Focused Electron smoke passed. Artifacts: '+output);
 }catch(error){

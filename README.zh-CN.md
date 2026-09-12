@@ -9,11 +9,12 @@
 [下载与发布说明](https://github.com/ztcshen/er-wiki/releases) ·
 [CI 状态](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
-当前源码版本为 `0.2.0-preview.1`，本地完成不代表已发布新安装包；下载以 Releases 为准。
+当前源码版本为 `0.2.0-preview.2`，源码推送不代表已发布新安装包；下载以 Releases 为准。
 
 ## 桌面工作流
 
 - 统一设置：语言、主题、自动保存、备份保留数量与手动检查更新。
+- ⌘/Ctrl+K 快速查找表、字段和操作；菜单按任务分组，目录分组可独立折叠。
 - 按模型恢复领域、选中表、缩放平移；支持阅读书签和返回上次位置。
 - 搜索表、字段、别名、注释及枚举解释。
 - 修改显示名称、说明和枚举不重排整图；结构变化重新布局。
@@ -21,6 +22,7 @@
 - 自动或手动本地备份，恢复为副本；SVG / PNG 导出当前视图、领域或完整总图。
 
 详见[使用说明](docs/USER_GUIDE.md)和[安装、签名与公证说明](docs/DESKTOP_RELEASE.md)。
+界面参考与模块划分见[工作台设计说明](docs/WORKBENCH_DESIGN.md)。
 
 ## 电商履约示例
 

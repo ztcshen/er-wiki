@@ -23,6 +23,7 @@ Simplified Chinese and the system default without translating your model content
 - Versioned JSON, automatic/manual local backups and restore-as-copy.
 - Pure-diagram SVG/PNG export for the viewport, domain or full model.
 - Display preferences are separate from saved model content.
+- Keyboard-first quick search (⌘/Ctrl+K), grouped actions and independently folding domains.
 - No hosted account, cloud-sharing service or application telemetry is required.
 
 ## Fictional fulfillment example
@@ -46,7 +47,7 @@ The same model in the actual table editor, including field names, types and disp
 
 [Desktop user guide](docs/USER_GUIDE.md) · [Installation and signing](docs/DESKTOP_RELEASE.md)
 
-Source version `0.2.0-preview.1` is a local development checkpoint until a matching
+Source version `0.2.0-preview.2` is a development checkpoint until a matching
 release is published. The Releases page remains the source of truth for downloads.
 
 This is an independently authored educational schema, not an export of a company
@@ -84,11 +85,16 @@ directory. It does not read an existing private development profile.
 ## Project layout
 
 - `desktop/`: Electron shell, EDA workspace and generic UI integration.
+- `desktop/native/`: IPC, operating-system menus, command lifecycle and session policy.
+- `desktop/build/`: normalized paths and the single pinned-upstream alias boundary.
 - `patches/`: modifications to pinned upstream drawDB.
 - `upstream.json`: original project URL and exact renderer commit.
 - `examples/`: fictional model and illustrative DDL; no row data.
 - `scripts/`: setup, offline assets, demo generation and publication guard.
 - `work/`: generated upstream checkout, ignored by this repository.
+
+See [workbench design and source references](docs/WORKBENCH_DESIGN.md) for the
+module boundaries and UI patterns adopted from similar open-source projects.
 
 ## Status and limits
 

@@ -1,7 +1,7 @@
 # Desktop demo snapshots
 
 The fulfillment PNGs are unmodified screenshots of the packaged ER Wiki Community
-desktop app. They show the all-table overview and the orders table editor in
+desktop app. They show the all-table overview, orders table editor and quick search in
 English and Chinese. The SVG is exported using that same app's Export ER diagram
 action, not drawn by a second script.
 

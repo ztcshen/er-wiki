@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from '../../work/drawdb/node_modules/react-router-dom';
-import { useDiagramList } from '../../work/drawdb/src/components/EditorHeader/Modal/Open/hooks/useDiagramList';
-import { db } from '../../work/drawdb/src/data/db';
+import { useParams } from 'react-router-dom';
+import { useDiagramList } from '@drawdb/components/EditorHeader/Modal/Open/hooks/useDiagramList';
+import { db } from '@drawdb/data/db';
 import { importModel } from './model-file';
 import { builtinModels } from './builtin-models';
 import { useLocale } from '../i18n/renderer';

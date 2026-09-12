@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from '../../work/drawdb/node_modules/react-router-dom';
+import { useParams } from 'react-router-dom';
 import { workspaceCommand } from './commands';
 import { dateText, tr } from '../i18n/renderer';
 

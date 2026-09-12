@@ -1,5 +1,5 @@
-import { Parser } from '../../work/drawdb/node_modules/node-sql-parser';
-import { importSQL } from '../../work/drawdb/src/utils/importSQL';
+import { Parser } from 'node-sql-parser';
+import { importSQL } from '@drawdb/utils/importSQL';
 import { versionModelDocument } from './model-format.mjs';
 
 self.onmessage = ({data}) => {

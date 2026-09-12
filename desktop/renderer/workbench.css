@@ -1,0 +1,298 @@
+/* Desktop chrome: a quiet model identity and one keyboard-first action entry. */
+.desktop-header {
+  gap: 14px;
+  padding: 9px 16px;
+}
+.desktop-header-identity {
+  max-width: 460px;
+}
+.desktop-project {
+  min-width: 0;
+  flex: 1;
+}
+.desktop-wordmark {
+  display: block;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--wiki-muted);
+  letter-spacing: 0.08em;
+}
+.desktop-model-switcher select {
+  padding: 3px 7px;
+  font-size: 13px;
+}
+.desktop-header .desktop-quick-search {
+  flex: 0 1 260px;
+  min-width: 180px;
+  justify-content: flex-start;
+  gap: 9px;
+  background: var(--wiki-surface);
+  color: var(--wiki-muted);
+  font-size: 12px;
+  border-color: var(--wiki-line);
+}
+.desktop-quick-search span {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+.desktop-quick-search kbd,
+.desktop-grouped-menu kbd {
+  border: 1px solid var(--wiki-line);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-family: inherit;
+  font-size: 10px;
+}
+.desktop-grouped-menu {
+  min-width: 245px;
+}
+.desktop-menu-section + .desktop-menu-section {
+  border-top: 1px solid var(--wiki-line);
+  margin-top: 5px;
+  padding-top: 3px;
+}
+.desktop-menu-heading {
+  padding: 5px 12px 3px;
+  color: var(--wiki-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+.desktop-grouped-menu .semi-dropdown-item {
+  min-height: 29px;
+  font-size: 12px;
+  gap: 9px;
+}
+.desktop-grouped-menu .bi {
+  color: var(--wiki-muted);
+  width: 16px;
+}
+
+.workbench-command {
+  display: flex;
+  flex-direction: column;
+  color: var(--wiki-ink);
+}
+.workbench-command-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--wiki-line);
+  border-radius: 8px;
+  background: var(--wiki-surface);
+  padding: 10px 12px;
+}
+.workbench-command-input .bi {
+  color: var(--wiki-muted);
+}
+.workbench-command [cmdk-input] {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  color: var(--wiki-ink);
+  border: 0;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+}
+.workbench-command [cmdk-list] {
+  max-height: min(420px, 48vh);
+  overflow: auto;
+  padding: 8px 0;
+}
+.workbench-command [cmdk-group-heading] {
+  color: var(--wiki-muted);
+  font-size: 11px;
+  padding: 8px 10px 4px;
+}
+.workbench-command [cmdk-item] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  min-height: 40px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.workbench-command [cmdk-item] > div {
+  flex: 1;
+  min-width: 0;
+}
+.workbench-command [cmdk-item] small {
+  display: block;
+  color: var(--wiki-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.workbench-command [cmdk-item] [aria-hidden] {
+  width: 17px;
+  color: var(--wiki-muted);
+}
+.workbench-command [cmdk-item][data-selected="true"] {
+  background: var(--wiki-surface);
+  outline: 1px solid var(--wiki-line);
+}
+.workbench-command [cmdk-item][data-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+}
+.workbench-command [cmdk-empty] {
+  text-align: center;
+  padding: 32px;
+  color: var(--wiki-muted);
+}
+.workbench-command footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--wiki-muted);
+  padding-top: 10px;
+  border-top: 1px solid var(--wiki-line);
+}
+.workbench-command kbd {
+  font: inherit;
+  font-size: 10px;
+  color: var(--wiki-muted);
+  white-space: nowrap;
+}
+
+/* Tree controls fold the directory only; they never hide tables from the ER scope. */
+.eda-directory-total {
+  margin-left: 7px;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--wiki-surface);
+}
+.eda-directory .eda-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.eda-search-box > .bi {
+  position: absolute;
+  left: 9px;
+  color: var(--wiki-muted);
+  font-size: 11px;
+}
+.eda-search-box input {
+  padding-left: 27px;
+}
+.eda-domain-section {
+  margin-top: 8px;
+}
+.eda-domain-row {
+  display: flex;
+  align-items: center;
+  border-left: 3px solid var(--domain-color);
+  border-radius: 0 5px 5px 0;
+}
+.eda-directory-scroll .eda-domain-row .eda-domain-toggle {
+  width: 23px;
+  padding: 3px;
+  flex: 0 0 23px;
+  border: 0;
+  font-size: 10px;
+}
+.eda-directory-scroll .eda-domain-row .eda-domain-heading {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  border: 0;
+  margin: 0;
+  padding: 5px 7px 5px 1px;
+}
+.eda-domain-heading > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.eda-directory-scroll .eda-domain-members .eda-table-link {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding-left: 14px;
+  min-height: 29px;
+}
+.eda-table-link .bi {
+  color: var(--wiki-muted);
+  font-size: 10px;
+  opacity: 0.7;
+}
+.eda-table-link > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.eda-directory-scroll {
+  flex: 1;
+}
+.eda-search-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--wiki-muted);
+}
+.eda-directory-scroll .eda-search-summary button {
+  width: auto;
+  padding: 2px;
+  font-size: 10px;
+}
+.eda-empty-search {
+  font-size: 12px;
+  color: var(--wiki-muted);
+  text-align: center;
+  padding: 20px 0;
+}
+.eda-directory-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding-top: 9px;
+  margin-top: 9px;
+  border-top: 1px solid var(--wiki-line);
+  color: var(--wiki-muted);
+  font-size: 9px;
+}
+.eda-directory-footer button {
+  min-height: 22px;
+  font-size: 9px;
+  padding: 2px 4px;
+  border: 0;
+}
+.eda-detail-actions {
+  flex-wrap: wrap;
+}
+@media (max-width: 1100px) {
+  .desktop-header {
+    gap: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .desktop-header .desktop-quick-search {
+    flex-basis: 160px;
+    min-width: 120px;
+  }
+  .desktop-quick-search span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .desktop-save-status:not(.is-error) > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .desktop-save-status {
+    margin: 0;
+  }
+}

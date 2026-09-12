@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import { useDiagram, useLayout, useUndoRedo } from '../../work/drawdb/src/hooks';
-import { Action, ObjectType } from '../../work/drawdb/src/data/constants';
+import { useDiagram, useLayout, useUndoRedo } from '@drawdb/hooks';
+import { Action, ObjectType } from '@drawdb/data/constants';
 
 export default function DisplayNameEditor({table,field}) {
   const {updateField}=useDiagram(),{layout}=useLayout(),{setUndoStack,setRedoStack}=useUndoRedo();

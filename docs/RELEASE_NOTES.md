@@ -1,4 +1,13 @@
-# 0.2.0-preview.1 — Desktop workflow improvements
+# 0.2.0-preview.2 — Keyboard-first workbench
+
+- Quick search with cmdk, qualified field lookup, keyboard navigation and command-only mode.
+- Shared action catalogue for a shorter grouped menu and the complete command palette.
+- Independent directory folding and explicit focus-to-table without changing ER scope.
+- Native IPC/menu/session boundaries and smaller EDA presentation components.
+- Shared cancellable layout tasks and centralized upstream aliases / normalized build paths.
+- Open-source design references and updated real desktop snapshots.
+
+## Included desktop workflow improvements
 
 - English / Simplified Chinese / system language, including native menus.
 - Unified settings, local help, field aliases and field/enum search.

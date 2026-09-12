@@ -71,6 +71,12 @@ try{
     await page.locator('[data-edit-field="status"]').waitFor();
     await capture(`fulfillment-editor-${language}.png`,`${language}: actual orders table editor, three columns`);
     await closeEditor();
+    await overview();
+    await page.getByRole('button',{name:/^(Quick search|快速查找)$/}).click();
+    await page.getByRole('combobox',{name:/^(Search actions or fields|搜索操作或表字段)$/}).fill('orders.status');
+    await page.getByRole('option',{name:/^orders\.status/}).waitFor();
+    await capture(`fulfillment-search-${language}.png`,`${language}: actual quick search, qualified field lookup`);
+    await closeEditor();
   }
   await overview();
   // Automate only the native destination chooser; the app's own export path renders the SVG.
