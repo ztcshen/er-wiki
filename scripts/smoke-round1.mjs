@@ -34,8 +34,24 @@ const ready = () =>
   page.locator('[data-eda-ready="true"]').waitFor({ timeout: 30000 });
 const close = () =>
   page.getByRole("button", { name: "Close editor", exact: true }).click();
-const checks = () =>
-  page.getByRole("button", { name: "Structure checks", exact: true }).click();
+const checks = async () => {
+  const button = page.getByRole("button", {
+    name: "Structure checks",
+    exact: true,
+  });
+  if ((await button.getAttribute("aria-pressed")) !== "true")
+    await button.click();
+  await page
+    .getByRole("complementary", {
+      name: "Structure check results",
+      exact: true,
+    })
+    .waitFor();
+};
+const closeChecks = () =>
+  page
+    .getByRole("button", { name: "Close structure checks", exact: true })
+    .click();
 const read = () =>
   page.evaluate(
     () =>
@@ -71,9 +87,105 @@ const locateRow = (code) =>
 try {
   await ready();
   const original = await read();
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].setContentSize(1440, 900),
+  );
+  assert.equal(await page.locator(".eda-toolbar select").count(), 0);
+  await page
+    .getByRole("button", { name: "Diagram display settings", exact: true })
+    .click();
+  const display = page.locator(".eda-display-panel");
+  await display.waitFor();
+  assert.equal(
+    await display
+      .getByRole("combobox", { name: "Layout direction", exact: true })
+      .isVisible(),
+    false,
+  );
+  await display
+    .locator("summary")
+    .filter({ hasText: "Advanced display" })
+    .click();
+  await display
+    .getByRole("combobox", { name: "Layout direction", exact: true })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Diagram display settings", exact: true })
+    .click();
+  await page
+    .locator(".eda-directory .eda-table-link")
+    .filter({ hasText: /^orders$/ })
+    .click();
+  await ready();
+  await page.locator('[data-field-item="orders.customer_id"]').click();
+  await ready();
+  assert.equal(
+    await page.locator(".eda-table-details, .eda-member-list").count(),
+    0,
+  );
+  assert.equal(
+    await page.locator(".eda-field-details h3").innerText(),
+    "customer_id",
+  );
+  const fieldRelations = page.locator("[data-field-relation]");
+  assert.equal(await fieldRelations.count(), 1);
+  await fieldRelations.click();
+  assert.equal(await page.locator(".eda-member-list article").count(), 1);
+  assert.equal(
+    await page.locator('[data-net-member][data-selected="true"]').count(),
+    1,
+  );
+  assert.equal(
+    await page.locator(".eda-field-details, .eda-table-details").count(),
+    0,
+  );
+  await page
+    .locator(".eda-inspector")
+    .getByRole("button", { name: "orders", exact: true })
+    .click();
+  await ready();
+  await page.getByRole("tab", { name: /^Related tables/ }).click();
+  assert.equal(await page.locator(".eda-field-browser").count(), 0);
+  assert((await page.locator("[data-related-relation]").count()) > 1);
+  await page.getByRole("tab", { name: /^Related tables/ }).press("ArrowLeft");
+  await page.locator('[data-field-item="orders.status"]').click();
+  await ready();
+  assert.equal(
+    await page.locator(".eda-table-details, .eda-member-list").count(),
+    0,
+  );
+  assert(
+    (await page.locator(".eda-enum-values").innerText()).includes("CONFIRMED"),
+  );
+  await page.screenshot({
+    path: path.join(out, "field-inspector.png"),
+    animations: "disabled",
+  });
+  await page
+    .getByRole("button", { name: "All-table overview", exact: true })
+    .click();
+  await ready();
+  assert.equal(await page.locator('[data-node-kind="table"]').count(), 13);
+  await page.screenshot({
+    path: path.join(out, "overview.png"),
+    animations: "disabled",
+  });
   await checks();
   assert.equal(await page.locator("[data-check-code]").count(), 0);
-  await close();
+  assert.equal(await page.getByRole("dialog").count(), 0);
+  const beforePan = await page
+    .locator("[data-eda-scene]")
+    .getAttribute("viewBox");
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await page.waitForFunction(
+    (before) =>
+      document.querySelector("[data-eda-scene]").getAttribute("viewBox") !==
+      before,
+    beforePan,
+  );
+  assert.equal(await page.locator(".eda-checks-panel").count(), 1);
+  assert.equal(await page.locator(".eda-inspector").count(), 1);
+  await closeChecks();
   assert.equal(
     (await read()).lastModified.getTime(),
     original.lastModified.getTime(),
@@ -123,6 +235,10 @@ try {
     .getByRole("button", { name: "Locate", exact: true })
     .click();
   await ready();
+  // Locate keeps the checks beside the graph; dismissing it reveals that object.
+  assert.equal(await page.locator(".eda-checks-panel").count(), 1);
+  assert.equal(await page.getByRole("dialog").count(), 0);
+  await closeChecks();
   assert.equal(
     await page.locator("[data-eda-field-details] h3").innerText(),
     "id",
@@ -187,7 +303,7 @@ try {
     await page.locator('[data-check-code="enum_default"]').count(),
     0,
   );
-  await close();
+  await closeChecks();
   // A native save shortcut commits the focused length draft before saving.
   await page.getByRole("button", { name: "Edit table", exact: true }).click();
   const size = page.getByRole("textbox", {
@@ -262,10 +378,10 @@ try {
   assert.equal(relation.startFieldId, relation.fields[0].startFieldId);
   await checks();
   await page.locator('[data-check-code="relation_type"]').waitFor();
-  await close();
+  await closeChecks();
   const before = await read();
   await checks();
-  await close();
+  await closeChecks();
   const after = await read();
   assert.deepEqual(before, after);
   assert(!Object.hasOwn(after, "reviewIssues"));
@@ -284,7 +400,7 @@ try {
       packaged,
       out,
       checks:
-        "live non-persistent diagnostics, locate/edit/resolve, broken reference repair, enum edit/default parsing, focused length save, composite relationship and reversible cardinality swap",
+        "simplified toolbar, advanced controls, table/field/relation context isolation, keyboard tabs, all-table overview, nonmodal live diagnostics with usable canvas, locate/edit/resolve, enum/default/size editing, composite relationship and reversible swap",
     }),
   );
 } catch (error) {

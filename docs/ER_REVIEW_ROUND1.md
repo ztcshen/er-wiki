@@ -4,6 +4,22 @@ This local build focuses on editing and immediate structural feedback.
 It does not add review records, issue statuses, approvals, model versioning,
 baseline comparison, an Agent, or a public release.
 
+## Simpler reading workspace (0.3.0-local.2)
+
+- Primary ER controls are Overview, Arrange, Check and Display. Navigate through
+  directory groups/tables; return to Overview to restore every table. The existing
+  five view scopes, reading bookmarks and advanced routing settings remain under
+  Display rather than taking up the main toolbar.
+- The right side shows one context at a time: table, field, individual relationship
+  or structure checks. A field does not append the entire table or all of its nets.
+  Table details separate Fields and Related tables, with keyboard-operable tabs.
+- Checking is a nonmodal side panel. Locate leaves the issue list open and the
+  diagram remains interactive. Editing still uses the centered editor; closing it
+  returns to the updated list. Clicking a graph/directory object shows its details.
+- These changes add no Agent, new persistence format, model history or approval
+  workflow. Future Agent configuration should use validated model operations;
+  the current advanced manual editors remain available as a fallback.
+
 ## Edit
 
 - Keep the existing table editor, type picker, defaults, constraints and indices.
@@ -51,3 +67,12 @@ The workflow creates an isolated fictional fixture with known issues, locates an
 repairs them, edits enum/default values, checks focused-input saving and composite
 relationship swap/undo, and verifies that checking adds no stored review metadata.
 No real business workspace is used for these checks.
+
+The same smoke now covers toolbar simplification, advanced controls, context-only
+inspectors, keyboard tab navigation, complete overview and nonmodal checks. The
+packaged macOS ARM64 build passed these focused checks at 1440×900, plus a 980×800
+overflow check. Shared read-only Demo components passed the local desktop/mobile
+smoke at 1440×900 and 390×844, without external requests or browser persistence.
+`npm test`: 60 passed. The extracted inspector/display components and original
+workspace/toolbar/inspector files were scanned with jscpd 5.2.0 (10 lines / 120
+tokens): no clones. No public deployment is part of this local iteration.

@@ -38,9 +38,13 @@ body[theme-mode=dark] .eda-workspace{--eda-active:#7fc4f4;--eda-field-active:#20
 .eda-scope-name{font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eda-model-count{font-size:11px;color:var(--wiki-muted);white-space:nowrap}
 .eda-view-actions{margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0}
-.eda-display-panel{width:270px;max-width:calc(100vw - 32px);padding:16px;color:var(--wiki-ink);font-size:12px;line-height:1.6}
+.eda-overview-button[aria-pressed=true],.eda-check-button[aria-pressed=true]{background:var(--wiki-surface);border-color:var(--eda-active);color:var(--eda-active)}
+.eda-display-panel{width:290px;max-width:calc(100vw - 32px);max-height:75vh;overflow:auto;padding:16px;color:var(--wiki-ink);font-size:12px;line-height:1.6}
 .eda-display-panel>strong{display:block;margin-bottom:14px;font-size:13px}
-.eda-display-panel>label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.eda-display-panel label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.eda-display-panel details[open]>summary{margin-bottom:12px}
+.eda-display-panel .eda-bookmarks{padding:0;width:auto;max-width:none}
+.eda-display-panel .eda-bookmarks>strong{display:none}
 .eda-display-panel .eda-display-check{flex-direction:row;align-items:center;gap:8px}
 .eda-display-panel input[type=checkbox]{width:14px;height:14px;accent-color:#0f766e}
 .eda-display-panel select{width:100%;min-width:0}
@@ -120,6 +124,15 @@ h3 .eda-detail-count{margin-left:10px}
 .eda-evidence small{display:block;color:var(--wiki-muted);line-height:1.6;padding:6px 0}
 .eda-evidence p{white-space:pre-line;font-size:12px}
 .eda-field-details{border-bottom:1px solid var(--wiki-line);margin-bottom:12px;padding-bottom:10px}
+.eda-inspector .eda-context-back{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--wiki-muted);font-size:11px;padding:0;margin:0 0 16px;text-align:left;overflow-wrap:anywhere}
+.eda-field-relations>button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;font-size:11px;margin-bottom:6px}
+.eda-field-relations b{color:var(--eda-active);white-space:nowrap;font-size:10px}
+.eda-detail-tabs{display:flex;gap:3px;border-bottom:1px solid var(--wiki-line);margin-top:18px}
+.eda-detail-tabs button{flex:1;border:0;border-radius:0;padding:9px 4px;font-size:11px;color:var(--wiki-muted)}
+.eda-detail-tabs button[aria-selected=true]{color:var(--eda-active);box-shadow:inset 0 -2px var(--eda-active)}
+.eda-detail-tabs span{font-size:10px;margin-left:4px}
+.eda-network-options{margin-bottom:14px;font-size:11px;color:var(--wiki-muted)}
+.eda-network-options summary{cursor:pointer}
 .eda-controls>.process-view-tabs{margin-right:6px;flex-shrink:0}
 .eda-controls>.process-view-tabs button{padding:5px 10px!important;font-size:11px!important}
 .eda-node[data-selected=true]{filter:drop-shadow(0 3px 5px #0f766e18)}

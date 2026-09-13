@@ -152,7 +152,7 @@ export default function EdaWorkspace({ modelId, ready }) {
     ? result?.projection.nodes.filter((n) => n.kind === "table").length
     : null;
   const showDirectory = settings.edaDirectory !== false,
-    showInspector = !!(net || infoTable);
+    showInspector = checksOpen || !!(net || infoTable);
   useEffect(() => {
     document.body.classList.add("eda-reading");
     setSelectedElement((s) => ({
@@ -312,7 +312,10 @@ export default function EdaWorkspace({ modelId, ready }) {
   });
   const inspectorActions = {
     clear: clearSelection,
-    selectNet: setNet,
+    selectNet: (id) => {
+      setField(null);
+      setNet(id);
+    },
     selectRelation: setRelation,
     selectRelated: (id) => {
       const relatedNet = result?.projection.nets.find((n) =>
@@ -327,6 +330,12 @@ export default function EdaWorkspace({ modelId, ready }) {
     focusRelation,
     editTable,
     inspectTable,
+    selectTable: (id) => {
+      setTable(id);
+      setField(null);
+      setNet(null);
+      setFieldNets([]);
+    },
     inspectField: (tid, fid) => {
       navigate("column", "", tid, { selectedTable: tid, selectedField: fid });
       pendingFocus.current = tid;
@@ -356,13 +365,11 @@ export default function EdaWorkspace({ modelId, ready }) {
     },
   };
   const editIssue = (issue) => {
-    setChecksOpen(false);
     if (issue.target.relationshipId != null)
       inspectorActions.editRelation(issue.target.relationshipId);
     else if (issue.target.tableId != null) editTable(issue.target.tableId);
   };
   const locateIssue = (issue) => {
-    setChecksOpen(false);
     const relation = relationships.find(
       (r) => r.id === issue.target.relationshipId,
     );
@@ -470,7 +477,8 @@ export default function EdaWorkspace({ modelId, ready }) {
       >
         <EdaToolbar
           issues={structureIssues}
-          onCheck={() => setChecksOpen(true)}
+          checksOpen={checksOpen}
+          onCheck={() => setChecksOpen((value) => !value)}
           leading={reader.mode === "er" ? viewSwitcher : null}
           model={model}
           domains={domains}
@@ -503,7 +511,10 @@ export default function EdaWorkspace({ modelId, ready }) {
               search={search}
               onSearch={setSearch}
               reading={reading}
-              navigate={navigate}
+              navigate={(...args) => {
+                setChecksOpen(false);
+                navigate(...args);
+              }}
             />
           )}
           <div
@@ -531,6 +542,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                 onView={setView}
                 onEdit={editTable}
                 onNode={(node) => {
+                  setChecksOpen(false);
                   if (node.kind === "domain") navigate("domain", node.domainId);
                   else {
                     setTable(node.tableId);
@@ -544,6 +556,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                   }
                 }}
                 onNet={(value, relationId = null) => {
+                  setChecksOpen(false);
                   const ids = Array.isArray(value) ? value : [value];
                   setNet(ids[0] || null);
                   setRelation(relationId);
@@ -554,6 +567,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                   );
                 }}
                 onField={(tid, fid) => {
+                  setChecksOpen(false);
                   const found = result.projection.nets.filter(
                     (n) =>
                       (n.targetTableId === tid &&
@@ -659,19 +673,30 @@ export default function EdaWorkspace({ modelId, ready }) {
               </>
             )}
           </div>
-          {showInspector && (
-            <EdaInspector
-              selection={{
-                net,
-                table: infoTable,
-                field: fieldInfo,
-                alternatives: fieldNets,
-                selectedRelation,
-              }}
-              tables={tables}
-              relationships={relationships}
-              actions={inspectorActions}
+          {checksOpen ? (
+            <StructureChecks
+              onClose={() => setChecksOpen(false)}
+              issues={structureIssues}
+              onLocate={locateIssue}
+              onEdit={editIssue}
+              readOnly={layout.readOnly}
             />
+          ) : (
+            showInspector && (
+              <EdaInspector
+                selection={{
+                  net,
+                  table: infoTable,
+                  field: fieldInfo,
+                  alternatives: fieldNets,
+                  selectedRelation,
+                }}
+                tables={tables}
+                relationships={relationships}
+                actions={inspectorActions}
+                readOnly={layout.readOnly}
+              />
+            )
           )}
         </div>
       </div>
@@ -717,14 +742,6 @@ export default function EdaWorkspace({ modelId, ready }) {
         readOnly={layout.readOnly}
       />
       <EdaEditors tools={tools} setTools={setTools} />
-      <StructureChecks
-        open={checksOpen}
-        onClose={() => setChecksOpen(false)}
-        issues={structureIssues}
-        onLocate={locateIssue}
-        onEdit={editIssue}
-        readOnly={layout.readOnly}
-      />
       {reader.mode === "er" && (
         <DiagramExport
           model={model}

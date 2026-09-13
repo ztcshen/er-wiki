@@ -572,5 +572,20 @@
   "复合关系中存在重复的字段映射": "Composite relationship repeats a field pair",
   "关联字段的类型、长度、精度或有符号定义不同，请确认": "Related fields differ in type, length, precision or signedness; please confirm",
   "非空引用字段配置了 SET NULL，请确认": "Non-null referencing field uses SET NULL; please confirm",
-  "首对字段映射与兼容字段不一致，可重新应用关系修正": "First field pair differs from compatibility fields; reapply the mapping to reconcile"
+  "首对字段映射与兼容字段不一致，可重新应用关系修正": "First field pair differs from compatibility fields; reapply the mapping to reconcile",
+  "结构检查结果": "Structure check results",
+  "关闭结构检查": "Close structure checks",
+  "点击定位，在图中查看问题；修改后列表自动更新。": "Locate an issue on the diagram. This list updates as you edit.",
+  "检查说明": "About these checks",
+  "高级显示": "Advanced display",
+  "视图范围": "View scope",
+  "查看同组关系": "Show bundled relationships",
+  "基数说明": "About cardinality",
+  "返回表详情": "Back to table details",
+  "不可为空": "Not nullable",
+  "可为空": "Nullable",
+  "字段关联": "Field relationships",
+  "表详情内容": "Table detail sections",
+  "尚未配置关联关系": "No relationships configured",
+  "注释": "Comment"
 }

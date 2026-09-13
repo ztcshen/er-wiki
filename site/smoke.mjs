@@ -89,6 +89,15 @@ try {
     0,
   );
   await capture("desktop-field.png");
+  assert.equal(
+    await page.locator(".eda-table-details, .eda-member-list").count(),
+    0,
+  );
+  await page
+    .locator(".eda-inspector")
+    .getByRole("button", { name: "orders", exact: true })
+    .click();
+  await page.getByRole("tab", { name: /^Related tables/ }).click();
   const related = page
     .locator("[data-related-relation]")
     .filter({ hasText: "order_items" });

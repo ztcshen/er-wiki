@@ -1,11 +1,9 @@
 import { useState } from "react";
-import CanvasEditorDialog from "@drawdb/components/EditorCanvas/CanvasEditorDialog";
 import { issueMessages } from "./issue-messages.mjs";
 import { tr } from "../i18n/renderer";
 import "./review.css";
 
 export default function StructureChecks({
-  open,
   onClose,
   issues,
   onLocate,
@@ -17,16 +15,19 @@ export default function StructureChecks({
     (issue) => severity === "all" || issue.severity === severity,
   );
   return (
-    <CanvasEditorDialog
-      title="结构检查"
-      visible={open}
-      onClose={onClose}
-      footerNote="仅反映当前模型，不保存评审记录，不执行数据库检查或自动修复。"
-    >
+    <aside className="eda-inspector eda-checks-panel" aria-label="结构检查结果">
+      <div className="eda-inspector-heading">
+        <strong>结构检查</strong>
+        <button
+          className="eda-icon-button"
+          aria-label="关闭结构检查"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
       <div className="structure-checks">
-        <p>
-          错误表示结构缺失或引用无效；提醒需要结合设计意图判断，不等同于数据库约束错误。
-        </p>
+        <p>点击定位，在图中查看问题；修改后列表自动更新。</p>
         <div className="checks-filters" role="group" aria-label="检查级别">
           {[
             ["all", "全部"],
@@ -91,7 +92,14 @@ export default function StructureChecks({
             </article>
           ))}
         </div>
+        <details className="eda-evidence">
+          <summary>检查说明</summary>
+          <p>
+            错误表示结构缺失或引用无效；提醒需要结合设计意图判断，不等同于数据库约束错误。
+          </p>
+          <p>仅反映当前模型，不保存评审记录，不执行数据库检查或自动修复。</p>
+        </details>
       </div>
-    </CanvasEditorDialog>
+    </aside>
   );
 }

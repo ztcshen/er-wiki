@@ -12,6 +12,11 @@
   display: flex;
   gap: 7px;
   margin-bottom: 12px;
+  position: sticky;
+  top: 27px;
+  padding: 8px 0;
+  background: var(--wiki-card);
+  z-index: 1;
 }
 .checks-filters button,
 .checks-actions button {
@@ -30,13 +35,13 @@
   background: var(--wiki-surface);
 }
 .checks-results {
-  max-height: 48vh;
-  overflow: auto;
+  min-width: 0;
 }
 .checks-results article {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   padding: 12px 10px;
   border: 1px solid var(--wiki-line);
@@ -65,6 +70,7 @@
   display: flex;
   gap: 5px;
   flex-shrink: 0;
+  justify-content: flex-end;
 }
 .checks-actions button:disabled {
   opacity: 0.4;
