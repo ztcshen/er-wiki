@@ -1,4 +1,4 @@
-# Unreleased — ER review and compact four-sided diagrams
+# v0.3.0 — ER review and compact four-sided diagrams
 
 - Directly edit field length and numeric precision, enum values, relationship endpoints and composite field mappings.
 - Live structural checks and simpler contextual navigation; no review baselines or audit-history workflow.
@@ -11,8 +11,21 @@
 Position refinement is bounded (up to 80 projected nodes, four search rounds and
 a six-second budget); layout remains heuristic. The libavoid-js WASM wrapper is
 pinned to a beta release and runs locally. Public examples contain fictional
-fulfillment data only. These notes describe source changes, not a newly published
-binary release; published downloads remain on the Releases page.
+fulfillment data only; no private business model or local workspace is bundled.
+
+## Downloads and installation
+
+This release provides a macOS Apple Silicon (ARM64) ZIP, project source, pinned
+drawDB source and SHA256 checksums. The application is ad-hoc signed, not Apple
+Developer ID signed or notarized. Windows/Linux binaries are not included.
+
+Download `er-wiki-0.3.0-macos-arm64.zip`, extract it, close the old application and
+replace it in Applications. Models are stored separately from the app bundle;
+export important models before upgrading. Follow your device's security policy
+if macOS blocks opening the app; do not disable Gatekeeper.
+
+macOS Apple Silicon 用户请下载 ARM64 ZIP，解压后替换旧应用，避免保留多个安装副本。
+模型数据与应用分开保存，升级前建议导出重要模型。本版本未做 Apple 公证。
 
 # v0.2.0 — ER-first desktop workbench
 
