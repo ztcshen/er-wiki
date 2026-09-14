@@ -13,10 +13,16 @@ const document = process.env.ER_WIKI_TEST_MODEL
   ? JSON.parse(await fs.readFile(process.env.ER_WIKI_TEST_MODEL, 'utf8')) : conditionalModel();
 const conditions = document.relationships.filter(r => r.reviewEvidence?.condition);
 assert.equal(conditions.length, 3, 'This focused scenario checks three alternative business references');
+const profile = path.join(out, 'profile');
+if (process.env.ER_WIKI_TEST_LANGUAGE) {
+  assert(['zh', 'en'].includes(process.env.ER_WIKI_TEST_LANGUAGE));
+  await fs.mkdir(profile, { recursive: true });
+  await fs.writeFile(path.join(profile, 'preferences.json'), JSON.stringify({ language: process.env.ER_WIKI_TEST_LANGUAGE }));
+}
 const app = await _electron.launch({
   executablePath: process.env.ER_WIKI_TEST_APP || require('electron'),
   args: process.env.ER_WIKI_TEST_APP ? [] : [path.join(root, 'desktop/main.cjs')],
-  env: { ...process.env, ER_WIKI_TEST_PROFILE: path.join(out, 'profile') },
+  env: { ...process.env, ER_WIKI_TEST_PROFILE: profile },
 });
 const page = await app.firstWindow(), errors = [];
 page.setDefaultTimeout(15000);
@@ -44,6 +50,15 @@ try {
     assert.equal(await page.locator('[data-node-kind="table"]').count(), document.tables.length);
     assert.equal(await page.locator('[data-kind="conditional"]').count(), 3);
     assert.equal(await page.locator('[data-eda-condition]').count(), 3);
+    const boxes = await page.locator('[data-node-kind="table"]').evaluateAll(nodes => Object.fromEntries(nodes.map(n => {
+      const rect = n.getBoundingClientRect();
+      return [n.getAttribute('data-table-id'), { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom }];
+    })));
+    for (const table of document.tables.filter(t => t.reviewPlacement)) {
+      const node = boxes[table.id], anchor = boxes[table.reviewPlacement.belowTableId];
+      assert(node.y > anchor.bottom, 'Placed table must remain below its anchor after reload');
+      if (table.reviewPlacement.leftOfTableId) assert(node.right < boxes[table.reviewPlacement.leftOfTableId].x, 'Placed table must stay left of the requested business table');
+    }
     const sourceIds = [...new Set(conditions.map(r => r.startTableId))];
     for (const id of sourceIds) {
       const badges = page.locator('[data-cardinality-table]').filter({ has: page.locator('text') });

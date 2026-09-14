@@ -47,6 +47,14 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   The predicate is review metadata, never executable SQL/JS or a physical FK.
   Predicate labels reuse ELK edge-label placement and the referencing group's color.
   Hover captions and relation details also show the condition.
+- A table may carry `reviewPlacement: { belowTableId, leftOfTableId, gap, offsetX }`
+  for a human-chosen overview region. After the initial layout, ELK interactive
+  layering consumes pseudo positions and reroutes every edge. Only candidates
+  satisfying the relative region and avoiding node overlaps are accepted. This
+  follows [ELK's interactive layout guidance](https://eclipse.dev/elk/blog/posts/2023/23-01-09-constraining-the-model.html);
+  it is not an absolute pixel pin or a change to relationship direction. Hints do
+  not hide tables and are ignored in drill-down views. Without hints, the existing
+  layout path and scoring order remain unchanged.
 
 ## Structure
 

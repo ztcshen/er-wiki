@@ -5,7 +5,7 @@ import { conditionText } from './relation-condition.mjs';
 // Selection of overview fields DOES change geometry and is captured via field IDs.
 export function geometryKey(model, options) {
   const p = projectModel(model, options);
-  return JSON.stringify({ nodes: p.nodes.map(n => [n.id, n.width, n.height, n.ports]),
+  return JSON.stringify({ nodes: p.nodes.map(n => [n.id, n.width, n.height, n.ports, n.placement]),
     edges: p.edges.map(e => [e.id, e.sources, e.targets, e.netIds, e.refs, e.labels]),
     level: options.level, labels: options.labels, bundle: options.bundle, expanded: options.expanded });
 }

@@ -1,5 +1,6 @@
 import { projectModel } from './model.mjs';
 import { scoreLayout, compareScores, validateLayout, sectionsOf } from './metrics.mjs';
+import { arrangePlaced } from './placement.mjs';
 
 export async function arrangeSchematic(model, options={}, elk){
   // Node tests use the bundled fake worker; the desktop worker injects a real
@@ -21,9 +22,15 @@ export async function arrangeSchematic(model, options={}, elk){
         children:p.nodes.map(n=>({id:n.id,width:n.width,height:n.height,ports:n.ports,
           layoutOptions:{'elk.portConstraints':'FIXED_POS'}})),
         edges:p.edges.map(e=>({id:e.id,sources:e.sources,targets:e.targets,...(e.labels?{labels:e.labels}: {})}))};
-      const layout=await elk.layout(graph);validateLayout(layout,p);
-      results.push({layout,metrics:scoreLayout(layout,p),direction,seed});
+      const base=await elk.layout(graph);validateLayout(base,p);
+      for(const {layout,placement}of await arrangePlaced(p,base,elk)){
+        validateLayout(layout,p);
+        const metrics=scoreLayout(layout,p);
+        if(placement&&metrics.overlaps)continue;
+        results.push({layout,metrics,direction,seed,...(placement?{placement}:{})});
+      }
     }
+    if(!results.length)throw new Error('Relative table placement cannot be satisfied without overlapping nodes');
     results.sort((a,b)=>compareScores(a.metrics,b.metrics));return results;
   }
   let results=await candidates(projection),best=results[0];
@@ -36,5 +43,5 @@ export async function arrangeSchematic(model, options={}, elk){
     for(const [id,length]of lengths)if(length>(options.longThreshold||1600))long.add(id);
     if(long.size){projection=projectModel(model,options,long);results=await candidates(projection);best=results[0];}
   }
-  return {projection,layout:best.layout,metrics:best.metrics,candidates:results.map(({direction,seed,metrics})=>({direction,seed,metrics}))};
+  return {projection,layout:best.layout,metrics:best.metrics,candidates:results.map(({direction,seed,metrics,placement})=>({direction,seed,metrics,...(placement?{placement}:{})}))};
 }
