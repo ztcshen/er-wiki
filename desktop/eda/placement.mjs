@@ -1,3 +1,4 @@
+import { elkGraph } from './elk-graph.mjs';
 // Relative table placement is presentation metadata, never a database relation.
 // ELK's interactive layering consumes pseudo positions; ELK still routes all edges.
 export function placementHints(projection) {
@@ -51,19 +52,14 @@ export async function arrangePlaced(projection, base, elk) {
   if (!hints.length) return [{ layout: base }];
   const positions = placementPositions(base, hints), candidates = [];
   for (const strategy of ['BRANDES_KOEPF', 'INTERACTIVE']) {
-    const graph = { id: 'root', layoutOptions: { ...base.layoutOptions,
+    const graph = elkGraph(projection, { ...base.layoutOptions,
       'elk.layered.cycleBreaking.strategy': 'INTERACTIVE',
       'elk.layered.layering.strategy': 'INTERACTIVE',
       'elk.layered.crossingMinimization.semiInteractive': 'true',
       'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
       'elk.layered.nodePlacement.strategy': strategy,
       'elk.separateConnectedComponents': 'false',
-    }, children: projection.nodes.map(n => {
-      const pos = positions.get(n.id);
-      return { id: n.id, x: pos.x, y: pos.y, width: n.width, height: n.height, ports: n.ports,
-        layoutOptions: { 'elk.portConstraints': 'FIXED_POS', 'elk.position': `(${pos.x},${pos.y})` } };
-    }), edges: projection.edges.map(e => ({ id: e.id, sources: e.sources, targets: e.targets,
-      ...(e.labels ? { labels: e.labels } : {}) })) };
+    }, positions);
     const layout = await elk.layout(graph);
     if (satisfiesPlacement(layout, hints)) candidates.push({ layout, placement: strategy });
   }

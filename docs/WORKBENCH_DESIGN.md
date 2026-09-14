@@ -53,8 +53,18 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   satisfying the relative region and avoiding node overlaps are accepted. This
   follows [ELK's interactive layout guidance](https://eclipse.dev/elk/blog/posts/2023/23-01-09-constraining-the-model.html);
   it is not an absolute pixel pin or a change to relationship direction. Hints do
-  not hide tables and are ignored in drill-down views. Without hints, the existing
-  layout path and scoring order remain unchanged.
+  not hide tables and are ignored in drill-down views.
+- Automatic arrangement retains the original ELK candidates as a fallback, then
+  tries compact interactive layouts with selected left/right port changes. Port
+  IDs, field bindings and relationship semantics never change. Crossings and
+  node overlaps remain the leading objectives; route obstructions, label collisions,
+  total/longest wire length, screen span and connected-group spread refine selection.
+  A group seed is only attempted for groups containing an internal relationship:
+  sharing a color alone does not force unrelated infrastructure tables together.
+  Candidates must satisfy human placement hints. Search is bounded by diagram size
+  (reduced above 80 projected nodes, baseline-only above 250); this is a heuristic,
+  not a guarantee of a globally optimal layout. It runs in the existing cancellable
+  worker and adds no configuration controls to the normal reading interface.
 
 ## Structure
 
