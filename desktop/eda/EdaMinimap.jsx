@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { minimapDock } from "./minimap-dock.mjs";
 import {
   centerViewAt,
   clientPointToWorld,
@@ -7,6 +8,7 @@ import {
 
 export default function EdaMinimap({ result, view, viewport, onView, onFit }) {
   const dragging = useRef(false);
+  const dock = minimapDock(result.layout, viewport);
   const bounds = [
     0,
     0,
@@ -33,7 +35,7 @@ export default function EdaMinimap({ result, view, viewport, onView, onFit }) {
       );
   };
   return (
-    <div className="eda-minimap">
+    <div className="eda-minimap" data-minimap-dock={dock.name} style={dock.style}>
       <span aria-hidden="true">导航概览</span>
       <svg
         viewBox={bounds.join(" ")}

@@ -3,7 +3,7 @@
 **[▶ Try the Live ER Demo](https://ztcshen.github.io/er-wiki/)** — no installation or sign-in. Read-only, fictional data only.
 
 An offline-first desktop workspace for understanding and editing database models.
-Built with Electron, drawDB and ELK. The desktop interface supports English,
+Built with Electron, drawDB, ELK and libavoid. The desktop interface supports English,
 Simplified Chinese and the system default without translating your model content.
 
 [![CI](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml/badge.svg)](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
@@ -16,6 +16,9 @@ Simplified Chinese and the system default without translating your model content
 ## Explore the schema. Follow a relationship. Edit the model.
 
 - Orthogonal ER diagrams, shared relation buses and high-fanout junctions.
+- Four-sided field ports, obstacle-avoiding routing and topology-aware SPOrE compaction; field identity and 1/N cardinality stay intact.
+- Direct length/precision editing, enum editing and live structural checks without adding a review-history workflow.
+- Replace a complete model in the running workspace without restarting or creating another model copy.
 - Zoom-aware table summaries: readable table names in the overview, fields when zoomed in.
 - Searchable field inspector with display names, types, enum values and related tables.
 - Consistent domain colors for internal relationships, neutral cross-domain wires and focused relation tracing.
@@ -47,8 +50,11 @@ The included example models **products and warehouse stock → order reservation
 split fulfillment → parcel shipment → returns**. It has 13 tables and supports
 multi-warehouse allocation and partial shipments at the schema level.
 
-These are real screenshots of the local **0.2.0 macOS desktop app**,
+These are real screenshots of the **0.2.0 macOS desktop app**,
 loaded with the example JSON below. They are not a separately drawn mockup.
+They document that release; current source includes the newer four-sided routing
+and compaction described in [workbench design](docs/WORKBENCH_DESIGN.md).
+The live demo follows the deployed main branch.
 
 ![Actual ER Wiki desktop: all 13 fulfillment tables](docs/images/fulfillment-desktop-en.png)
 

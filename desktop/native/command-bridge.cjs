@@ -22,7 +22,7 @@ function createCommandBridge(getWindow, timeoutMs = 120000) {
           resolve(ok);
         });
         try {
-          window.webContents.send("desktop:command", { id, action });
+          window.webContents.send("desktop:command", { ...(typeof action === 'string' ? { action } : action), id });
         } catch {
           settle(id, false);
         }

@@ -17,6 +17,7 @@ const { atomicWrite } = require("./files.cjs");
 const { createPreferences } = require("./preferences.cjs");
 const { createBackupStore } = require("./backups.cjs");
 const { createCommandBridge } = require("./native/command-bridge.cjs");
+const { createModelHandoff } = require('./native/model-handoff.cjs');
 const { registerDesktopIpc } = require("./native/ipc.cjs");
 const { createLocalizer, createDialogQueue } = require("./native/dialogs.cjs");
 const { installDesktopMenu } = require("./native/menu.cjs");
@@ -49,6 +50,8 @@ let mayClose = false;
 const bridge = createCommandBridge(() => window);
 const command = (action) => bridge.request(action);
 const stateFile = path.join(app.getPath("userData"), "window-state.json");
+const handoff = createModelHandoff({ request: command, writeResult: result =>
+  atomicWrite(path.join(app.getPath('userData'), 'model-replacement-result.json'), JSON.stringify(result)) });
 const preferences = createPreferences(
   path.join(app.getPath("userData"), "preferences.json"),
   () => app.getLocale(),
@@ -95,6 +98,7 @@ registerDesktopIpc({
   localized,
   nativeDialog,
   version: APP_VERSION,
+  onWorkspaceReady: modelId => handoff.ready(modelId),
 });
 
 function createWindow() {
@@ -196,17 +200,19 @@ function createWindow() {
   );
 }
 
-if (!app.requestSingleInstanceLock()) {
+if (!app.requestSingleInstanceLock({ argv: process.argv, cwd: process.cwd() })) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
+  app.on("second-instance", (_event, argv, cwd, data) => {
+    handoff.enqueue(Array.isArray(data?.argv) ? data.argv : argv, typeof data?.cwd === 'string' ? data.cwd : cwd)
+      .catch(error => dialog.showErrorBox(tr('模型替换失败'), error.message));
     if (window?.isMinimized()) window.restore();
     window?.show();
     window?.focus();
   });
   app
     .whenReady()
-    .then(() => {
+    .then(async () => {
       fs.mkdirSync(app.getPath("userData"), { recursive: true });
       const root = path.join(__dirname, "dist");
       if (!fs.existsSync(path.join(root, "index.html")))
@@ -220,6 +226,7 @@ if (!app.requestSingleInstanceLock()) {
       });
       installMenu();
       createWindow();
+      await handoff.enqueue(process.argv, process.cwd());
     })
     .catch((error) => {
       dialog.showErrorBox(tr("ER Wiki 启动失败"), error.message);

@@ -30,7 +30,7 @@ test('lexicographic order gives crossings precedence over all lower objectives',
   assert(compareScores({crossings:1,overlaps:0,length:10000,bends:99},{crossings:1,overlaps:1,length:1,bends:0})<0);
 });
 test('ELK candidates produce finite orthogonal geometry and score in requested order',async()=>{const{arrangeSchematic}=await layoutModule,{compareScores,validateLayout}=await metricsModule;
-  const m=fixture(),before=JSON.stringify(m),r=await arrangeSchematic(m,{level:'table',labels:'off',bundle:true});
+  const m=fixture(),before=JSON.stringify(m),r=await arrangeSchematic(m,{level:'table',labels:'off',bundle:true,optimize:false});
   validateLayout(r.layout,r.projection);assert.equal(r.metrics.overlaps,0);assert.equal(r.candidates.length,4);
   for(const candidate of r.candidates)assert(compareScores(r.metrics,candidate.metrics)<=0);assert.equal(JSON.stringify(m),before);
 });

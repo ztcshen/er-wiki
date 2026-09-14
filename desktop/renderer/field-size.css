@@ -1,0 +1,87 @@
+.desktop-type-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+}
+.desktop-type-cell > .semi-select {
+  min-width: 0;
+}
+.desktop-type-cell .semi-select-selection-text,
+.desktop-type-cell .font-mono {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.desktop-field-size {
+  min-width: 0;
+  margin: 8px 0;
+}
+.desktop-field-size label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--wiki-muted);
+}
+.desktop-field-size input {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--wiki-line);
+  border-radius: 5px;
+  background: var(--wiki-card);
+  color: var(--wiki-ink);
+  padding: 6px 8px;
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.desktop-field-size input:focus {
+  outline: 2px solid var(--eda-active, #0a78bf);
+  outline-offset: 1px;
+}
+.desktop-field-size input[aria-invalid="true"] {
+  border-color: var(--wiki-danger);
+  outline-color: var(--wiki-danger);
+}
+.desktop-field-size input:disabled {
+  opacity: 0.5;
+}
+.desktop-field-size small {
+  display: block;
+  margin-top: 5px;
+  color: var(--wiki-danger);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.desktop-field-size.is-inline {
+  position: relative;
+  margin: 0;
+  width: 90px;
+}
+.desktop-field-size.is-inline label {
+  gap: 4px;
+  font-size: 9px;
+}
+.desktop-field-size.is-inline input {
+  width: 58px;
+  padding: 5px 4px;
+  text-align: center;
+  height: 30px;
+}
+.desktop-field-size.is-inline small {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 5;
+  width: 190px;
+  padding: 7px;
+  background: var(--wiki-card);
+  border: 1px solid var(--wiki-danger);
+  border-radius: 5px;
+  box-shadow: 0 3px 10px #0001;
+}

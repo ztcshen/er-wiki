@@ -93,7 +93,10 @@ export default function EdaScene({
           dim = (active || activeRelation != null) && !highlight,
           uncertain = m.refs.some(
             (id) => relationMeta.get(id)?.reviewEvidence?.kind === "inferred",
-          );
+          ),
+          conditionColor = m.kind === "conditional"
+            ? domainByTable.get(relationMeta.get(m.refs[0])?.startTableId)?.color
+            : null;
         return (
           <g
             key={edge.id}
@@ -134,13 +137,23 @@ export default function EdaScene({
                   stroke={
                     highlight
                       ? "var(--eda-active)"
-                      : relationColor(m, relationMeta, domainByTable)
+                      : conditionColor || relationColor(m, relationMeta, domainByTable)
                   }
                   strokeDasharray={uncertain ? "6 4" : undefined}
-                  strokeWidth={highlight ? 3 : m.kind === "bus" ? 2.8 : 1.5}
+                  strokeWidth={highlight ? 3 : m.kind === "bus" ? 2.8 : m.kind === "conditional" ? 2 : 1.5}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
+              </g>
+            ))}
+            {m.kind === "conditional" && (edge.labels || []).map((label) => (
+              <g key={label.id} transform={`translate(${label.x},${label.y})`}
+                data-eda-condition={label.text} pointerEvents="none">
+                <rect width={label.width} height={label.height} rx="5"
+                  fill="var(--wiki-card)" stroke={highlight ? "var(--eda-active)" : conditionColor || "var(--wiki-line)"} />
+                <text x="10" y="16" fontSize="12" fill={conditionColor || "var(--wiki-ink)"}>
+                  {fitText(label.text, label.width - 20, 12)}
+                </text>
               </g>
             ))}
           </g>
@@ -307,6 +320,9 @@ export default function EdaScene({
             {(node.ports || []).map((p) => (
               <circle
                 key={p.id}
+                data-eda-port={p.id}
+                data-port-side={p.layoutOptions["elk.port.side"]}
+                data-field-ids={JSON.stringify(p.fieldIds || [])}
                 cx={p.x}
                 cy={p.y}
                 r="2.5"

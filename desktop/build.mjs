@@ -18,6 +18,7 @@ await build({root:source,configFile:false,plugins:[{name:'er-wiki-desktop',enfor
 fs.copyFileSync(path.join(root,'LICENSE'),path.join(here,'dist/LICENSE.txt'));
 fs.copyFileSync(path.join(here,'licenses/cmdk.LICENSE.txt'),path.join(here,'dist/cmdk-LICENSE.txt'));
 fs.copyFileSync(path.join(here,'node_modules/elkjs/LICENSE.md'),path.join(here,'dist/elkjs-LICENSE.md'));
+fs.copyFileSync(path.join(root,'node_modules/libavoid-js/LICENSE'),path.join(here,'dist/libavoid-LICENSE.txt'));
 for(const [from,to]of [['monaco-editor/LICENSE','monaco-LICENSE.txt'],['bootstrap-icons/LICENSE','bootstrap-icons-LICENSE.txt'],['@fortawesome/fontawesome-free/LICENSE.txt','fontawesome-LICENSE.txt']])
   fs.copyFileSync(path.join(root,'node_modules',from),path.join(here,'dist',to));
 console.log('Community renderer built with fictional fulfillment data only.');

@@ -1,10 +1,12 @@
 {
   "name": "er-wiki-workspace",
-  "version": "0.2.0",
+  "version": "0.3.0-local.3",
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
-  "engines": { "node": ">=22.18.0" },
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "build": "npm --prefix desktop run build",
@@ -20,6 +22,7 @@
     "@fortawesome/fontawesome-free": "6.5.2",
     "bootstrap-icons": "1.11.1",
     "cmdk": "1.1.1",
+    "libavoid-js": "0.5.0-beta.5",
     "monaco-editor": "0.52.2"
   }
 }

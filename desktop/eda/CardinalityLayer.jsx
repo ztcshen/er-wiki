@@ -38,6 +38,7 @@ export default function CardinalityLayer({
             data-eda-cardinality={badge.value}
             data-diagram-interactive
             data-cardinality-table={String(badge.tableId)}
+            data-port-side={badge.side}
             data-rel-ids={JSON.stringify(badge.refs)}
             data-highlight={active ? "true" : "false"}
             role="button"

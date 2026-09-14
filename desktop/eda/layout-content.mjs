@@ -1,11 +1,12 @@
 import { projectModel } from './model.mjs';
+import { conditionText } from './relation-condition.mjs';
 
 // Text, colors, types and enum explanations do not change fixed-size geometry.
 // Selection of overview fields DOES change geometry and is captured via field IDs.
 export function geometryKey(model, options) {
   const p = projectModel(model, options);
-  return JSON.stringify({ nodes: p.nodes.map(n => [n.id, n.width, n.height, n.ports]),
-    edges: p.edges.map(e => [e.id, e.sources, e.targets, e.netIds, e.refs]),
+  return JSON.stringify({ nodes: p.nodes.map(n => [n.id, n.width, n.height, n.ports, n.placement, n.domainId]),
+    edges: p.edges.map(e => [e.id, e.sources, e.targets, e.netIds, e.refs, e.labels]),
     level: options.level, labels: options.labels, bundle: options.bundle, expanded: options.expanded });
 }
 
@@ -16,7 +17,7 @@ export function refreshLayoutContent(result, model) {
   const relations = new Map(model.relationships.map(r => [r.id, r]));
   const groups = new Map(model.groups.flatMap(g => g.tableIds.map(id => [id, g])));
   const nets = result.projection.nets.map(n => ({ ...n,
-    name: `${tables.get(n.targetTableId)?.name}.${n.targetFields.map(id => tables.get(n.targetTableId)?.fields.find(f => f.id === id)?.name).join('+')}`,
+    name: `${tables.get(n.targetTableId)?.name}.${n.targetFields.map(id => tables.get(n.targetTableId)?.fields.find(f => f.id === id)?.name).join('+')}${n.condition?' · '+conditionText(relations.get(n.members[0]?.id)||n.members[0]):''}`,
     members: n.members.map(r => relations.get(r.id) || r) }));
   const netMap = new Map(nets.map(n => [n.id, n]));
   const nodes = result.projection.nodes.map(n => {

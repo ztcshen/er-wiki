@@ -40,6 +40,61 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   default scope keys remain byte-compatible with previously saved camera positions.
 - Existing three-column cards, orthogonal routing, Bus/Hub/Net Labels, model editing,
   import/export and backup capabilities are retained.
+- Conditional references described by `reviewEvidence.condition = { field, value }`
+  have their own nets, field ports and labeled direct paths when both tables are
+  visible. They do not merge into ordinary PK buses or disappear behind long-line
+  labels; a domain view still uses boundary labels for genuinely out-of-scope tables.
+  The predicate is review metadata, never executable SQL/JS or a physical FK.
+  Predicate labels reuse ELK edge-label placement and the referencing group's color.
+  Hover captions and relation details also show the condition.
+- A table may carry `reviewPlacement: { belowTableId, leftOfTableId, gap, offsetX }`
+  for a human-chosen overview region. After the initial layout, ELK interactive
+  layering consumes pseudo positions and reroutes every edge. Only candidates
+  satisfying the relative region and avoiding node overlaps are accepted. This
+  follows [ELK's interactive layout guidance](https://eclipse.dev/elk/blog/posts/2023/23-01-09-constraining-the-model.html);
+  it is not an absolute pixel pin or a change to relationship direction. Hints do
+  not hide tables and are ignored in drill-down views.
+- Automatic arrangement retains the original ELK candidates as a fallback, then
+  tries compact interactive layouts with selected left/right port changes. Port
+  IDs, field bindings and relationship semantics never change. Crossings and
+  node overlaps remain the leading objectives; route obstructions, label collisions,
+  total/longest wire length, screen span and connected-group spread refine selection.
+  A group seed is only attempted for groups containing an internal relationship:
+  sharing a color alone does not force unrelated infrastructure tables together.
+  Candidates must satisfy human placement hints. Search is bounded by diagram size
+  (reduced above 80 projected nodes, baseline-only above 250); this is a heuristic,
+  not a guarantee of a globally optimal layout. It runs in the existing cancellable
+  worker and adds no configuration controls to the normal reading interface.
+- Small/medium diagrams then get a free-position search using libavoid, independent
+  of ELK's layer assignments. Candidates include leaf attachment above/below/alongside
+  its unique neighbor, moving into free rows/columns and translating connected
+  groups. Obstructing virtual junctions can yield their slot. These are topology-
+  and geometry-derived proposals, with no table-name rules or saved pixel positions.
+  Each proposal reroutes the whole graph with fixed field pins and is rejected if
+  it violates placement, overlaps cards, cuts through cards or obscures labels.
+  Shared bus pins are not changed by individual-table moves; whole-layout port
+  assignment can evaluate their side as one shared endpoint. The original ELK
+  layout is always a scored fallback.
+  The optional search has four rounds and a six-second budget, reduced candidates
+  above 30 nodes and disabled above 80 nodes. The pinned libavoid-js WASM wrapper
+  is a beta release: loading or candidate failures never alter the source model.
+- The optional search also evaluates ELK SPOrE/ShrinkTree compaction at two
+  clearances, with orthogonal and free translation. Only positions are consumed;
+  every candidate gets fresh obstacle routing. Relative placement is reapplied and
+  checked, so compaction cannot silently discard a human-chosen region.
+- Table pins can use all four sides. `ports.mjs` owns boundary coordinates, direction
+  flags and restoring the original field-row anchor. Top/bottom rails distribute
+  field groups horizontally; conditional leads for one field share a cardinality
+  anchor but retain separate ports. IDs and composite-field bindings never change.
+  Four-side candidates are evaluated globally and per relation, without rotating
+  table contents. Edits and semantic zoom do not move pins independently of routes.
+- Scoring now detects cardinality-label collisions and includes a small empty-area
+  penalty (`0.2 * sqrt(bounding area - node area)`) in addition to wire length,
+  longest relation, screen span and group spread. This is an occupancy proxy, not
+  an exact largest-empty-rectangle solver; routing space remains necessary.
+  The minimap picks a less-occupied corner of the fitted layout and does not jump
+  while panning or dragging it. It does not promise to avoid every object at every
+  zoom level.
 
 ## Structure
 

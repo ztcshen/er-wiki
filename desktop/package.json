@@ -1,7 +1,7 @@
 {
   "name": "er-wiki-desktop",
   "productName": "ER Wiki",
-  "version": "0.2.0",
+  "version": "0.3.0-local.3",
   "private": true,
   "description": "Local-first ER model workspace based on drawDB",
   "license": "AGPL-3.0-only",
