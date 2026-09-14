@@ -72,11 +72,29 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   and geometry-derived proposals, with no table-name rules or saved pixel positions.
   Each proposal reroutes the whole graph with fixed field pins and is rejected if
   it violates placement, overlaps cards, cuts through cards or obscures labels.
-  Shared bus pins keep their side during this phase; exclusive pins can change
-  sides with a moved table. The original ELK layout is always a scored fallback.
+  Shared bus pins are not changed by individual-table moves; whole-layout port
+  assignment can evaluate their side as one shared endpoint. The original ELK
+  layout is always a scored fallback.
   The optional search has four rounds and a six-second budget, reduced candidates
   above 30 nodes and disabled above 80 nodes. The pinned libavoid-js WASM wrapper
   is a beta release: loading or candidate failures never alter the source model.
+- The optional search also evaluates ELK SPOrE/ShrinkTree compaction at two
+  clearances, with orthogonal and free translation. Only positions are consumed;
+  every candidate gets fresh obstacle routing. Relative placement is reapplied and
+  checked, so compaction cannot silently discard a human-chosen region.
+- Table pins can use all four sides. `ports.mjs` owns boundary coordinates, direction
+  flags and restoring the original field-row anchor. Top/bottom rails distribute
+  field groups horizontally; conditional leads for one field share a cardinality
+  anchor but retain separate ports. IDs and composite-field bindings never change.
+  Four-side candidates are evaluated globally and per relation, without rotating
+  table contents. Edits and semantic zoom do not move pins independently of routes.
+- Scoring now detects cardinality-label collisions and includes a small empty-area
+  penalty (`0.2 * sqrt(bounding area - node area)`) in addition to wire length,
+  longest relation, screen span and group spread. This is an occupancy proxy, not
+  an exact largest-empty-rectangle solver; routing space remains necessary.
+  The minimap picks a less-occupied corner of the fitted layout and does not jump
+  while panning or dragging it. It does not promise to avoid every object at every
+  zoom level.
 
 ## Structure
 

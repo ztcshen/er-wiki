@@ -320,6 +320,9 @@ export default function EdaScene({
             {(node.ports || []).map((p) => (
               <circle
                 key={p.id}
+                data-eda-port={p.id}
+                data-port-side={p.layoutOptions["elk.port.side"]}
+                data-field-ids={JSON.stringify(p.fieldIds || [])}
                 cx={p.x}
                 cy={p.y}
                 r="2.5"

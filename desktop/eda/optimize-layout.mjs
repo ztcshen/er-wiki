@@ -2,6 +2,8 @@ import { elkGraph } from './elk-graph.mjs';
 import { placementHints, placementPositions, satisfiesPlacement } from './placement.mjs';
 import { scoreLayout, validateLayout } from './metrics.mjs';
 import { cohesiveGroups, layoutQuality, compareCandidates } from './layout-quality.mjs';
+import { movePorts } from './ports.mjs';
+export { movePorts } from './ports.mjs';
 
 export function portSuggestions(projection, layout, limit = 4) {
   const geometry = new Map(layout.children.map(n => [n.id, n]));
@@ -22,17 +24,6 @@ export function portSuggestions(projection, layout, limit = 4) {
     if (side !== port.layoutOptions['elk.port.side']) suggestions.push({ id: port.id, side, benefit: Math.abs(distance) });
   }
   return suggestions.sort((a, b) => b.benefit - a.benefit || a.id.localeCompare(b.id)).slice(0, limit);
-}
-
-export function movePorts(projection, changes) {
-  const next = structuredClone(projection), byId = new Map(changes.map(c => [c.id, c]));
-  for (const n of next.nodes) for (const port of n.ports) {
-    const change = byId.get(port.id);
-    if (!change) continue;
-    port.x = change.side === 'EAST' ? n.width : 0;
-    port.layoutOptions['elk.port.side'] = change.side;
-  }
-  return next; // Port IDs, field identities and relationship directions stay intact.
 }
 
 function groupSeed(projection, base) {

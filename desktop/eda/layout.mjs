@@ -34,7 +34,7 @@ export async function arrangeSchematic(model, options={}, elk){
     if(!results.length)throw new Error('Relative table placement cannot be satisfied without overlapping nodes');
     results.sort(compareCandidates);
     if(options.optimize===false)return results;
-    return refinePositions(await optimizeLayouts(results,elk,options),options);
+    return refinePositions(await optimizeLayouts(results,elk,options),options,elk);
   }
   let results=await candidates(projection),best=results[0];
   if(options.labels!=='off'&&options.level!=='system'){

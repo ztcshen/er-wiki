@@ -40,7 +40,8 @@ test('ELK places conditional labels and never cuts their full-view paths for len
   assert.equal(result.metrics.overlaps, 0);
   const { cardinalityBadges } = await import('../eda/cardinality.mjs');
   const inboxBadges = cardinalityBadges(result).filter(b => b.tableId === 'notifications');
-  assert(inboxBadges.length >= 1 && inboxBadges.length <= 2, 'Conditional leads share one badge per side');
+  assert(inboxBadges.length >= 1 && inboxBadges.length <= 4, 'Conditional leads share one badge per side');
+  assert.equal(new Set(inboxBadges.map(b => b.side)).size, inboxBadges.length);
   assert.equal(new Set(inboxBadges.flatMap(b => b.refs)).size, 3);
   assert(inboxBadges.every(b => b.value === 'N'));
   for (const branch of branches) {

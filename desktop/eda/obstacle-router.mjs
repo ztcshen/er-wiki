@@ -1,5 +1,7 @@
 // ELK supplies the skeleton; libavoid routes free-position candidates without
 // forcing related tables back into successive layers. Both run in the worker.
+import { PORT_SIDES } from './ports.mjs';
+import { cardinalityBadges } from './cardinality.mjs';
 let loading;
 export function loadObstacleRouter() {
   return loading ||= import('libavoid-js').then(async ({ AvoidLib }) => {
@@ -15,8 +17,8 @@ export const rectanglesOverlap = (a, b, gap = 0) =>
   a.x < b.x + b.width + gap && a.x + a.width + gap > b.x &&
   a.y < b.y + b.height + gap && a.y + a.height + gap > b.y;
 
-function placeLabels(edges, nodes) {
-  const occupied = [...nodes];
+function placeLabels(edges, nodes, badges) {
+  const occupied = [...nodes, ...badges.map(b => ({ x: b.x - (b.value === '混合' ? 23 : 11), y: b.y - 9, width: b.value === '混合' ? 46 : 22, height: 18 }))];
   for (const edge of edges) for (const label of edge.labels || []) {
     const section = edge.sections[0], points = [section.startPoint, ...section.bendPoints, section.endPoint];
     const candidates = [];
@@ -59,7 +61,8 @@ export function routeObstacles(Avoid, projection, seed) {
       n.ports = structuredClone(ports);
       ports.forEach((port, index) => {
         const side = port.layoutOptions['elk.port.side'];
-        const pin = new Avoid.ShapeConnectionPin(shape, index + 1, port.x / n.width, port.y / n.height, true, 0, side === 'EAST' ? 8 : 4);
+        if (!PORT_SIDES[side]) throw new Error('Invalid routing port side');
+        const pin = new Avoid.ShapeConnectionPin(shape, index + 1, port.x / n.width, port.y / n.height, true, 0, PORT_SIDES[side].avoid);
         pin.setExclusive(false);
         endpoints.set(port.id, own(new Avoid.ConnEnd(shape, index + 1)));
       });
@@ -87,7 +90,7 @@ export function routeObstacles(Avoid, projection, seed) {
         ...(edge.labels ? { labels: structuredClone(edge.labels) } : {}),
       };
     });
-    placeLabels(layout.edges, layout.children);
+    placeLabels(layout.edges, layout.children, cardinalityBadges({ layout, projection }));
     // Normalize nodes, wires and labels together; nothing is clipped at zero.
     const coords = [...layout.children.flatMap(n => [n, { x: n.x + n.width, y: n.y + n.height }]),
       ...layout.edges.flatMap(e => [...e.sections.flatMap(s => [s.startPoint, ...s.bendPoints, s.endPoint]),

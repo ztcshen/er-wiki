@@ -105,7 +105,9 @@ export function projectModel(model, options={}, longCuts=new Set()) {
       const branches=conditionPorts.get(JSON.stringify([tid,fids,side]))||[relation.id];
       y+=branches.length===1?6:-8+16*branches.indexOf(relation.id)/(branches.length-1);
     }
-    return port(n,relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y),relation?badgeY:undefined);
+    const pid=port(n,relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y),relation?badgeY:undefined);
+    n.ports.find(p=>p.id===pid).fieldIds=[...fids];
+    return pid;
   };
   const labelPort=(net,key,side)=>{
     const n=addNode({id:idOf('label',[net.id,key]),kind:'label',netId:net.id,title:net.code,subtitle:net.name,

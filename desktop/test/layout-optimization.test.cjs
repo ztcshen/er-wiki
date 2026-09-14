@@ -23,7 +23,7 @@ test('moving a port preserves semantic identities and input', async () => {
 
 test('quality detects obstructed routes and ignores disconnected groups', async () => {
   const { layoutQuality, cohesiveGroups } = await import('../eda/layout-quality.mjs');
-  const p = { nodes: [], edges: [{ id: 'e', refs: ['r'] }], nets: [], domains: [{ id: 'infra', tableIds: ['a', 'b'] }] };
+  const p = { nodes: [], edges: [{ id: 'e', refs: ['r'], sources: [], targets: [] }], nets: [], domains: [{ id: 'infra', tableIds: ['a', 'b'] }] };
   assert.deepEqual(cohesiveGroups(p), []);
   const q = layoutQuality({ width: 100, height: 100, children: [{ x: 40, y: 40, width: 20, height: 20 }], edges: [{ id: 'e', sections: [{ startPoint: { x: 0, y: 50 }, endPoint: { x: 100, y: 50 } }], labels: [{ x: 45, y: 45, width: 10, height: 10 }] }] }, p, { length: 100 });
   assert.equal(q.nodeIntrusions, 1);

@@ -1,4 +1,5 @@
 import { sectionsOf } from './metrics.mjs';
+import { cardinalityBadges } from './cardinality.mjs';
 
 const overlaps = (a, b) => a.x < b.x + b.width - .1 && a.x + a.width > b.x + .1 &&
   a.y < b.y + b.height - .1 && a.y + a.height > b.y + .1;
@@ -34,6 +35,13 @@ export function layoutQuality(layout, projection, metrics, targetAspect = 1.8) {
     labelOverlaps += nodes.filter(n => overlaps(labels[i], n)).length;
     for (let j = 0; j < i; j++) if (overlaps(labels[i], labels[j])) labelOverlaps++;
   }
+  const badges = cardinalityBadges({ layout, projection }).map(b => ({ x: b.x - (b.value === '混合' ? 23 : 11), y: b.y - 9, width: b.value === '混合' ? 46 : 22, height: 18 }));
+  let badgeOverlaps = 0;
+  for (let i = 0; i < badges.length; i++) {
+    badgeOverlaps += nodes.filter(n => overlaps(badges[i], n)).length;
+    badgeOverlaps += labels.filter(l => overlaps(badges[i], l)).length;
+    badgeOverlaps += badges.slice(0, i).filter(b => overlaps(badges[i], b)).length;
+  }
   const geometry = new Map(nodes.map(n => [n.id, n]));
   let groupSpread = 0;
   for (const group of cohesiveGroups(projection)) {
@@ -45,16 +53,17 @@ export function layoutQuality(layout, projection, metrics, targetAspect = 1.8) {
   const width = layout.width || 0, height = layout.height || 0;
   const longestRelation = Math.max(0, ...lengths.values());
   const screenSpan = Math.max(width / targetAspect, height);
+  const emptyArea = Math.max(0, width * height - nodes.reduce((sum, n) => sum + n.width * n.height, 0));
   // Crossings remain the first objective. Within that class, bounded penalties
   // prefer readable, compact routes without requiring every group to be a box.
-  const readability = Math.round(metrics.length + .3 * longestRelation + .4 * screenSpan + .12 * groupSpread);
+  const readability = Math.round(metrics.length + .3 * longestRelation + .4 * screenSpan + .12 * groupSpread + .2 * Math.sqrt(emptyArea));
   return { width, height, aspectRatio: height ? width / height : 1, longestRelation,
-    groupSpread: Math.round(groupSpread), nodeIntrusions, labelOverlaps, readability };
+    groupSpread: Math.round(groupSpread), nodeIntrusions, labelOverlaps, badgeOverlaps, emptyArea: Math.round(emptyArea), readability };
 }
 
 export function compareCandidates(a, b) {
   for (const key of ['crossings', 'overlaps']) if (a.metrics[key] !== b.metrics[key]) return a.metrics[key] - b.metrics[key];
-  for (const key of ['nodeIntrusions', 'labelOverlaps', 'readability']) {
+  for (const key of ['nodeIntrusions', 'labelOverlaps', 'badgeOverlaps', 'readability']) {
     const difference = (a.quality?.[key] || 0) - (b.quality?.[key] || 0);
     if (difference) return difference;
   }

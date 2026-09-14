@@ -72,7 +72,7 @@ try {
     for (const id of sourceIds) {
       const badges = page.locator('[data-cardinality-table]').filter({ has: page.locator('text') });
       const matching = await badges.evaluateAll((nodes, id) => nodes.filter(n => n.getAttribute('data-cardinality-table') === id).length, id);
-      assert(matching >= 1 && matching <= 2, 'Shared field has at most one badge per side');
+      assert(matching >= 1 && matching <= 4, 'Shared field has at most one badge per side');
     }
     for (const relation of conditions) {
       const wires = page.locator('[data-kind="conditional"]');
@@ -89,6 +89,28 @@ try {
       assert(box && box.width > 10 && box.height > 3);
     }
     await page.screenshot({ path: path.join(out, `relations-${labels}.png`), scale: 'css' });
+    if (labels === 'off' && process.env.ER_WIKI_EXPECT_FOUR_SIDES === '1') {
+      const pins = await page.locator('[data-node-kind="table"] [data-eda-port]').evaluateAll(nodes => nodes.map(p => ({
+        side: p.getAttribute('data-port-side'), fields: JSON.parse(p.getAttribute('data-field-ids')),
+        tableId: p.closest('[data-table-id]').getAttribute('data-table-id'),
+        x: p.cx.baseVal.value, y: p.cy.baseVal.value,
+        width: p.closest('[data-table-id]').querySelector('rect').width.baseVal.value,
+        height: p.closest('[data-table-id]').querySelector('rect').height.baseVal.value,
+      })));
+      assert(pins.some(p => p.side === 'NORTH') && pins.some(p => p.side === 'SOUTH'), 'Native desktop must actually render both top and bottom pins');
+      for (const pin of pins.filter(p => ['NORTH', 'SOUTH'].includes(p.side))) {
+        assert.equal(pin.y, pin.side === 'NORTH' ? 0 : pin.height);
+        assert(pin.x > 0 && pin.x < pin.width);
+        const table = document.tables.find(t => String(t.id) === pin.tableId);
+        assert(pin.fields.length && pin.fields.every(id => table.fields.some(f => f.id === id)), 'Vertical pins retain original field bindings');
+      }
+      const badge = page.locator('[data-cardinality-table][data-port-side="NORTH"], [data-cardinality-table][data-port-side="SOUTH"]').first();
+      const ids = JSON.parse(await badge.getAttribute('data-rel-ids'));
+      await badge.focus(); await badge.press('Enter');
+      await page.locator('[data-net-member]').first().waitFor();
+      const visibleIds = await page.locator('[data-net-member]').evaluateAll(nodes => nodes.map(n => n.getAttribute('data-net-member')));
+      assert(ids.some(id => visibleIds.includes(String(id))), 'Selecting a vertical badge opens the corresponding original relation');
+    }
   }
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, out, tables: document.tables.length, directConditions: conditions.length, checked: ['Bus enabled', 'all lines', 'all net labels', 'same model after reload', 'visible condition labels', 'no page errors'] }));

@@ -4,8 +4,10 @@ import { portSuggestions, movePorts } from './optimize-layout.mjs';
 import { scoreLayout, validateLayout } from './metrics.mjs';
 import { layoutQuality, compareCandidates } from './layout-quality.mjs';
 import { placementHints, satisfiesPlacement } from './placement.mjs';
+import { fourSideSuggestions } from './ports.mjs';
+import { compactLayoutSeeds } from './compact-layout.mjs';
 
-export async function refinePositions(candidates, options = {}) {
+export async function refinePositions(candidates, options = {}, elk) {
   let best = [...candidates].sort(compareCandidates)[0];
   if (options.refinePositions === false || best.projection.nodes.length > 80) return candidates;
   const results = [...candidates];
@@ -18,7 +20,7 @@ export async function refinePositions(candidates, options = {}) {
       const layout = routeObstacles(Avoid, projection, seed);
       validateLayout(layout, projection);
       const metrics = scoreLayout(layout, projection), quality = layoutQuality(layout, projection, metrics, options.targetAspectRatio);
-      if (metrics.overlaps || quality.nodeIntrusions || quality.labelOverlaps || !satisfiesPlacement(layout, placementHints(projection))) return;
+      if (metrics.overlaps || quality.nodeIntrusions || quality.labelOverlaps || quality.badgeOverlaps || !satisfiesPlacement(layout, placementHints(projection))) return;
       const result = { ...base, projection, layout, metrics, quality, optimization: `position / ${kind}` };
       if (compareCandidates(result, best) < 0) best = result;
       return result;
@@ -28,7 +30,31 @@ export async function refinePositions(candidates, options = {}) {
       options.onPositionError?.(error, { projection: base.projection, seed, changes, kind });
     }
   };
+  const trySides = (base, seed, kind) => {
+    if (aborted) return;
+    const suggestions = fourSideSuggestions(base.projection, seed);
+    // Try whole assignment and each affected edge independently, so a bad side
+    // on one relation cannot hide a useful top/bottom choice on another.
+    const variants = [suggestions, ...base.projection.edges.map(e => suggestions.filter(s => [...e.sources, ...e.targets].includes(s.id)))];
+    const seen = new Set();
+    for (const changes of variants) {
+      if (aborted || performance.now() - started >= budget) break;
+      const key = JSON.stringify(changes);
+      if (!changes.length || seen.has(key)) continue;
+      seen.add(key); route(base, seed, changes, kind + ' / four-sides');
+    }
+  };
   route(best, best.layout, [], 'reroute');
+  trySides(best, best.layout, 'ports');
+  const compact = async () => {
+    const base = best;
+    for (const seed of await compactLayoutSeeds(base.projection, base.layout, elk)) {
+      if (aborted || performance.now() - started >= budget) break;
+      route(base, seed.layout, [], seed.kind);
+      trySides(base, seed.layout, seed.kind);
+    }
+  };
+  await compact();
   for (let round = 0; round < 4 && !aborted && performance.now() - started < budget; round++) {
     const base = best;
     const moves = positionCandidates(base.projection, base.layout, base.projection.nodes.length > 30 ? 24 : 64);
@@ -56,10 +82,15 @@ export async function refinePositions(candidates, options = {}) {
           if (aborted) break;
         }
       }
+      if (!aborted) {
+        const four = fourSideSuggestions(base.projection, seed).filter(c => exclusive.has(c.id));
+        if (four.length) route(base, seed, four, move.kind + ' / four-sides');
+      }
     }
     if (best === base) break;
     results.push(best);
   }
+  if (!aborted && performance.now() - started < budget) await compact();
   if (!results.includes(best)) results.push(best);
   return results.sort(compareCandidates);
 }

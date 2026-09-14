@@ -1,4 +1,5 @@
 import { conditionText } from './relation-condition.mjs';
+import { PORT_SIDES } from './ports.mjs';
 const cardinalities = new Map([
   ["one_to_one", { start: "1", end: "1", name: "一对一" }],
   ["one_to_many", { start: "1", end: "N", name: "一对多" }],
@@ -119,14 +120,16 @@ export function cardinalityBadges(result, selectedRelation = null) {
         const side = port.layoutOptions["elk.port.side"];
         // Hidden-field/domain views can have several different field ports at the
         // same position. Summarize them once instead of stacking conflicting labels.
-        const badgeY = port.badgeY ?? port.y;
-        const key = JSON.stringify([node.id, port.x, badgeY, side]);
+        const badgeY = port.badgeY ?? port.y, badgeX = port.badgeX ?? port.x;
+        const normal = PORT_SIDES[side] || PORT_SIDES.WEST;
+        const key = JSON.stringify([node.id, badgeX, badgeY, side]);
         if (!groups.has(key))
           groups.set(key, {
             id: key,
             tableId: node.tableId,
-            x: position.x + port.x + (side === "EAST" ? 19 : -19),
-            y: position.y + badgeY,
+            side,
+            x: position.x + badgeX + normal.dx * 19,
+            y: position.y + badgeY + normal.dy * 19,
             netIds: new Set(),
             entries: new Map(),
           });
@@ -150,6 +153,7 @@ export function cardinalityBadges(result, selectedRelation = null) {
     return {
       id: group.id,
       tableId: group.tableId,
+      side: group.side,
       x: group.x,
       y: group.y,
       refs: entries.map((entry) => entry.id),
