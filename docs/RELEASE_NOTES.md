@@ -1,3 +1,19 @@
+# Unreleased — ER review and compact four-sided diagrams
+
+- Directly edit field length and numeric precision, enum values, relationship endpoints and composite field mappings.
+- Live structural checks and simpler contextual navigation; no review baselines or audit-history workflow.
+- Replace a complete model in the running desktop workspace, retaining its model ID and reading other models independently.
+- Explicit conditional relationships with visible predicates and field-grouped cardinality badges.
+- Relative table placement, adaptive field ports on all four sides, libavoid obstacle routing and ELK SPOrE compaction.
+- Candidate scoring retains original layouts as fallbacks and checks crossings, overlaps, labels, route length and occupancy.
+- Minimap placement avoids occupied corners in the fitted overview. Fields and relationship semantics do not change during arrangement.
+
+Position refinement is bounded (up to 80 projected nodes, four search rounds and
+a six-second budget); layout remains heuristic. The libavoid-js WASM wrapper is
+pinned to a beta release and runs locally. Public examples contain fictional
+fulfillment data only. These notes describe source changes, not a newly published
+binary release; published downloads remain on the Releases page.
+
 # v0.2.0 — ER-first desktop workbench
 
 ## ER reading and editing

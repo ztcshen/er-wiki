@@ -48,15 +48,16 @@ test('layout direction persists per model and bookmarks without invalidating old
 
 test('explicit orientation restricts ELK candidates while retaining orthogonal routes and scoring priority', async () => {
   const { arrangeSchematic } = await import('../eda/layout.mjs');
-  const { validateLayout, compareScores } = await import('../eda/metrics.mjs');
+  const { validateLayout } = await import('../eda/metrics.mjs');
+  const { compareCandidates } = await import('../eda/layout-quality.mjs');
   const fixture = JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, '../../examples/fulfillment.drawdb.json'), 'utf8'));
   const model = { tables: fixture.tables, relationships: fixture.relationships, groups: fixture.reviewGroups };
   const before = JSON.stringify(model);
   for (const direction of ['RIGHT', 'DOWN']) {
     const result = await arrangeSchematic(model, { level: 'overview', labels: 'off', bundle: true, direction });
     validateLayout(result.layout, result.projection);
-    assert.equal(result.candidates.length, 2);
-    assert(result.candidates.every(candidate => candidate.direction === direction && compareScores(result.metrics, candidate.metrics) <= 0));
+    assert.equal(result.candidates.filter(candidate => !candidate.optimization).length, 2, 'Both original ELK seeds remain available alongside refinement candidates');
+    assert(result.candidates.every(candidate => candidate.direction === direction && compareCandidates(result, candidate) <= 0));
     assert.equal(result.projection.nodes.filter(node => node.kind === 'table').length, 13);
   }
   assert.equal(JSON.stringify(model), before);
