@@ -20,7 +20,7 @@ export async function arrangeSchematic(model, options={}, elk){
         'elk.spacing.edgeNode':'22','elk.spacing.edgeEdge':'14','elk.padding':'[top=40,left=40,bottom=40,right=40]'},
         children:p.nodes.map(n=>({id:n.id,width:n.width,height:n.height,ports:n.ports,
           layoutOptions:{'elk.portConstraints':'FIXED_POS'}})),
-        edges:p.edges.map(e=>({id:e.id,sources:e.sources,targets:e.targets}))};
+        edges:p.edges.map(e=>({id:e.id,sources:e.sources,targets:e.targets,...(e.labels?{labels:e.labels}: {})}))};
       const layout=await elk.layout(graph);validateLayout(layout,p);
       results.push({layout,metrics:scoreLayout(layout,p),direction,seed});
     }
@@ -29,7 +29,7 @@ export async function arrangeSchematic(model, options={}, elk){
   let results=await candidates(projection),best=results[0];
   if(options.labels!=='off'&&options.level!=='system'){
     const long=new Set(),lengths=new Map();const meta=new Map(projection.edges.map(e=>[e.id,e]));
-    for(const e of best.layout.edges){const m=meta.get(e.id);if(m.kind==='label-stub'||m.netIds.some(id=>(options.expanded||[]).includes(id)))continue;
+    for(const e of best.layout.edges){const m=meta.get(e.id);if(m.kind==='label-stub'||m.kind==='conditional'||m.netIds.some(id=>(options.expanded||[]).includes(id)))continue;
       const length=sectionsOf(e).reduce((sum,p)=>sum+p.slice(1).reduce((n,b,i)=>n+Math.abs(b.x-p[i].x)+Math.abs(b.y-p[i].y),0),0);
       m.refs.forEach(id=>lengths.set(id,(lengths.get(id)||0)+length));
     }

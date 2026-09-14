@@ -40,6 +40,13 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   default scope keys remain byte-compatible with previously saved camera positions.
 - Existing three-column cards, orthogonal routing, Bus/Hub/Net Labels, model editing,
   import/export and backup capabilities are retained.
+- Conditional references described by `reviewEvidence.condition = { field, value }`
+  have their own nets, field ports and labeled direct paths when both tables are
+  visible. They do not merge into ordinary PK buses or disappear behind long-line
+  labels; a domain view still uses boundary labels for genuinely out-of-scope tables.
+  The predicate is review metadata, never executable SQL/JS or a physical FK.
+  Predicate labels reuse ELK edge-label placement and the referencing group's color.
+  Hover captions and relation details also show the condition.
 
 ## Structure
 

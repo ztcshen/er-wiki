@@ -1,3 +1,4 @@
+import { relationCondition, conditionLabel, conditionText } from './relation-condition.mjs';
 const idOf = (kind, value) => `${kind}:${JSON.stringify(value)}`;
 const pairsOf = r => r.fields?.length ? r.fields : [{ startFieldId:r.startFieldId,endFieldId:r.endFieldId }];
 export const ALL_DOMAIN = '__unassigned__';
@@ -9,9 +10,13 @@ export function deriveNets(model) {
     const source=known.get(r.startTableId),target=known.get(r.endTableId),pairs=pairsOf(r);
     if(!source||!target||!pairs.every(p=>source.fields.some(f=>f.id===p.startFieldId)&&target.fields.some(f=>f.id===p.endFieldId)))continue;
     // Equal names are NOT equal nets. Composite target order is intentional.
-    const key=idOf('net',[target.id,pairs.map(p=>p.endFieldId)]);
+    const condition=relationCondition(r);
+    // Alternative business-type branches are NOT one electrical net with all
+    // unconditional references to this PK. Keep each review relation traceable.
+    const key=idOf('net',[target.id,pairs.map(p=>p.endFieldId),...(condition?[r.id,condition]:[])]);
     if(!nets.has(key))nets.set(key,{id:key,targetTableId:target.id,targetFields:pairs.map(p=>p.endFieldId),
-      name:`${target.name}.${pairs.map(p=>target.fields.find(f=>f.id===p.endFieldId).name).join('+')}`,members:[]});
+      name:`${target.name}.${pairs.map(p=>target.fields.find(f=>f.id===p.endFieldId).name).join('+')}${condition?' · '+conditionText(r):''}`,
+      condition,members:[]});
     nets.get(key).members.push(r);
   }
   return [...nets.values()].sort((a,b)=>a.id.localeCompare(b.id)).map((n,i)=>({...n,code:`N${String(i+1).padStart(3,'0')}`}));
@@ -40,8 +45,12 @@ export function projectModel(model, options={}, longCuts=new Set()) {
       layoutOptions:{'elk.port.side':side}});
     return id;
   };
-  const connect=(source,target,net,refs,kind='wire')=>edges.push({id:`wire-${edges.length}`,sources:[source],targets:[target],
-    netIds:Array.isArray(net)?net:[net.id],refs:refs.map(r=>r.id),kind});
+  const connect=(source,target,net,refs,kind='wire')=>{
+    const label=kind==='conditional'?conditionLabel(refs[0]):null;
+    edges.push({id:`wire-${edges.length}`,sources:[source],targets:[target],
+      netIds:Array.isArray(net)?net:[net.id],refs:refs.map(r=>r.id),kind,
+      ...(label?{labels:[{id:`condition-${edges.length}`,...label}]}:{})});
+  };
   if(level==='system'){
     for(const d of domains)addNode({id:idOf('domain',d.id),kind:'domain',domainId:d.id,title:d.name,color:d.color,width:300,height:112,
       tableIds:d.tableIds,internal:model.relationships.filter(r=>d.tableIds.includes(r.startTableId)&&d.tableIds.includes(r.endTableId)).map(r=>r.id)});
@@ -78,11 +87,23 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     addNode({id:idOf('table',t.id),kind:'table',tableId:t.id,title:t.name,comment:t.comment||'',color:domainByTable.get(t.id)?.color||t.color||'#64748b',
       domainName:domainByTable.get(t.id)?.name||'',domainUnassigned:domainByTable.get(t.id)?.id===ALL_DOMAIN,width:360,height:fields.length?78+fields.length*30:110,fields,totalFields:t.fields.length});
   }
-  const tablePort=(tid,fids,side)=>{
+  const conditionPorts=new Map();
+  for(const net of touching)if(net.condition)for(const r of net.members){
+    for(const [tid,fids,side]of [[r.endTableId,pairsOf(r).map(p=>p.endFieldId),'EAST'],[r.startTableId,pairsOf(r).map(p=>p.startFieldId),'WEST']]){
+      const key=JSON.stringify([tid,fids,side]);
+      if(!conditionPorts.has(key))conditionPorts.set(key,[]);
+      conditionPorts.get(key).push(r.id);
+    }
+  }
+  const tablePort=(tid,fids,side,relation=null)=>{
     const n=nodes.get(idOf('table',tid));if(!n)return null;
     const indices=fids.map(fid=>n.fields.findIndex(f=>f.id===fid)).filter(i=>i>=0);
-    const y=indices.length?78+30*(indices.reduce((s,i)=>s+i,0)/indices.length)+15:65;
-    return port(n,fids,side,Math.min(n.height-8,y));
+    let y=indices.length?78+30*(indices.reduce((s,i)=>s+i,0)/indices.length)+15:65;
+    if(relation){
+      const branches=conditionPorts.get(JSON.stringify([tid,fids,side]))||[relation.id];
+      y+=branches.length===1?6:-8+16*branches.indexOf(relation.id)/(branches.length-1);
+    }
+    return port(n,relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y));
   };
   const labelPort=(net,key,side)=>{
     const n=addNode({id:idOf('label',[net.id,key]),kind:'label',netId:net.id,title:net.code,subtitle:net.name,
@@ -95,12 +116,12 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     for(const r of members){
       const owner=nodes.has(idOf('table',r.endTableId)),child=nodes.has(idOf('table',r.startTableId));
       const cross=domainByTable.get(r.startTableId)?.id!==domainByTable.get(r.endTableId)?.id;
-      const cut=!owner||!child||(!expanded.has(net.id)&&options.labels!=='off'&&
+      const cut=!owner||!child||(!net.condition&&!expanded.has(net.id)&&options.labels!=='off'&&
         (options.labels==='all'||cross||longCuts.has(r.id)));
       (cut?labels:wires).push(r);covered.add(r.id);
     }
     if(wires.length){
-      const ownerPort=tablePort(net.targetTableId,net.targetFields,'EAST');
+      const ownerPort=tablePort(net.targetTableId,net.targetFields,'EAST',net.condition?wires[0]:null);
       let branchPort=ownerPort;
       if(options.bundle!==false&&wires.length>=2){
         const high=wires.length>=4;
@@ -108,7 +129,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
           width:high?80:24,height:high?58:24,fanout:net.members.length,color:domainByTable.get(net.targetTableId)?.color||'#64748b'});
         connect(ownerPort,port(hub,'in','WEST',hub.height/2),net,wires,'bus');branchPort=port(hub,'out','EAST',hub.height/2);
       }
-      for(const r of wires)connect(branchPort,tablePort(r.startTableId,pairsOf(r).map(p=>p.startFieldId),'WEST'),net,[r],'branch');
+      for(const r of wires)connect(branchPort,tablePort(r.startTableId,pairsOf(r).map(p=>p.startFieldId),'WEST',net.condition?r:null),net,[r],net.condition?'conditional':'branch');
     }
     if(labels.length){
       const ownerPort=tablePort(net.targetTableId,net.targetFields,'EAST');

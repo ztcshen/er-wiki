@@ -1,5 +1,6 @@
 import { cardinalityOf } from "./cardinality.mjs";
 import { tr } from "../i18n/renderer";
+import { conditionText } from "./relation-condition.mjs";
 
 export default function RelationDetails({
   net,
@@ -84,6 +85,7 @@ export default function RelationDetails({
               <p className="eda-cardinality-tables">
                 {source?.name} ({card.start}) — ({card.end}) {target?.name}
               </p>
+              {conditionText(relation) && <p className="eda-code">条件关联：{conditionText(relation)}</p>}
               <p>
                 {pairs
                   .map(

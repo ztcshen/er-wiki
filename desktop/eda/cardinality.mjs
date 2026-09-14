@@ -1,3 +1,4 @@
+import { conditionText } from './relation-condition.mjs';
 const cardinalities = new Map([
   ["one_to_one", { start: "1", end: "1", name: "一对一" }],
   ["one_to_many", { start: "1", end: "N", name: "一对多" }],
@@ -22,7 +23,8 @@ export function relationCaption(
   translate = (value) => value,
 ) {
   const card = cardinalityOf(relation);
-  return `${tableName(relation.startTableId)} (${card.start}) — (${card.end}) ${tableName(relation.endTableId)} · ${translate(card.name)}`;
+  const condition = conditionText(relation);
+  return `${tableName(relation.startTableId)} (${card.start}) — (${card.end}) ${tableName(relation.endTableId)} · ${translate(card.name)}${condition ? ' · '+condition : ''}`;
 }
 
 export function matchesRelation(meta, netId, relationId) {
