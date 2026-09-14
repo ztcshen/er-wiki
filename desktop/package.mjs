@@ -21,7 +21,7 @@ for(const name of ['desktop','scripts','patches','examples','docs','LICENSE','NO
 const identity=process.env.ER_WIKI_SIGN_IDENTITY;
 const notarize=process.env.ER_WIKI_NOTARIZE==='1';
 if(notarize&&(!identity||!process.env.ER_WIKI_NOTARY_PROFILE))throw new Error('Notarization requires a Developer ID identity and an existing notarytool keychain profile.');
-const outputs=await packager({dir:stage,out:path.join(here,'release',meta.version),name:'ER Wiki Community',platform:process.platform,arch:process.arch,icon:packageIcon(here),
+const outputs=await packager({dir:stage,out:process.env.ER_WIKI_PACKAGE_OUT||path.join(here,'release',meta.version),name:'ER Wiki Community',platform:process.platform,arch:process.arch,icon:packageIcon(here),
   osxSign:identity?{identity,optionsForFile:()=>({hardenedRuntime:true,entitlements:path.join(here,'assets/entitlements.plist')})}:undefined,
   electronVersion:meta.devDependencies.electron,appVersion:meta.version,appBundleId:'io.github.ztcshen.erwiki',appCopyright:'drawDB contributors and ER Wiki contributors — AGPL-3.0',
   asar:true,overwrite:true,download:{checksums:JSON.parse(fs.readFileSync(path.join(here,'node_modules/electron/checksums.json'),'utf8'))}});

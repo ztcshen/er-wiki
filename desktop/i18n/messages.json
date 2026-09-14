@@ -587,5 +587,12 @@
   "字段关联": "Field relationships",
   "表详情内容": "Table detail sections",
   "尚未配置关联关系": "No relationships configured",
-  "注释": "Comment"
+  "注释": "Comment",
+  "完整替换当前模型…": "Replace current model…",
+  "完整替换当前模型？": "Replace the entire current model?",
+  "完整替换": "Replace entire model",
+  "选择完整模型以替换当前内容": "Choose a complete model to replace the current content",
+  "模型替换失败": "Model replacement failed",
+  "当前模型已完整替换，图形已更新；模型 ID 保持不变": "The entire model was replaced and the diagram updated. Model ID is unchanged.",
+  "模型：{{v0}}。替换为 {{v1}} 张表、{{v2}} 条关系、{{v3}} 个分组。原内容不会合并；替换前保留备份，旧编辑撤销栈将清空。": "Model: {{v0}}. Replace with {{v1}} tables, {{v2}} relationships and {{v3}} groups. No merging. A backup is kept before replacement; the old editing undo stack is cleared."
 }

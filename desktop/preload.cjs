@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('erDesktop', Object.freeze({
   checkUpdates: () => ipcRenderer.invoke('desktop:check-updates'),
   openResource: resource => ipcRenderer.invoke('desktop:open-resource', resource),
   confirmLeave: () => ipcRenderer.invoke('desktop:confirm-leave'),
+  confirmReplace: value => ipcRenderer.invoke('desktop:confirm-replace', value),
+  workspaceReady: modelId => ipcRenderer.send('desktop:workspace-ready', modelId),
   requestClose: () => ipcRenderer.invoke('desktop:request-close'),
   commandResult: (id, ok) => ipcRenderer.send('desktop:command-result', { id, ok }),
   onCommand: callback => {

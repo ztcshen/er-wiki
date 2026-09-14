@@ -3,6 +3,9 @@ import { searchModel } from "../eda/reading-state.mjs";
 // One catalogue supplies the application menu and keyboard command palette.
 // Targets are fixed capabilities, never arbitrary IPC channels or JavaScript.
 export const commandCatalogue = [
+  { id: "model.replace", label: "完整替换当前模型…", group: "导入与导出",
+    icon: "arrow-repeat", target: "workspace", action: "replace", mutating: true,
+    keywords: "replace full model json overwrite" },
   {
     id: "model.check",
     label: "结构检查",
@@ -295,7 +298,7 @@ export const menuSections = [
   { label: "模型", ids: ["model.new", "model.clone", "model.rename"] },
   {
     label: "导入与导出",
-    ids: ["import.json", "import.sql", "export.json", "export.diagram"],
+    ids: ["model.replace", "import.json", "import.sql", "export.json", "export.diagram"],
   },
   { label: "工作区", ids: ["app.backups", "app.settings", "app.help"] },
 ];

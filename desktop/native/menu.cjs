@@ -39,6 +39,7 @@ function installDesktopMenu({
         {
           label: "文件",
           submenu: [
+            { label: '完整替换当前模型…', click: () => command('replace') },
             {
               label: "导入模型副本…",
               accelerator: "CmdOrCtrl+Shift+O",

@@ -4,10 +4,18 @@ import { db } from '@drawdb/data/db';
 import { importModel, exportModel } from './model-file';
 import { tr } from '../i18n/renderer';
 import { openPanel, openCommandPalette } from './commands';
+import { replaceWorkspace } from './replace-workspace';
+import { useSelect } from '@drawdb/hooks';
+import { ObjectType } from '@drawdb/data/constants';
 
 export function useDesktopWorkspace(value) {
+  const { setSelectedElement, setBulkSelectedElements } = useSelect();
   const current = useRef(value);
   current.current = value;
+  useEffect(() => {
+    window.erDesktop?.workspaceReady(value.ready ? value.snapshot.diagramId || null : null);
+    return () => window.erDesktop?.workspaceReady(null);
+  }, [value.ready, value.snapshot.diagramId]);
   useEffect(() => {
     if (!value.ready || !value.lastSaved || !value.snapshot.diagramId || !window.erDesktop) return;
     let active = true;
@@ -61,6 +69,13 @@ export function useDesktopWorkspace(value) {
         if (action === 'save') {
           if(current.current.readOnly)throw new Error('只读模式下不可保存模型');
           await current.current.save(); ok = true;
+        } else if (action === 'replace' || action === 'replace-json') {
+          ok = await replaceWorkspace({ current, db, action, targetId, json });
+          if (ok) {
+            setSelectedElement(s => ({ ...s, element: ObjectType.NONE, id: -1, open: false, openDialogue: false }));
+            setBulkSelectedElements([]);
+            Toast.success(tr('当前模型已完整替换，图形已更新；模型 ID 保持不变'));
+          }
         } else if (action === 'export') {
           const { snapshot } = current.current;
           ok = await window.erDesktop.exportModel(snapshot.name, exportModel(snapshot));

@@ -16,6 +16,7 @@ function registerDesktopIpc({
   tr,
   localized,
   nativeDialog,
+  onWorkspaceReady = () => {},
   version: APP_VERSION,
 }) {
   function trusted(event) {
@@ -38,6 +39,23 @@ function registerDesktopIpc({
     }
     if (typeof result?.id === "string")
       bridge.settle(result.id, result.ok === true);
+  });
+  ipcMain.on('desktop:workspace-ready', (event, modelId) => {
+    try { trusted(event); } catch { return; }
+    if (modelId === null || typeof modelId === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(modelId)) onWorkspaceReady(modelId);
+  });
+  ipcMain.handle('desktop:confirm-replace', (event, summary) => {
+    trusted(event);
+    if (!summary || typeof summary.name !== 'string' || summary.name.length > 1000 ||
+      !['tables', 'relations', 'groups'].every(key => Number.isSafeInteger(summary[key]) && summary[key] >= 0)) throw new Error('Invalid replacement summary');
+    return nativeDialog(async () => {
+      const { response } = await dialog.showMessageBox(getWindow(), {
+        type: 'warning', message: tr('完整替换当前模型？'),
+        detail: tr('模型：{{v0}}。替换为 {{v1}} 张表、{{v2}} 条关系、{{v3}} 个分组。原内容不会合并；替换前保留备份，旧编辑撤销栈将清空。', { v0: summary.name, v1: summary.tables, v2: summary.relations, v3: summary.groups }),
+        buttons: [tr('取消'), tr('完整替换')], defaultId: 0, cancelId: 0, noLink: true,
+      });
+      return response === 1;
+    });
   });
   ipcMain.handle("desktop:request-close", (event) => {
     trusted(event);
@@ -63,13 +81,13 @@ function registerDesktopIpc({
   });
   ipcMain.handle("desktop:open-model", (event, kind = "json") => {
     trusted(event);
-    if (!["json", "sql"].includes(kind))
+    if (!["json", "sql", "replace-json"].includes(kind))
       throw new Error("Invalid import format");
     return nativeDialog(async () => {
       const result = await dialog.showOpenDialog(
         getWindow(),
         localized({
-          title: "导入模型副本（不覆盖已有模型）",
+          title: kind === 'replace-json' ? '选择完整模型以替换当前内容' : '导入模型副本（不覆盖已有模型）',
           properties: ["openFile"],
           filters: [
             {

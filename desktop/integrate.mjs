@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { modulePath } from './build/paths.mjs';
+import { integrateReplacement } from './build/replacement.mjs';
 
 function replaceOnce(code, anchor, replacement) {
   if (code.split(anchor).length !== 2) throw new Error(`Desktop integration anchor changed: ${anchor.slice(0, 70)}`);
@@ -31,7 +32,7 @@ export function integrateDesktop(here) {
       code = `import { useDesktopWorkspace } from ${JSON.stringify(sourceFile('renderer/useDesktopWorkspace.js'))};\n` + code;
       code = replaceOnce(code, '      setTitle("Untitled diagram");',
         '      setTitle("Untitled diagram");\n      setLastSaved("");\n      setSaveState(State.NONE);');
-      return replaceOnce(code, '  const moveToCloud = useCallback(async () => {', `
+      code = replaceOnce(code, '  const moveToCloud = useCallback(async () => {', `
   useDesktopWorkspace({
     save, navigate, lastSaved, autosave: settings.autosave, readOnly: layout.readOnly,
     ready: Boolean(isTemplate) || !loadedDiagramId || (diagramSource === "local" && viewOwnerIdRef.current === loadedDiagramId),
@@ -42,6 +43,7 @@ export function integrateDesktop(here) {
   });
 
   const moveToCloud = useCallback(async () => {`);
+      return integrateReplacement(code);
     }
     if (id.endsWith('/src/components/EditorHeader/ControlPanel.jsx')) {
       code=`import { workspaceCommand as desktopCommand } from ${JSON.stringify(sourceFile('renderer/commands.js'))};\n`+code;

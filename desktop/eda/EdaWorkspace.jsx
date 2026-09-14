@@ -69,6 +69,7 @@ export default function EdaWorkspace({ modelId, ready }) {
   const [fieldNets, setFieldNets] = useState([]),
     [focusRequest, setFocusRequest] = useState(0);
   const pendingFocus = useRef(null),
+    pendingFit = useRef(false),
     canvas = useRef(null);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   useEffect(() => {
@@ -182,6 +183,11 @@ export default function EdaWorkspace({ modelId, ready }) {
       setView([0, 0, result.layout.width || 800, result.layout.height || 500]);
   };
   const zoomView = (factor) => setView((v) => zoomAtPoint(v, factor));
+  useEffect(() => {
+    if (!pendingFit.current || !currentResult || busy || !result) return;
+    pendingFit.current = false;
+    fitView();
+  }, [result, currentResult, busy, focusRequest]);
   const tableNode = (id) => {
     const metadata = result?.projection.nodes.find(
       (n) => n.kind === "table" && n.tableId === id,
@@ -254,6 +260,17 @@ export default function EdaWorkspace({ modelId, ready }) {
   useEffect(() => {
     const handle = ({ detail }) => {
       const action = typeof detail === "string" ? detail : detail?.action;
+      if (action === "model-replaced") {
+        switchMode("er");
+        setChecksOpen(false);
+        setTools(null);
+        pendingFocus.current = null;
+        pendingRelation.current = null;
+        pendingFit.current = true;
+        navigate("overview");
+        setFocusRequest((n) => n + 1);
+        return;
+      }
       if (action === "check-model") {
         switchMode("er");
         setChecksOpen(true);
