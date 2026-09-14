@@ -44,6 +44,12 @@ try {
     assert.equal(await page.locator('[data-node-kind="table"]').count(), document.tables.length);
     assert.equal(await page.locator('[data-kind="conditional"]').count(), 3);
     assert.equal(await page.locator('[data-eda-condition]').count(), 3);
+    const sourceIds = [...new Set(conditions.map(r => r.startTableId))];
+    for (const id of sourceIds) {
+      const badges = page.locator('[data-cardinality-table]').filter({ has: page.locator('text') });
+      const matching = await badges.evaluateAll((nodes, id) => nodes.filter(n => n.getAttribute('data-cardinality-table') === id).length, id);
+      assert.equal(matching, 1, 'Shared notification field must not have stacked N badges');
+    }
     for (const relation of conditions) {
       const wire = page.locator('[data-kind="conditional"]').filter({ hasText: `${relation.reviewEvidence.condition.field} = ${relation.reviewEvidence.condition.value}` });
       assert.equal(await wire.count(), 1);

@@ -39,9 +39,9 @@ export function projectModel(model, options={}, longCuts=new Set()) {
   const domainByTable=new Map(domains.flatMap(d=>d.tableIds.map(id=>[id,d])));
   const nodes=new Map(),edges=[],covered=new Set(),expanded=new Set(options.expanded||[]);
   const addNode=n=>{if(!nodes.has(n.id))nodes.set(n.id,{ports:[],...n});return nodes.get(n.id);};
-  const port=(node,key,side,y)=>{
+  const port=(node,key,side,y,badgeY)=>{
     const id=idOf('port',[node.id,key,side]);
-    if(!node.ports.some(p=>p.id===id))node.ports.push({id,width:0,height:0,x:side==='EAST'?node.width:0,y,
+    if(!node.ports.some(p=>p.id===id))node.ports.push({id,width:0,height:0,x:side==='EAST'?node.width:0,y,...(badgeY===undefined?{}:{badgeY}),
       layoutOptions:{'elk.port.side':side}});
     return id;
   };
@@ -99,11 +99,12 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     const n=nodes.get(idOf('table',tid));if(!n)return null;
     const indices=fids.map(fid=>n.fields.findIndex(f=>f.id===fid)).filter(i=>i>=0);
     let y=indices.length?78+30*(indices.reduce((s,i)=>s+i,0)/indices.length)+15:65;
+    const badgeY=y;
     if(relation){
       const branches=conditionPorts.get(JSON.stringify([tid,fids,side]))||[relation.id];
       y+=branches.length===1?6:-8+16*branches.indexOf(relation.id)/(branches.length-1);
     }
-    return port(n,relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y));
+    return port(n,relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y),relation?badgeY:undefined);
   };
   const labelPort=(net,key,side)=>{
     const n=addNode({id:idOf('label',[net.id,key]),kind:'label',netId:net.id,title:net.code,subtitle:net.name,

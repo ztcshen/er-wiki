@@ -119,13 +119,14 @@ export function cardinalityBadges(result, selectedRelation = null) {
         const side = port.layoutOptions["elk.port.side"];
         // Hidden-field/domain views can have several different field ports at the
         // same position. Summarize them once instead of stacking conflicting labels.
-        const key = JSON.stringify([node.id, port.x, port.y, side]);
+        const badgeY = port.badgeY ?? port.y;
+        const key = JSON.stringify([node.id, port.x, badgeY, side]);
         if (!groups.has(key))
           groups.set(key, {
             id: key,
             tableId: node.tableId,
             x: position.x + port.x + (side === "EAST" ? 19 : -19),
-            y: position.y + port.y,
+            y: position.y + badgeY,
             netIds: new Set(),
             entries: new Map(),
           });
