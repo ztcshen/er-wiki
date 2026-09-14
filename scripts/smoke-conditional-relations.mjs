@@ -47,6 +47,7 @@ try {
     }, { targetId, labels });
     await page.reload();
     await ready();
+    if (process.env.ER_WIKI_EXPECT_POSITION_REFINEMENT === '1') assert.match(await page.locator('[data-eda-ready="true"]').getAttribute('data-layout-optimizer'), /^position \/ /);
     assert.equal(await page.locator('[data-node-kind="table"]').count(), document.tables.length);
     assert.equal(await page.locator('[data-kind="conditional"]').count(), conditions.length);
     assert.equal(await page.locator('[data-eda-condition]').count(), conditions.length);
@@ -58,6 +59,14 @@ try {
       const node = boxes[table.id], anchor = boxes[table.reviewPlacement.belowTableId];
       assert(node.y > anchor.bottom, 'Placed table must remain below its anchor after reload');
       if (table.reviewPlacement.leftOfTableId) assert(node.right < boxes[table.reviewPlacement.leftOfTableId].x, 'Placed table must stay left of the requested business table');
+    }
+    // The all-wire fixture folds this leaf vertically. Label-only views have
+    // different obstacles and may correctly prefer an adjacent horizontal slot.
+    if (labels === 'off' && process.env.ER_WIKI_TEST_LEAF && process.env.ER_WIKI_TEST_PARENT) {
+      const leaf = boxes[process.env.ER_WIKI_TEST_LEAF], parent = boxes[process.env.ER_WIKI_TEST_PARENT];
+      assert(leaf && parent);
+      assert(Math.abs(leaf.x - parent.x) < 2, 'Attached leaf folds into its parent column');
+      assert(leaf.bottom < parent.y || leaf.y > parent.bottom, 'Attached leaf is above or below its parent');
     }
     const sourceIds = [...new Set(conditions.map(r => r.startTableId))];
     for (const id of sourceIds) {

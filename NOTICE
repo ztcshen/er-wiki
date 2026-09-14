@@ -11,6 +11,10 @@ together with the Electron shell, EDA presentation and build tools.
 Major third-party components retain their own licenses:
 - Electron: MIT, with Chromium and other notices in the packaged distribution.
 - elkjs / Eclipse Layout Kernel: Eclipse Public License 2.0.
+- libavoid / libavoid-js: LGPL-2.1-or-later. The replaceable WASM asset and
+  license are included in desktop/dist. Wrapper version: 0.5.0-beta.5 (pinned).
+  Wrapper source and build scripts: https://github.com/Aksem/libavoid-js/tree/5062a42fbd82fff562afeebcbb7b1ed45eed8e75
+  Routing engine source: https://github.com/mjwybrow/adaptagrams/tree/master/cola/libavoid
 - React and Monaco Editor: MIT.
 - cmdk command menu: MIT.
 - Bootstrap Icons: MIT.

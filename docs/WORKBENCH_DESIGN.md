@@ -65,6 +65,18 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   (reduced above 80 projected nodes, baseline-only above 250); this is a heuristic,
   not a guarantee of a globally optimal layout. It runs in the existing cancellable
   worker and adds no configuration controls to the normal reading interface.
+- Small/medium diagrams then get a free-position search using libavoid, independent
+  of ELK's layer assignments. Candidates include leaf attachment above/below/alongside
+  its unique neighbor, moving into free rows/columns and translating connected
+  groups. Obstructing virtual junctions can yield their slot. These are topology-
+  and geometry-derived proposals, with no table-name rules or saved pixel positions.
+  Each proposal reroutes the whole graph with fixed field pins and is rejected if
+  it violates placement, overlaps cards, cuts through cards or obscures labels.
+  Shared bus pins keep their side during this phase; exclusive pins can change
+  sides with a moved table. The original ELK layout is always a scored fallback.
+  The optional search has four rounds and a six-second budget, reduced candidates
+  above 30 nodes and disabled above 80 nodes. The pinned libavoid-js WASM wrapper
+  is a beta release: loading or candidate failures never alter the source model.
 
 ## Structure
 

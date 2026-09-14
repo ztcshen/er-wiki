@@ -539,6 +539,7 @@ export default function EdaWorkspace({ modelId, ready }) {
             className="eda-canvas"
             data-minimap={settings.edaMinimap !== false}
             id="canvas"
+            data-layout-optimizer={result?.optimization}
             data-eda-ready={
               ready && result && currentResult && !busy && !error
                 ? "true"

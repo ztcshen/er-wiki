@@ -4,6 +4,7 @@ import { arrangePlaced } from './placement.mjs';
 import { elkGraph } from './elk-graph.mjs';
 import { layoutQuality, compareCandidates } from './layout-quality.mjs';
 import { optimizeLayouts } from './optimize-layout.mjs';
+import { refinePositions } from './refine-positions.mjs';
 
 export async function arrangeSchematic(model, options={}, elk){
   // Node tests use the bundled fake worker; the desktop worker injects a real
@@ -32,7 +33,8 @@ export async function arrangeSchematic(model, options={}, elk){
     }
     if(!results.length)throw new Error('Relative table placement cannot be satisfied without overlapping nodes');
     results.sort(compareCandidates);
-    return options.optimize===false?results:optimizeLayouts(results,elk,options);
+    if(options.optimize===false)return results;
+    return refinePositions(await optimizeLayouts(results,elk,options),options);
   }
   let results=await candidates(projection),best=results[0];
   if(options.labels!=='off'&&options.level!=='system'){
@@ -44,6 +46,6 @@ export async function arrangeSchematic(model, options={}, elk){
     for(const [id,length]of lengths)if(length>(options.longThreshold||1600))long.add(id);
     if(long.size){projection=projectModel(model,options,long);results=await candidates(projection);best=results[0];}
   }
-  return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,
+  return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,optimization:best.optimization||'elk',
     candidates:results.map(({direction,seed,metrics,quality,placement,optimization})=>({direction,seed,metrics,quality,...(placement?{placement}:{}),...(optimization?{optimization}:{})}))};
 }
