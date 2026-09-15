@@ -39,6 +39,8 @@ export function validateLayout(layout, projection){
   const expectedEdges=new Set(projection.edges.map(e=>e.id)),actualEdges=new Set((layout.edges||[]).map(e=>e.id));
   if(actualEdges.size!==expectedEdges.size||[...expectedEdges].some(id=>!actualEdges.has(id)))throw new Error('布局结果缺失关系');
   for(const e of layout.edges||[]){if(!e.sections?.length)throw new Error('布局结果缺失布线路径');
+    const original=projection.edges.find(edge=>edge.id===e.id);
+    for(const key of ['sources','targets'])if(JSON.stringify(e[key]||[])!==JSON.stringify(original[key]||[]))throw new Error('布局关系端点被改变');
     for(const p of sectionsOf(e))if(p.some(point=>!point||![point.x,point.y].every(Number.isFinite)))throw new Error('布局坐标无效');
     for(const p of sectionsOf(e))for(let i=1;i<p.length;i++)if(![p[i].x,p[i].y].every(Number.isFinite)||
       Math.abs(p[i].x-p[i-1].x)>.01&&Math.abs(p[i].y-p[i-1].y)>.01)throw new Error('收到非正交路径');}

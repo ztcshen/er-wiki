@@ -18,7 +18,7 @@ export const rectanglesOverlap = (a, b, gap = 0) =>
   a.y < b.y + b.height + gap && a.y + a.height + gap > b.y;
 
 function placeLabels(edges, nodes, badges) {
-  const occupied = [...nodes, ...badges.map(b => ({ x: b.x - (b.value === '混合' ? 23 : 11), y: b.y - 9, width: b.value === '混合' ? 46 : 22, height: 18 }))];
+  const occupied = [...nodes, ...badges.map(b => ({ x: b.x - b.width / 2, y: b.y - b.height / 2, width: b.width, height: b.height }))];
   for (const edge of edges) for (const label of edge.labels || []) {
     const section = edge.sections[0], points = [section.startPoint, ...section.bendPoints, section.endPoint];
     const candidates = [];

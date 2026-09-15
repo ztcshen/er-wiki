@@ -24,4 +24,45 @@ test('missing diagnostics and foreign node identities cannot be declared valid',
   assert.equal(candidateValidity(fixture()).valid, false);
   const { validateLayout } = await import('../eda/metrics.mjs');
   assert.throws(() => validateLayout({ children: [{ id: 'wrong', x: 0, y: 0, width: 1, height: 1 }], edges: [] }, { nodes: [{ id: 'expected' }], edges: [] }));
+  const value = fixture(); value.projection.edges[0].sources = ['expected-port'];
+  assert.throws(() => validateLayout(value.layout, value.projection), /端点/);
+});
+
+test('a degraded result remains available for inspection but is not cached', async () => {
+  const { createCachedLayoutTask } = await import('../eda/cached-layout-task.mjs');
+  const { scoreLayout } = await import('../eda/metrics.mjs');
+  const { layoutQuality } = await import('../eda/layout-quality.mjs');
+  const value = fixture(); value.status = 'degraded';
+  value.metrics = scoreLayout(value.layout, value.projection);
+  value.quality = layoutQuality(value.layout, value.projection, value.metrics);
+  let writes = 0;
+  const task = createCachedLayoutTask({ modelId: 'example', scope: 'overview', shape: 'shape',
+    cache: { get: async () => null, put: async () => { writes++; } }, computeDelayMs: 0,
+    compute: () => ({ promise: Promise.resolve(value), cancel() {} }) });
+  const result = await task.promise;
+  assert.equal(result.status, 'degraded'); assert.equal(writes, 0);
+  assert.equal(result.quality.annotationIntrusions, 1);
+});
+
+test('bundle count boxes participate in obstruction checks', async () => {
+  const { scoreLayout } = await import('../eda/metrics.mjs');
+  const { layoutQuality } = await import('../eda/layout-quality.mjs');
+  const value = fixture(); value.layout.edges[0].labels = [];
+  value.projection.edges[0].kind = 'bus';
+  value.layout.children = [{ id: 'box', x: 40, y: -5, width: 20, height: 5 }];
+  value.projection.nodes = [{ id: 'box', kind: 'table', tableId: 'box', ports: [] }];
+  const quality = layoutQuality(value.layout, value.projection, scoreLayout(value.layout, value.projection));
+  assert(quality.badgeOverlaps > 0);
+});
+
+test('all unreadable baseline candidates yield explicit degraded diagnostics without deleting tables', async () => {
+  const { arrangeSchematic } = await import('../eda/layout.mjs');
+  const model = { tables: ['a', 'b'].map(id => ({ id, name: id, fields: [{ id: 'id', name: 'id' }] })), relationships: [], groups: [] };
+  const before = JSON.stringify(model);
+  const engine = { layout: async graph => ({ ...graph, width: 400, height: 200, children: graph.children.map(node => ({ ...node, x: 0, y: 0 })) }) };
+  const result = await arrangeSchematic(model, { optimize: false, labels: 'off' }, engine);
+  assert.equal(result.status, 'degraded');
+  assert(result.validity.reasons.includes('overlaps'));
+  assert.equal(result.projection.nodes.length, 2);
+  assert.equal(JSON.stringify(model), before);
 });
