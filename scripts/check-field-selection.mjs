@@ -4,10 +4,25 @@ import { conditionalModel } from '../desktop/test/fixtures/conditional-model.mjs
 
 export async function checkFieldSelection({ app, page, read, replace, out }) {
   const model = conditionalModel(), long = model.tables.find(t => t.name === 'notifications');
+  model.relationships[1].cardinality = 'one_to_many';
   for (let index = long.fields.length; index < 50; index++) long.fields.push({ ...long.fields[0], id: `extra-${index}`, name: `extra_${index}`, primary: false });
   const id = page.url().split('/').at(-1);
   assert.equal((await replace(model, id)).ok, true);
   await page.locator('[data-eda-ready="true"]').waitFor({ timeout: 30000 });
+  const mixed = page.locator('[data-cardinality-table="loans"][data-eda-cardinality="混合"]');
+  await mixed.waitFor();
+  const badgeGeometry = await mixed.evaluate(node => {
+    const rect = node.querySelector('rect'); return { transform: node.getAttribute('transform'), width: rect.getAttribute('width'), height: rect.getAttribute('height') };
+  });
+  const badgeBox = await mixed.locator('rect').boundingBox();
+  const tableBox = await page.locator('[data-node-kind="table"][data-table-id="loans"] > rect').first().boundingBox();
+  assert(badgeBox.x + badgeBox.width <= tableBox.x || badgeBox.x >= tableBox.x + tableBox.width || badgeBox.y + badgeBox.height <= tableBox.y || badgeBox.y >= tableBox.y + tableBox.height);
+  const repaymentEdge = page.locator('[data-eda-wire][data-rel-ids=\'["repay-loan"]\']').first();
+  await repaymentEdge.dispatchEvent('pointerover');
+  const focusedBadge = page.locator('[data-cardinality-table="loans"]').filter({ has: page.locator('rect[width="46"]') });
+  await page.waitForFunction(() => [...document.querySelectorAll('[data-cardinality-table="loans"]')].some(node => node.querySelector('rect')?.getAttribute('width') === '46' && node.dataset.edaCardinality === 'N'));
+  assert.deepEqual(await focusedBadge.evaluate(node => ({ transform: node.getAttribute('transform'), width: node.querySelector('rect').getAttribute('width'), height: node.querySelector('rect').getAttribute('height') })), badgeGeometry);
+  await repaymentEdge.dispatchEvent('pointerout');
   const focus = (tableId, fieldId) => page.evaluate(detail => window.dispatchEvent(new CustomEvent('erwiki-eda-command', { detail: { action: 'focus-table', ...detail } })), { tableId, fieldId });
   const selected = () => page.locator('[data-eda-wire][data-highlight="true"]').evaluateAll(nodes => [...new Set(nodes.flatMap(n => JSON.parse(n.dataset.relIds)))].sort());
   await page.getByRole('searchbox', { name: /Search model|搜索模型/ }).fill('extra_49');

@@ -69,8 +69,10 @@ test('geometry-only snapshots restore current names, enums and relationship cont
   model.tables[0].fields[0].reviewEnumValues = [{ value: 'A', label: 'CURRENT-ENUM' }];
   assert.equal(geometryKey(model, options), shape);
   const snapshot = layoutSnapshot(result), text = JSON.stringify(snapshot);
+  snapshot.quality = { badgeOverlaps: 999999 };
   assert(!text.includes('Fictional conditional relation example'));
   const restored = restoreLayoutSnapshot(snapshot, model, options);
+  assert.notEqual(restored.quality.badgeOverlaps, 999999, 'cached quality must be recomputed from current badge geometry');
   const node = restored.projection.nodes.find(n => n.tableId === model.tables[0].id);
   assert.equal(node.title, 'renamed_business_table'); assert.equal(node.comment, 'CURRENT-COMMENT');
   assert.equal(node.fields[0].reviewEnumValues[0].label, 'CURRENT-ENUM');
