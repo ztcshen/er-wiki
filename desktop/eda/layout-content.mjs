@@ -1,12 +1,15 @@
-import { projectModel } from './model.mjs';
+import { projectModel, domainsOf } from './model.mjs';
+import { cardinalityBadges } from './cardinality.mjs';
 import { conditionText } from './relation-condition.mjs';
 
 // Text, colors, types and enum explanations do not change fixed-size geometry.
 // Selection of overview fields DOES change geometry and is captured via field IDs.
 export function geometryKey(model, options) {
   const p = projectModel(model, options);
+  const badges = cardinalityBadges({ projection: p, layout: { children: p.nodes.map(node => ({ ...node, x: 0, y: 0 })) } });
   return JSON.stringify({ nodes: p.nodes.map(n => [n.id, n.width, n.height, n.ports, n.placement, n.domainId, n.fields?.map(f=>f.id), n.tableIds, n.internal, n.fanout]),
     edges: p.edges.map(e => [e.id, e.sources, e.targets, e.netIds, e.refs, e.labels]),
+    badges: badges.map(b => [b.id, b.width, b.height]),
     covered: p.covered, level: options.level, labels: options.labels, bundle: options.bundle, expanded: options.expanded });
 }
 
@@ -36,5 +39,5 @@ export function refreshLayoutContent(result, model) {
     return net ? { ...n, ...(n.kind === 'label' ? { subtitle: net.name } : {}),
       color: groups.get(net.targetTableId)?.color || '#64748b' } : n;
   });
-  return { ...result, projection: { ...result.projection, nodes, nets, tableNames: model.tables.map(t=>({id:t.id,name:t.name})) } };
+  return { ...result, projection: { ...result.projection, nodes, nets, domains: domainsOf(model), tableNames: model.tables.map(t=>({id:t.id,name:t.name})) } };
 }

@@ -26,7 +26,7 @@ export default function CardinalityLayer({
         const active = matchesRelation(badge, activeNet, activeRelation, activeIds),
           text = tr(badge.value);
         const color = active ? "var(--eda-active)" : "var(--wiki-muted)";
-        const width = badge.value === "混合" ? 46 : 22;
+        const width = badge.width;
         const select = () =>
           onSelect(
             badge.netIds,
@@ -56,9 +56,9 @@ export default function CardinalityLayer({
             <title>{describe(badge.refs)}</title>
             <rect
               x={-width / 2}
-              y="-9"
+              y={-badge.height / 2}
               width={width}
-              height="18"
+              height={badge.height}
               rx="4"
               fill="var(--wiki-card)"
               stroke={color}

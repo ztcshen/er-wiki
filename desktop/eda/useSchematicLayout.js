@@ -9,9 +9,9 @@ export function useSchematicLayout(modelId, model, reading, ready) {
   const { location, rememberedView, setView } = reading;
   const viewKey = scopeKey(location);
   const shape = useMemo(() => geometryKey(model, location), [model, viewKey]);
-  const input = useMemo(() => ({ model, options: location, shape }), [modelId, shape, viewKey]);
   const [revision, setRevision] = useState(0),
     [raw, setRaw] = useState(null);
+  const input = useMemo(() => ({ model, options: location, shape }), [modelId, shape, viewKey, revision]);
   const [completed, setCompleted] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");

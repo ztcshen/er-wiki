@@ -35,7 +35,7 @@ export function layoutQuality(layout, projection, metrics, targetAspect = 1.8) {
     labelOverlaps += nodes.filter(n => overlaps(labels[i], n)).length;
     for (let j = 0; j < i; j++) if (overlaps(labels[i], labels[j])) labelOverlaps++;
   }
-  const badges = cardinalityBadges({ layout, projection }).map(b => ({ x: b.x - (b.value === '混合' ? 23 : 11), y: b.y - 9, width: b.value === '混合' ? 46 : 22, height: 18 }));
+  const badges = cardinalityBadges({ layout, projection }).map(b => ({ x: b.x - b.width / 2, y: b.y - b.height / 2, width: b.width, height: b.height }));
   let badgeOverlaps = 0;
   for (let i = 0; i < badges.length; i++) {
     badgeOverlaps += nodes.filter(n => overlaps(badges[i], n)).length;

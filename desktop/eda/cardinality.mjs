@@ -129,8 +129,9 @@ export function cardinalityBadges(result, selectedRelation = null) {
             id: key,
             tableId: node.tableId,
             side,
-            x: position.x + badgeX + normal.dx * 19,
-            y: position.y + badgeY + normal.dy * 19,
+            x: position.x + badgeX,
+            y: position.y + badgeY,
+            normal,
             netIds: new Set(),
             entries: new Map(),
           });
@@ -151,12 +152,17 @@ export function cardinalityBadges(result, selectedRelation = null) {
     const values = [
       ...new Set((focused ? [focused] : entries).map((entry) => entry.value)),
     ];
+    // Reserve the largest label for this port, even while a member is hovered.
+    const width = new Set(entries.map(entry => entry.value)).size > 1 ? 46 : 22;
+    const height = 18, gap = 8;
     return {
       id: group.id,
       tableId: group.tableId,
       side: group.side,
-      x: group.x,
-      y: group.y,
+      x: group.x + group.normal.dx * (width / 2 + gap),
+      y: group.y + group.normal.dy * (height / 2 + gap),
+      width,
+      height,
       refs: entries.map((entry) => entry.id),
       netIds: [...group.netIds],
       value: values.length === 1 ? values[0] : "混合",

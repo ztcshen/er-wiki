@@ -1,5 +1,6 @@
 import { projectModel } from './model.mjs';
-import { validateLayout } from './metrics.mjs';
+import { validateLayout, scoreLayout } from './metrics.mjs';
+import { layoutQuality } from './layout-quality.mjs';
 import { PORT_SIDES } from './ports.mjs';
 
 const coordinates = ['x', 'y', 'rowY', 'rowBadgeY', 'badgeX', 'badgeY'];
@@ -63,5 +64,6 @@ export function restoreLayoutSnapshot(snapshot, model, options) {
   validateLayout(layout, projection);
   requireValue(['crossings', 'overlaps', 'length', 'bends'].every(k => Number.isFinite(snapshot.metrics?.[k])), 'Invalid cached metrics');
   requireValue(Array.isArray(snapshot.candidates), 'Invalid cached candidates');
-  return { ...snapshot, projection, layout };
+  const metrics = scoreLayout(layout, projection);
+  return { ...snapshot, projection, layout, metrics, quality: layoutQuality(layout, projection, metrics) };
 }
