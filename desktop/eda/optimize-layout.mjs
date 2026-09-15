@@ -1,7 +1,7 @@
 import { elkGraph } from './elk-graph.mjs';
-import { placementHints, placementPositions, satisfiesPlacement } from './placement.mjs';
+import { placementHints, placementPositions } from './placement.mjs';
 import { scoreLayout, validateLayout } from './metrics.mjs';
-import { cohesiveGroups, layoutQuality, compareCandidates } from './layout-quality.mjs';
+import { cohesiveGroups, layoutQuality, compareCandidates, candidateValidity } from './layout-quality.mjs';
 import { movePorts } from './ports.mjs';
 export { movePorts } from './ports.mjs';
 
@@ -64,7 +64,7 @@ export async function optimizeLayouts(baselines, elk, options) {
       const layout = await elk.layout(graph);
       validateLayout(layout, projection);
       const metrics = scoreLayout(layout, projection), quality = layoutQuality(layout, projection, metrics, options.targetAspectRatio);
-      if (metrics.overlaps || quality.nodeIntrusions || !satisfiesPlacement(layout, hints)) return;
+      if (!candidateValidity({ projection, layout, metrics, quality }).valid) return;
       results.push({ ...base, projection, layout, metrics, quality, optimization: `compact / ${changes.length} ports / ${strategy}` });
     };
     // Optional optimization failures leave the already-valid baseline available.

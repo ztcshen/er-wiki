@@ -528,6 +528,7 @@ export default function EdaWorkspace({ modelId, ready }) {
             {tr(reading.error)}
           </p>
         )}
+        {currentResult && result?.status === 'degraded' && <p role="status" className="eda-warning">{tr('布局仍有可读性冲突，已保留完整图；此结果不会缓存。')} {result.validity?.reasons.join(', ')}</p>}
         <div
           className="eda-body"
           data-directory={showDirectory}

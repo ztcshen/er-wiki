@@ -2,7 +2,7 @@ import { projectModel } from './model.mjs';
 import { scoreLayout, validateLayout, sectionsOf } from './metrics.mjs';
 import { arrangePlaced } from './placement.mjs';
 import { elkGraph } from './elk-graph.mjs';
-import { layoutQuality, compareCandidates } from './layout-quality.mjs';
+import { layoutQuality, compareCandidates, candidateValidity } from './layout-quality.mjs';
 import { optimizeLayouts } from './optimize-layout.mjs';
 import { refinePositions } from './refine-positions.mjs';
 
@@ -46,6 +46,7 @@ export async function arrangeSchematic(model, options={}, elk){
     for(const [id,length]of lengths)if(length>(options.longThreshold||1600))long.add(id);
     if(long.size){longCuts=[...long];projection=projectModel(model,options,long);results=await candidates(projection);best=results[0];}
   }
-  return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,optimization:best.optimization||'elk',longCuts,
+  const validity = candidateValidity(best);
+  return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,validity,status:validity.valid?'ready':'degraded',optimization:best.optimization||'elk',longCuts,
     candidates:results.map(({direction,seed,metrics,quality,placement,optimization})=>({direction,seed,metrics,quality,...(placement?{placement}:{}),...(optimization?{optimization}:{})}))};
 }

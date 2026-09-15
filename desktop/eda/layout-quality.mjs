@@ -1,5 +1,6 @@
-import { sectionsOf } from './metrics.mjs';
-import { cardinalityBadges } from './cardinality.mjs';
+import { sectionsOf, validateLayout } from './metrics.mjs';
+import { cardinalityBadges, bundleBadges } from './cardinality.mjs';
+import { placementHints, satisfiesPlacement } from './placement.mjs';
 
 const overlaps = (a, b) => a.x < b.x + b.width - .1 && a.x + a.width > b.x + .1 &&
   a.y < b.y + b.height - .1 && a.y + a.height > b.y + .1;
@@ -19,10 +20,10 @@ export function layoutQuality(layout, projection, metrics, targetAspect = 1.8) {
     for (const points of sectionsOf(edge)) for (let i = 1; i < points.length; i++) {
       const a = points[i - 1], b = points[i];
       length += Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-      segments.push({ a, b });
+      segments.push({ a, b, refs: meta.get(edge.id)?.refs || [] });
     }
     for (const id of meta.get(edge.id)?.refs || []) lengths.set(id, (lengths.get(id) || 0) + length);
-    labels.push(...(edge.labels || []).filter(l => [l.x, l.y, l.width, l.height].every(Number.isFinite)));
+    labels.push(...(edge.labels || []).filter(l => [l.x, l.y, l.width, l.height].every(Number.isFinite)).map(l => ({ ...l, refs: meta.get(edge.id)?.refs || [] })));
   }
   let nodeIntrusions = 0, labelOverlaps = 0;
   for (const { a, b } of segments) for (const n of nodes) {
@@ -35,7 +36,16 @@ export function layoutQuality(layout, projection, metrics, targetAspect = 1.8) {
     labelOverlaps += nodes.filter(n => overlaps(labels[i], n)).length;
     for (let j = 0; j < i; j++) if (overlaps(labels[i], labels[j])) labelOverlaps++;
   }
-  const badges = cardinalityBadges({ layout, projection }).map(b => ({ x: b.x - b.width / 2, y: b.y - b.height / 2, width: b.width, height: b.height }));
+  const badges = cardinalityBadges({ layout, projection }).map(b => ({ x: b.x - b.width / 2, y: b.y - b.height / 2, width: b.width, height: b.height, refs: b.refs }));
+  badges.push(...bundleBadges({ layout, projection }).map(b => ({ x: b.x - 32, y: b.y - 8, width: 64, height: 16, refs: b.refs })));
+  let annotationIntrusions = 0;
+  for (const { a, b, refs } of segments) for (const box of [...labels, ...badges]) {
+    if (refs.some(id => box.refs.includes(id))) continue;
+    const hit = Math.abs(a.y - b.y) < .01
+      ? a.y > box.y + .1 && a.y < box.y + box.height - .1 && Math.max(a.x, b.x) > box.x + .1 && Math.min(a.x, b.x) < box.x + box.width - .1
+      : a.x > box.x + .1 && a.x < box.x + box.width - .1 && Math.max(a.y, b.y) > box.y + .1 && Math.min(a.y, b.y) < box.y + box.height - .1;
+    if (hit) annotationIntrusions++;
+  }
   let badgeOverlaps = 0;
   for (let i = 0; i < badges.length; i++) {
     badgeOverlaps += nodes.filter(n => overlaps(badges[i], n)).length;
@@ -58,10 +68,25 @@ export function layoutQuality(layout, projection, metrics, targetAspect = 1.8) {
   // prefer readable, compact routes without requiring every group to be a box.
   const readability = Math.round(metrics.length + .3 * longestRelation + .4 * screenSpan + .12 * groupSpread + .2 * Math.sqrt(emptyArea));
   return { width, height, aspectRatio: height ? width / height : 1, longestRelation,
-    groupSpread: Math.round(groupSpread), nodeIntrusions, labelOverlaps, badgeOverlaps, emptyArea: Math.round(emptyArea), readability };
+    groupSpread: Math.round(groupSpread), nodeIntrusions, labelOverlaps, badgeOverlaps, annotationIntrusions, emptyArea: Math.round(emptyArea), readability };
+}
+
+export function candidateValidity(candidate) {
+  const reasons = [];
+  if (!['crossings', 'overlaps', 'length', 'bends', 'collinearConflicts', 'illegalContacts'].every(key => Number.isFinite(candidate.metrics?.[key])) ||
+      !['nodeIntrusions', 'labelOverlaps', 'badgeOverlaps', 'annotationIntrusions'].every(key => Number.isFinite(candidate.quality?.[key]))) reasons.push('DIAGNOSTICS_MISSING');
+  try {
+    validateLayout(candidate.layout, candidate.projection);
+    if (!satisfiesPlacement(candidate.layout, placementHints(candidate.projection))) reasons.push('PLACEMENT_INVALID');
+  } catch (error) { reasons.push('GEOMETRY_INVALID'); }
+  for (const key of ['overlaps', 'collinearConflicts', 'illegalContacts']) if (candidate.metrics?.[key] > 0) reasons.push(key);
+  for (const key of ['nodeIntrusions', 'labelOverlaps', 'badgeOverlaps', 'annotationIntrusions']) if (candidate.quality?.[key] > 0) reasons.push(key);
+  return { valid: reasons.length === 0, reasons };
 }
 
 export function compareCandidates(a, b) {
+  const av = candidateValidity(a), bv = candidateValidity(b);
+  if (av.valid !== bv.valid) return av.valid ? -1 : 1;
   for (const key of ['crossings', 'overlaps']) if (a.metrics[key] !== b.metrics[key]) return a.metrics[key] - b.metrics[key];
   for (const key of ['nodeIntrusions', 'labelOverlaps', 'badgeOverlaps', 'readability']) {
     const difference = (a.quality?.[key] || 0) - (b.quality?.[key] || 0);

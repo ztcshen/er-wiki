@@ -2,8 +2,7 @@ import { loadObstacleRouter, routeObstacles } from './obstacle-router.mjs';
 import { positionCandidates, settleJunctions } from './position-candidates.mjs';
 import { portSuggestions, movePorts } from './optimize-layout.mjs';
 import { scoreLayout, validateLayout } from './metrics.mjs';
-import { layoutQuality, compareCandidates } from './layout-quality.mjs';
-import { placementHints, satisfiesPlacement } from './placement.mjs';
+import { layoutQuality, compareCandidates, candidateValidity } from './layout-quality.mjs';
 import { fourSideSuggestions } from './ports.mjs';
 import { compactLayoutSeeds } from './compact-layout.mjs';
 
@@ -20,7 +19,7 @@ export async function refinePositions(candidates, options = {}, elk) {
       const layout = routeObstacles(Avoid, projection, seed);
       validateLayout(layout, projection);
       const metrics = scoreLayout(layout, projection), quality = layoutQuality(layout, projection, metrics, options.targetAspectRatio);
-      if (metrics.overlaps || quality.nodeIntrusions || quality.labelOverlaps || quality.badgeOverlaps || !satisfiesPlacement(layout, placementHints(projection))) return;
+      if (!candidateValidity({ projection, layout, metrics, quality }).valid) return;
       const result = { ...base, projection, layout, metrics, quality, optimization: `position / ${kind}` };
       if (compareCandidates(result, best) < 0) best = result;
       return result;

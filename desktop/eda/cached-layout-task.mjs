@@ -1,5 +1,6 @@
 import { layoutDigest } from './layout-cache.mjs';
 import { layoutSnapshot, restoreLayoutSnapshot } from './layout-snapshot.mjs';
+import { candidateValidity } from './layout-quality.mjs';
 
 const cancelled = () => Object.assign(new Error('Layout cancelled'), { code: 'LAYOUT_CANCELLED' });
 
@@ -17,7 +18,10 @@ export function createCachedLayoutTask({ modelId, scope, shape, model, options, 
       try {
         const saved = await cache.get(key, fingerprint);
         if (stopped) throw cancelled();
-        if (saved) return { ...restoreLayoutSnapshot(saved, model, options), cacheSource: 'cache' };
+        if (saved) {
+          const restored = restoreLayoutSnapshot(saved, model, options);
+          if (candidateValidity(restored).valid) return { ...restored, cacheSource: 'cache', status: 'ready' };
+        }
       } catch { /* Invalid/unavailable cache is a miss, not a model error. */ }
     }
     if (stopped) throw cancelled();
@@ -26,7 +30,7 @@ export function createCachedLayoutTask({ modelId, scope, shape, model, options, 
     onCompute(); computation = compute();
     const value = await computation.promise;
     if (stopped) throw cancelled();
-    if (fingerprint && modelId != null) {
+    if (fingerprint && modelId != null && candidateValidity(value).valid) {
       try { await cache.put(key, fingerprint, layoutSnapshot(value), () => !stopped); }
       catch { /* Caching is optional; still show the computed diagram. */ }
     }
