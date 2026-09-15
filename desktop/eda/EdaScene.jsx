@@ -10,6 +10,7 @@ import {
   relationCaption,
 } from "./cardinality.mjs";
 import CardinalityLayer from "./CardinalityLayer";
+import { resolveRelationSemantics } from '../review/relation-semantics.mjs';
 
 const pathText = (points) =>
   points.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" ");
@@ -92,7 +93,7 @@ export default function EdaScene({
           highlight = matchesRelation(m, active, activeRelation),
           dim = (active || activeRelation != null) && !highlight,
           uncertain = m.refs.some(
-            (id) => relationMeta.get(id)?.reviewEvidence?.kind === "inferred",
+            (id) => ['inferred', 'unknown', 'invalid'].includes(resolveRelationSemantics(relationMeta.get(id)).certainty) || resolveRelationSemantics(relationMeta.get(id)).conditionState === 'invalid',
           ),
           conditionColor = m.kind === "conditional"
             ? domainByTable.get(relationMeta.get(m.refs[0])?.startTableId)?.color
@@ -152,7 +153,7 @@ export default function EdaScene({
                 <rect width={label.width} height={label.height} rx="5"
                   fill="var(--wiki-card)" stroke={highlight ? "var(--eda-active)" : conditionColor || "var(--wiki-line)"} />
                 <text x="10" y="16" fontSize="12" fill={conditionColor || "var(--wiki-ink)"}>
-                  {fitText(label.text, label.width - 20, 12)}
+                  {fitText(tr(label.text), label.width - 20, 12)}
                 </text>
               </g>
             ))}

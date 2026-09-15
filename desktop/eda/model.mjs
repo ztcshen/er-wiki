@@ -10,12 +10,12 @@ export function deriveNets(model) {
     const source=known.get(r.startTableId),target=known.get(r.endTableId),pairs=pairsOf(r);
     if(!source||!target||!pairs.every(p=>source.fields.some(f=>f.id===p.startFieldId)&&target.fields.some(f=>f.id===p.endFieldId)))continue;
     // Equal names are NOT equal nets. Composite target order is intentional.
-    const condition=relationCondition(r);
+    const condition=relationCondition(r,source);
     // Alternative business-type branches are NOT one electrical net with all
     // unconditional references to this PK. Keep each review relation traceable.
     const key=idOf('net',[target.id,pairs.map(p=>p.endFieldId),...(condition?[r.id,condition]:[])]);
     if(!nets.has(key))nets.set(key,{id:key,targetTableId:target.id,targetFields:pairs.map(p=>p.endFieldId),
-      name:`${target.name}.${pairs.map(p=>target.fields.find(f=>f.id===p.endFieldId).name).join('+')}${condition?' · '+conditionText(r):''}`,
+      name:`${target.name}.${pairs.map(p=>target.fields.find(f=>f.id===p.endFieldId).name).join('+')}${condition?' · '+conditionText(r,source):''}`,
       condition,members:[]});
     nets.get(key).members.push(r);
   }
@@ -46,7 +46,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     return id;
   };
   const connect=(source,target,net,refs,kind='wire')=>{
-    const label=kind==='conditional'?conditionLabel(refs[0]):null;
+    const label=kind==='conditional'?conditionLabel(refs[0],model.tables.find(t=>t.id===refs[0].startTableId)):null;
     edges.push({id:`wire-${edges.length}`,sources:[source],targets:[target],
       netIds:Array.isArray(net)?net:[net.id],refs:refs.map(r=>r.id),kind,
       ...(label?{labels:[{id:`condition-${edges.length}`,...label}]}:{})});

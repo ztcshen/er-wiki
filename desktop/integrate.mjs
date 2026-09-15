@@ -68,7 +68,12 @@ export function integrateDesktop(here) {
       return code.replaceAll('当前浏览器', '桌面工作区');
     }
     if(id.endsWith('/src/context/DiagramContext.jsx')){
-      return replaceOnce(code,'  };\n\n  const deleteTable =','    return data?.table?.id ?? newTable.id;\n  };\n\n  const deleteTable =');
+      code=replaceOnce(code,'  };\n\n  const deleteTable =','    return data?.table?.id ?? newTable.id;\n  };\n\n  const deleteTable =');
+      code=`import { renameConditionField } from ${JSON.stringify(sourceFile('review/relation-semantics.mjs'))};\n`+code;
+      return replaceOnce(code,'  const updateField = (tid, fid, updatedValues) => {',`  const updateField = (tid, fid, updatedValues) => {
+    const priorField = tables.find(t => t.id === tid)?.fields.find(f => f.id === fid);
+    if (priorField && typeof updatedValues.name === "string" && updatedValues.name !== priorField.name)
+      setRelationships(previous => renameConditionField(previous, tid, priorField.name, updatedValues.name));`);
     }
     if(id.endsWith('/src/components/EditorSidePanel/TablesTab/TableInfo.jsx')){
       code=replaceOnce(code,'          value={data.name}','          aria-label="表名称"\n          value={data.name}');
@@ -111,12 +116,15 @@ export function integrateDesktop(here) {
       return `import { tr as translateSource } from ${JSON.stringify(sourceFile('i18n/renderer.js'))};\n`+code.replace('{definition.source}','{translateSource(definition.source)}');
     }
     if(id.endsWith('/src/components/EditorSidePanel/RelationshipsTab/RelationshipInfo.jsx')){
-      code=`import RelationshipEndpoints from ${JSON.stringify(sourceFile('review/RelationshipEndpoints.jsx'))};\nimport { swappedRelationship } from ${JSON.stringify(sourceFile('review/relationship-draft.mjs'))};\n`+code;
+      code=`import RelationshipEndpoints from ${JSON.stringify(sourceFile('review/RelationshipEndpoints.jsx'))};\nimport RelationshipSemantics from ${JSON.stringify(sourceFile('review/RelationshipSemantics.jsx'))};\nimport { Toast } from '@douyinfe/semi-ui';\nimport { tr as reviewTr } from ${JSON.stringify(sourceFile('i18n/renderer.js'))};\nimport { swappedRelationship, relationshipDraft, validateRelationshipDraft } from ${JSON.stringify(sourceFile('review/relationship-draft.mjs'))};\n`+code;
+      code=replaceOnce(code,'  const { tables, deleteRelationship, updateRelationship } = useDiagram();','  const { tables, relationships, deleteRelationship, updateRelationship } = useDiagram();');
       const a=code.indexOf('  const startFieldOptions ='),b=code.indexOf('  const changeCardinality =');
       if(a<0||b<a)throw new Error('Relationship field editor anchors changed');
       code=replaceOnce(code,code.slice(a,b),`  const swapKeys = () => {
     if (layout.readOnly) return;
     const redo = swappedRelationship(data);
+    const validation = validateRelationshipDraft({ ...relationshipDraft(data), ...redo }, tables, relationships, data.id);
+    if (validation.errors.length) { Toast.warning(reviewTr(validation.errors[0])); return; }
     const undo = Object.fromEntries(Object.keys(redo).map(key => [key, data[key]]));
     setUndoStack(stack => [...stack, { action: Action.EDIT, element: ObjectType.RELATIONSHIP, component: "self", rid: data.id, undo, redo, message: t("swap") }]);
     setRedoStack([]); updateRelationship(data.id, redo);
@@ -125,7 +133,7 @@ export function integrateDesktop(here) {
 `);
       const start=code.indexOf('      <Card\n'),end=code.indexOf('      </Card>',start);
       if(start<0||end<start)throw new Error('Relationship composite editor anchor changed');
-      code=replaceOnce(code,code.slice(start,end+'      </Card>'.length),'      <RelationshipEndpoints data={data} />');
+      code=replaceOnce(code,code.slice(start,end+'      </Card>'.length),'      <RelationshipEndpoints data={data} />\n      <RelationshipSemantics data={data} />');
       return replaceOnce(code,'            onClick={() => deleteRelationship(data.id)}','            aria-label={`删除关系 ${data.name}`}\n            onClick={() => deleteRelationship(data.id)}');
     }
     return null;

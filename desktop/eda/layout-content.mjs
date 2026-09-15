@@ -17,7 +17,7 @@ export function refreshLayoutContent(result, model) {
   const relations = new Map(model.relationships.map(r => [r.id, r]));
   const groups = new Map(model.groups.flatMap(g => g.tableIds.map(id => [id, g])));
   const nets = result.projection.nets.map(n => ({ ...n,
-    name: `${tables.get(n.targetTableId)?.name}.${n.targetFields.map(id => tables.get(n.targetTableId)?.fields.find(f => f.id === id)?.name).join('+')}${n.condition?' · '+conditionText(relations.get(n.members[0]?.id)||n.members[0]):''}`,
+    name: `${tables.get(n.targetTableId)?.name}.${n.targetFields.map(id => tables.get(n.targetTableId)?.fields.find(f => f.id === id)?.name).join('+')}${n.condition?' · '+conditionText(relations.get(n.members[0]?.id)||n.members[0], tables.get((relations.get(n.members[0]?.id)||n.members[0])?.startTableId)):''}`,
     members: n.members.map(r => relations.get(r.id) || r) }));
   const netMap = new Map(nets.map(n => [n.id, n]));
   const nodes = result.projection.nodes.map(n => {

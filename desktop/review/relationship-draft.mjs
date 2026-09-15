@@ -1,6 +1,9 @@
 import { pairsOf, fieldDefinition } from "./model-checks.mjs";
+import { conditionSignature, resolveRelationSemantics } from './relation-semantics.mjs';
 export function relationshipDraft(data = {}) {
   return {
+    ...(data.cardinality !== undefined ? { cardinality: data.cardinality } : {}),
+    ...(data.reviewEvidence ? { reviewEvidence: structuredClone(data.reviewEvidence) } : {}),
     startTableId: data.startTableId ?? "",
     endTableId: data.endTableId ?? "",
     fields: pairsOf(data).map((pair) => ({
@@ -20,6 +23,9 @@ export function validateRelationshipDraft(
     source = tables.find((t) => t.id === draft.startTableId),
     target = tables.find((t) => t.id === draft.endTableId);
   if (!source || !target) return { errors: ["请选择两端的表和字段"], warnings };
+  const semantic = resolveRelationSemantics(draft, source);
+  errors.push(...semantic.errors.map(e => e.message));
+  warnings.push(...semantic.warnings.map(e => e.message));
   if (!draft.fields.length) errors.push("至少需要一对字段");
   const seen = new Set();
   for (const pair of draft.fields) {
@@ -39,9 +45,9 @@ export function validateRelationshipDraft(
   }
   const signature = (value) =>
     JSON.stringify(
-      pairsOf(value)
+      [pairsOf(value)
         .map((pair) => JSON.stringify([pair.startFieldId, pair.endFieldId]))
-        .sort(),
+        .sort(), conditionSignature(value)],
     );
   if (
     relationships.some(
@@ -57,7 +63,8 @@ export function validateRelationshipDraft(
 }
 export function endpointPatch(draft) {
   return {
-    ...draft,
+    startTableId: draft.startTableId,
+    endTableId: draft.endTableId,
     fields: draft.fields.map((pair) => ({ ...pair })),
     startFieldId: draft.fields[0].startFieldId,
     endFieldId: draft.fields[0].endFieldId,

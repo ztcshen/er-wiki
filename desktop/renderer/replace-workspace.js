@@ -28,11 +28,6 @@ export async function replaceWorkspace({
     throw new Error("Model JSON must be no larger than 20 MB");
   const data = JSON.parse(file.json);
   const incoming = importModel(file.json, "model.json");
-  if (
-    new Set(incoming.references.map((r) => r.id)).size !==
-    incoming.references.length
-  )
-    throw new Error("Duplicate relationship IDs in replacement");
   if (bindingIssues(incoming.processModel, incoming.tables).length)
     throw new Error(
       "Replacement process bindings reference missing tables or fields",

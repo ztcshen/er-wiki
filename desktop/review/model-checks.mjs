@@ -1,8 +1,9 @@
 import { parseFieldSize } from "../renderer/field-size.mjs";
+import { resolveRelationSemantics, conditionSignature } from './relation-semantics.mjs';
 
 export const pairsOf = (relation) =>
-  relation.fields?.length
-    ? relation.fields
+  Array.isArray(relation.fields) && relation.fields.length
+    ? relation.fields.map(p => p || {})
     : [
         {
           startFieldId: relation.startFieldId,
@@ -62,35 +63,36 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
     });
   const duplicates = (items, key, report) => {
     const seen = new Map();
-    for (const item of items) {
+    for (const [index, item] of items.entries()) {
       const value = key(item);
       if (value == null) continue;
-      if (seen.has(value)) report(item, seen.get(value));
+      if (seen.has(value)) report(item, seen.get(value), index);
       else seen.set(value, item);
     }
   };
   duplicates(
     tables,
     (t) => t.id,
-    (t) => push("table_id", "error", { tableId: t.id }, { table: t.name }),
+    (t, prior, index) => push("table_id", "error", { tableId: t.id }, { table: t.name, path: `tables[${index}].id` }),
   );
   duplicates(
     tables,
     (t) => JSON.stringify([t.schema || "", String(t.name || "").trim()]),
-    (t) => push("table_name", "error", { tableId: t.id }, { table: t.name }),
+    (t, prior, index) => push("table_name", "error", { tableId: t.id }, { table: t.name, path: `tables[${index}].name` }),
   );
   duplicates(
     relations,
     (r) => r.id,
-    (r) =>
+    (r, prior, index) =>
       push(
         "relation_id",
         "error",
         { relationshipId: r.id },
-        { relation: r.name },
+        { relation: r.name, path: `relationships[${index}].id` },
       ),
   );
-  for (const table of tables) {
+  for (const [tablePosition, table] of tables.entries()) {
+    const tablePath = `tables[${tablePosition}]`;
     const target = { tableId: table.id },
       fields = table.fields || [];
     if (!String(table.name || "").trim()) push("table_blank", "error", target);
@@ -99,28 +101,28 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
     duplicates(
       fields,
       (f) => f.id,
-      (f) =>
+      (f, prior, index) =>
         push(
           "field_id",
           "error",
           { ...target, fieldId: f.id },
-          { table: table.name, field: f.name },
+          { table: table.name, field: f.name, path: `${tablePath}.fields[${index}].id` },
         ),
     );
     duplicates(
       fields,
       (f) => String(f.name || "").trim(),
-      (f) =>
+      (f, prior, index) =>
         push(
           "field_name",
           "error",
           { ...target, fieldId: f.id },
-          { table: table.name, field: f.name },
+          { table: table.name, field: f.name, path: `${tablePath}.fields[${index}].name` },
         ),
     );
-    for (const field of fields) {
+    for (const [fieldPosition, field] of fields.entries()) {
       const location = { ...target, fieldId: field.id },
-        params = { table: table.name, field: field.name };
+        params = { table: table.name, field: field.name, path: `${tablePath}.fields[${fieldPosition}]` };
       if (!String(field.name || "").trim())
         push("field_blank", "error", location, { table: table.name });
       if (!String(field.type || "").trim())
@@ -165,9 +167,9 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
       ["index", table.indices || []],
       ["unique", table.uniqueConstraints || []],
     ]) {
-      for (const index of indexes) {
+      for (const [indexPosition, index] of indexes.entries()) {
         const location = { ...target, indexId: index.id },
-          params = { table: table.name, index: index.name || String(index.id) };
+          params = { table: table.name, index: index.name || String(index.id), path: `${tablePath}.${kind === 'index' ? 'indices' : 'uniqueConstraints'}[${indexPosition}]` };
         if (!index.fields?.length)
           push("index_empty", "warning", location, params);
         else {
@@ -194,9 +196,9 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
     }
   }
   const definitions = new Set();
-  for (const relation of relations) {
+  for (const [relationPosition, relation] of relations.entries()) {
     const location = { relationshipId: relation.id },
-      params = { relation: relation.name || String(relation.id) };
+      params = { relation: relation.name || String(relation.id), path: `relationships[${relationPosition}]` };
     const source = tableIndex.get(relation.startTableId),
       target = tableIndex.get(relation.endTableId),
       pairs = pairsOf(relation);
@@ -204,10 +206,14 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
       push("relation_table", "error", location, params);
       continue;
     }
+    const semantic = resolveRelationSemantics(relation, source);
+    for (const [severity, diagnostics] of [['error', semantic.errors], ['warning', semantic.warnings]])
+      for (const diagnostic of diagnostics) push(diagnostic.code, severity, location, { ...params, path: `relationships[${relations.indexOf(relation)}].${diagnostic.path}` });
     const signature = JSON.stringify([
       source.id,
       target.id,
       pairs.map((p) => JSON.stringify([p.startFieldId, p.endFieldId])).sort(),
+      conditionSignature(relation),
     ]);
     if (definitions.has(signature))
       push("relation_duplicate", "warning", location, params);
@@ -217,7 +223,7 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
       const start = source.fields.find((f) => f.id === pair.startFieldId),
         end = target.fields.find((f) => f.id === pair.endFieldId);
       const pairLocation = { ...location, pairIndex: index },
-        pairParams = { ...params, source: source.name, target: target.name };
+        pairParams = { ...params, source: source.name, target: target.name, path: `${params.path}${relation.fields?.length ? `.fields[${index}]` : ''}` };
       if (!start || !end) {
         push("relation_field", "error", pairLocation, pairParams);
         continue;

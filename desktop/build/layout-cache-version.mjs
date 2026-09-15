@@ -13,5 +13,6 @@ export function layoutCacheVersion(desktop, readFile = fs.readFileSync) {
   for (const [file, key] of [[path.join(desktop, 'package.json'), 'elkjs'], [path.join(desktop, '../package.json'), 'libavoid-js']]) {
     hash.update(key).update(JSON.parse(readFile(file)).devDependencies[key]);
   }
+  hash.update(readFile(path.join(desktop, 'review/relation-semantics.mjs')));
   return 'layout-cache-v1-' + hash.digest('hex').slice(0, 24);
 }

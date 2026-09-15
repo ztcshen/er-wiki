@@ -1,6 +1,7 @@
 import { cardinalityOf } from "./cardinality.mjs";
 import { tr } from "../i18n/renderer";
 import { conditionText } from "./relation-condition.mjs";
+import { relationNatureLabel } from '../review/relation-semantics.mjs';
 
 export default function RelationDetails({
   net,
@@ -85,7 +86,8 @@ export default function RelationDetails({
               <p className="eda-cardinality-tables">
                 {source?.name} ({card.start}) — ({card.end}) {target?.name}
               </p>
-              {conditionText(relation) && <p className="eda-code">条件关联：{conditionText(relation)}</p>}
+              <p>{tr(relationNatureLabel(relation, source))}</p>
+              {conditionText(relation, source) && <p className="eda-code">条件关联：{tr(conditionText(relation, source))}</p>}
               <p>
                 {pairs
                   .map(
@@ -96,15 +98,10 @@ export default function RelationDetails({
               </p>
               <details className="eda-evidence">
                 <summary>
-                  {relation.reviewEvidence?.kind === "inferred"
-                    ? "待核关联 · 查看依据"
-                    : "关联依据"}
+                  关联依据
                 </summary>
                 <small>
-                  {relation.reviewEvidence?.kind === "physical"
-                    ? "已记录物理约束"
-                    : relation.reviewEvidence?.description ||
-                      "逻辑关系；物理约束与基数以原始定义为准"}
+                  {relation.reviewEvidence?.description || tr(relationNatureLabel(relation, source))}
                 </small>
               </details>
             </article>
