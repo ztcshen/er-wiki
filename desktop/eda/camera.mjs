@@ -82,3 +82,13 @@ export function focusNodeView(node, viewport, padding = 56) {
     height,
   ];
 }
+
+// Focus the actual projected row, never fit the full height of a long table.
+// Match TableContent's fixed header/row geometry; no model or layout mutation.
+export function focusFieldView(node, fields, fieldId, viewport) {
+  const index = fields?.findIndex(field => field.id === fieldId) ?? -1;
+  if (index < 0 || !node || ![node.x, node.y, node.width].every(Number.isFinite)) return null;
+  const width = viewport?.width > 0 ? viewport.width : 800;
+  const height = viewport?.height > 0 ? viewport.height : 600;
+  return [node.x + node.width / 2 - width / 2, node.y + 78 + index * 30 + 15 - height / 2, width, height];
+}

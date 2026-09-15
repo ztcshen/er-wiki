@@ -162,6 +162,7 @@ export default function EdaScene({
       })}
       {nodes.map((node) => {
         const m = nodeMeta.get(node.id),
+          nodeCompact = compact && !(selectedTable === m.tableId && selectedField != null && m.fields?.some(f => f.id === selectedField)),
           virtual = ["hub", "junction", "label"].includes(m.kind),
           refs = nodeRefs.get(node.id) || [],
           lit =
@@ -187,7 +188,7 @@ export default function EdaScene({
             data-highlight={lit ? "true" : "false"}
             className="eda-node"
             data-selected={selectedTable === m.tableId}
-            data-detail={m.kind === "table" && compact ? "summary" : "fields"}
+            data-detail={m.kind === "table" && nodeCompact ? "summary" : "fields"}
             opacity={
               m.kind === "table" &&
               (active || activeRelation != null) &&
@@ -310,7 +311,7 @@ export default function EdaScene({
                   <TableContent
                     node={node}
                     meta={m}
-                    compact={compact}
+                    compact={nodeCompact}
                     scale={scale}
                     endpoint={endpoint}
                     onField={onField}

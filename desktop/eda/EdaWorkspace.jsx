@@ -14,6 +14,7 @@ import { searchModel } from "./reading-state.mjs";
 import {
   actualSizeView,
   focusNodeView,
+  focusFieldView,
   viewScale,
   zoomAtPoint,
 } from "./camera.mjs";
@@ -172,6 +173,8 @@ export default function EdaWorkspace({ modelId, ready }) {
     reading.navigate(...args);
   };
   const clearSelection = () => {
+    pendingFocus.current = null;
+    pendingRelation.current = null;
     setNet(null);
     setTable(null);
     setField(null);
@@ -194,9 +197,11 @@ export default function EdaWorkspace({ modelId, ready }) {
     );
     return result?.layout.children.find((n) => n.id === metadata?.id);
   };
-  const focusTable = (id) => {
+  const focusTable = (id, fieldId = null) => {
     if (!currentResult) return;
-    const next = focusNodeView(
+    const next = fieldId != null ? focusFieldView(tableNode(id),
+      result?.projection.nodes.find(n => n.kind === 'table' && n.tableId === id)?.fields,
+      fieldId, canvas.current?.getBoundingClientRect()) : focusNodeView(
       tableNode(id),
       canvas.current?.getBoundingClientRect(),
     );
@@ -212,7 +217,7 @@ export default function EdaWorkspace({ modelId, ready }) {
   };
   useEffect(() => {
     if (!currentResult || pendingFocus.current === null) return;
-    focusTable(pendingFocus.current);
+    focusTable(pendingFocus.current, pendingFocus.current === selectedTable ? selectedField : null);
     pendingFocus.current = null;
   }, [result, currentResult, focusRequest]);
   useEffect(() => {
@@ -303,7 +308,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       else if (action === "overview") navigate("overview");
       else if (action === "back") reading.back();
       else if (action === "arrange") schematic.arrange();
-      else if (action === "focus-selection") focusTable(selectedTable);
+      else if (action === "focus-selection") focusTable(selectedTable, selectedField);
       else if (action === "toggle-directory")
         setSettings((s) => ({ ...s, edaDirectory: s.edaDirectory === false }));
       else if (action === "zoom-in" || action === "zoom-out")
@@ -359,7 +364,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       setFocusRequest((n) => n + 1);
     },
     canFocus: currentResult && !!tableNode(selectedTable),
-    focus: () => focusTable(selectedTable),
+    focus: () => focusTable(selectedTable, selectedField),
     editRelation: (id) =>
       setSelectedElement((s) => ({
         ...s,
@@ -586,6 +591,8 @@ export default function EdaWorkspace({ modelId, ready }) {
                   );
                 }}
                 onField={(tid, fid) => {
+                  pendingFocus.current = null;
+                  pendingRelation.current = null;
                   setChecksOpen(false);
                   const found = result.projection.nets.filter(
                     (n) =>
