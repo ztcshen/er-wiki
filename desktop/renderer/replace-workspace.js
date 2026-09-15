@@ -12,10 +12,10 @@ export async function replaceWorkspace({
 }) {
   const initial = current.current;
   if (initial.readOnly || !initial.localWritable)
-    throw new Error("The current model must be a writable saved local model");
+    throw Object.assign(new Error("The current model must be a writable saved local model"), { code: 'MODEL_READ_ONLY' });
   const target = initial.snapshot.diagramId;
   if (action === "replace-json" && targetId !== target)
-    throw new Error("Replacement target does not match the open model");
+    throw Object.assign(new Error("Replacement target does not match the open model"), { code: 'TARGET_MISMATCH' });
   const file =
     action === "replace"
       ? await window.erDesktop.openModel("replace-json")
@@ -25,8 +25,10 @@ export async function replaceWorkspace({
     typeof file.json !== "string" ||
     new TextEncoder().encode(file.json).length > 20 * 1024 * 1024
   )
-    throw new Error("Model JSON must be no larger than 20 MB");
-  const data = JSON.parse(file.json);
+    throw Object.assign(new Error("Model JSON must be no larger than 20 MB"), { code: 'MODEL_FILE_TOO_LARGE' });
+  let data;
+  try { data = JSON.parse(file.json); }
+  catch (error) { throw Object.assign(error, { code: 'JSON_INVALID' }); }
   const incoming = importModel(file.json, "model.json");
   if (bindingIssues(incoming.processModel, incoming.tables).length)
     throw new Error(

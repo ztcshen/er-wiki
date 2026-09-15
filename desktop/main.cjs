@@ -50,7 +50,7 @@ let mayClose = false;
 const bridge = createCommandBridge(() => window);
 const command = (action) => bridge.request(action);
 const stateFile = path.join(app.getPath("userData"), "window-state.json");
-const handoff = createModelHandoff({ request: command, writeResult: result =>
+const handoff = createModelHandoff({ request: action => bridge.requestDetailed(action), writeResult: result =>
   atomicWrite(path.join(app.getPath('userData'), 'model-replacement-result.json'), JSON.stringify(result)) });
 const preferences = createPreferences(
   path.join(app.getPath("userData"), "preferences.json"),
