@@ -210,3 +210,8 @@ html[lang=en] .eda-controls>select{max-width:155px}html[lang=en] .desktop-more-m
   .eda-controls>select{max-width:100px}.eda-back-button{padding:5px!important}.eda-view-actions{gap:3px}
   .eda-view-actions button{padding:5px 7px}.eda-model-count{font-size:10px}
 }
+.eda-constraint { padding: 8px 0; border-bottom: 1px solid var(--wiki-line); overflow-wrap: anywhere; }
+.eda-constraint small { color: var(--wiki-muted); }
+.eda-constraint button { padding: 2px 5px; margin-top: 4px; font-size: 11px; }
+.eda-evidence dd { margin: 4px 0 10px; overflow-wrap: anywhere; }
+.eda-evidence dd code { white-space: pre-wrap; }

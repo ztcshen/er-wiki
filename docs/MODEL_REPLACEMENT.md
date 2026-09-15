@@ -68,6 +68,28 @@ reported as a warning. No SQL or evidence locator is executed or fetched.
 
 ## Focused verification
 
+Optional table review metadata is preserved by JSON import, export and full
+replacement. `reviewChineseName` is a display alias and never renames the physical
+table. `reviewContext` describes current design, not a review history:
+
+```json
+{
+  "purpose": "Store fictional business notifications",
+  "grain": "One received message",
+  "authority": {
+    "kind": "design",
+    "summary": "An example design declaration",
+    "source": { "kind": "doc", "locator": "example.md" }
+  }
+}
+```
+
+Authority kinds are `design`, `observed`, `unknown`; source kinds are `ddl`,
+`code`, `doc`. Locators display as text, without automatic fetching. Missing
+metadata stays missing. Table details also show existing ordered index/constraint
+fields and process bindings; neither UI infers business truth or creates a
+second configuration model.
+
 `npm test` covers identity retention, stale/write-failure rejection, CLI arguments
 and handoff. `scripts/smoke-replacement.mjs` uses an isolated fictional workspace to
 verify validation, failure preservation, picker confirmation/cancellation, native

@@ -1,7 +1,12 @@
 import { tableConstraints, reviewContextErrors } from '../review/table-review.mjs';
 import { tr } from '../i18n/renderer';
+import { useProcessModel } from '../process/context';
+import { actionsForTable } from '../process/definition.mjs';
+import { accessLabel } from '../process/ProcessGlyphs';
 
 export default function TableReviewDetails({ table, actions }) {
+  const { processModel } = useProcessModel();
+  const steps = (processModel?.scenarios || []).flatMap(scenario => actionsForTable(scenario, table.id).map(step => ({ scenario, step })));
   const constraints = tableConstraints(table);
   const errors = reviewContextErrors(table.reviewContext);
   const context = errors.length ? {} : table.reviewContext || {};
@@ -28,5 +33,15 @@ export default function TableReviewDetails({ table, actions }) {
         {context.authority?.source && <dd><code>{context.authority.source.kind}: {context.authority.source.locator}</code></dd>}
       </dl>
     </details>
+    {steps.length > 0 && <details className="eda-evidence" data-table-process-access>
+      <summary>{tr('哪些流程步骤使用此表')} ({steps.length})</summary>
+      {steps.map(({ scenario, step }) => <div key={`${scenario.id}:${step.id}`} className="eda-constraint">
+        <strong>{scenario.name} · {step.name}</strong>
+        <div>{step.bindings.filter(binding => binding.tableId === table.id).map((binding, index) => <span key={index}>
+          {index > 0 && ' · '}{tr(accessLabel(binding.access))}
+          {binding.fieldIds.length > 0 && ` (${binding.fieldIds.map(id => table.fields.find(field => field.id === id)?.name || String(id)).join(', ')})`}
+        </span>)}</div>
+      </div>)}
+    </details>}
   </>;
 }
