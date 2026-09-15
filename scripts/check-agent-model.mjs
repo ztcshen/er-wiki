@@ -1,0 +1,44 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { nativeModelClient } from './native-model-client.mjs';
+
+export async function checkAgentModel({ app, page, read, profile, out, root }) {
+  const client = nativeModelClient({ app, profile }), id = page.url().split('/').at(-1);
+  const before = await read(), file = path.join(out, 'agent-read.json');
+  const exported = await client.send(['--export-model', file, '--model-id', id]);
+  assert.equal(exported.ok, true, JSON.stringify(exported));
+  assert.match(exported.contentHash, /^[a-f0-9]{64}$/);
+  assert.deepEqual(await read(), before);
+  const validation = JSON.parse(execFileSync(process.execPath, [path.join(root, 'scripts/validate-model.mjs'), '--file', file, '--json'], { encoding: 'utf8' }));
+  assert.deepEqual(validation.errors, []);
+  await page.getByRole('button', { name: /^(Zoom in|放大)$/ }).click();
+  const identity = await client.send(['--inspect-model']);
+  assert.equal(identity.contentHash, exported.contentHash);
+  await page.getByRole('button', { name: /^(Fit to window|适应窗口)$/ }).click();
+  const tableId = before.find(model => model.diagramId === id).tables[0].id;
+  await page.locator(`[data-node-kind="table"][data-table-id="${tableId}"]`).click();
+  await page.getByRole('button', { name: /^(Edit table|编辑表)$/ }).click();
+  await page.getByRole('textbox', { name: /^(Table name|表名称)$/ }).fill('human_changed_table');
+  const draft = await client.send(['--inspect-model']);
+  assert.equal(draft.errorCode, 'EDITOR_DRAFT_ACTIVE');
+  await page.getByRole('button', { name: /^(Close editor|关闭编辑器)$/ }).click();
+  await page.locator('.canvas-editor-dialog').waitFor({ state: 'hidden' });
+  const stale = await client.send(['--replace-model', file, '--model-id', id, '--expected-content-hash', exported.contentHash]);
+  assert.equal(stale.errorCode, 'CONTENT_HASH_MISMATCH');
+  const freshFile = path.join(out, 'fresh.json');
+  const fresh = await client.send(['--export-model', freshFile, '--model-id', id]);
+  assert.equal(fresh.ok, true, JSON.stringify(fresh));
+  const document = JSON.parse(await fs.readFile(freshFile, 'utf8'));
+  assert.equal(document.tables[0].name, 'human_changed_table');
+  document.tables[0].comment = 'Agent update after fresh read';
+  await fs.writeFile(freshFile, JSON.stringify(document));
+  const applied = await client.send(['--replace-model', freshFile, '--model-id', id, '--expected-content-hash', fresh.contentHash]);
+  assert.equal(applied.ok, true, JSON.stringify(applied));
+  const layout = await client.layout(applied.requestId);
+  assert.equal(layout.layoutStatus, 'ready', JSON.stringify(layout));
+  assert.equal((await read()).length, before.length);
+  assert.equal((await read()).find(model => model.diagramId === id).tables[0].comment, document.tables[0].comment);
+  console.log(JSON.stringify({ passed: true, out, checks: 'native export, real preflight, camera-neutral hash, active draft refusal, stale hash refusal, fresh protected replacement, layout ready correlation' }));
+}

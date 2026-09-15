@@ -46,10 +46,40 @@ file validation. The receipt includes `operation: "replace-model"`, `status`
 `sha256`; failed argument parsing can have a null `targetId`. A newer request's
 receipt is not overwritten by an older request finishing late. Callers must
 observe a new matching request identity rather than accept an earlier success.
-Only one replacement may execute at a time. `layoutStatus: "not_observed"` means
-the model result is known but rendering completion is not yet observed; it must
-not be interpreted as layout ready. If the receipt file itself cannot be written,
+Only one model handoff operation may execute at a time. Model success does not
+imply layout success: `layoutStatus` starts as `pending` and becomes `ready`,
+`failed`, or `degraded` when the matching request/model/geometric identity is
+observed. A matching cache hit or validated visible preview can be ready without
+waiting for optional further optimization. Legacy/unobserved operations may use
+`not_observed`, which must not be interpreted as ready. If the receipt file itself cannot be written,
 the operation reports an error rather than guaranteeing an on-disk receipt.
+
+### Read, validate and replace safely
+
+The same executable accepts these operations (one operation per invocation):
+
+```sh
+"/path/to/ER Wiki.app/Contents/MacOS/ER Wiki Community" --inspect-model
+"/path/to/ER Wiki.app/Contents/MacOS/ER Wiki Community" \
+  --export-model "/absolute/path/current.json" --model-id "current-model-id"
+"/path/to/ER Wiki.app/Contents/MacOS/ER Wiki Community" \
+  --replace-model "/absolute/path/updated.json" --model-id "current-model-id" \
+  --expected-content-hash "SHA256_FROM_THE_READ_RECEIPT"
+```
+
+Inspect returns identity, `contentHash`, `hasUnsavedChanges` and draft status in
+the latest receipt, not the full document. Export writes the currently committed
+React content, including unsaved model edits, to the explicit file. Existing
+files are refused unless `--overwrite` is supplied. Reading does not save, blur,
+switch models or clear undo. Open editors/active input drafts are conservatively
+refused with `EDITOR_DRAFT_ACTIVE`; finish or cancel them before reading.
+
+The content hash excludes camera, reading state and save metadata, canonicalizes
+object keys, and preserves meaningful array order. It is different from the
+export file's byte-level `sha256`. `CONTENT_HASH_MISMATCH` means the model changed
+after reading: read again instead of retrying with the stale document. Omitting
+the hash remains compatible with older replacement callers, but loses this
+read-to-write protection. This is concurrency protection, not model history.
 
 ### Headless preflight
 
@@ -98,3 +128,5 @@ Set `ER_WIKI_TEST_APP` to test a packaged executable. `ER_WIKI_PACKAGE_OUT` can 
 packaging to a temporary directory before updating the one fixed application entry.
 Use `--receipts-only` for the narrow success/validation-failure/JSON-failure
 native handoff check; it does not run the broader replacement scenarios.
+Use `--agent-model-only` for native export, headless preflight, camera-neutral
+hashes, draft/stale-hash refusal, protected replacement and layout-ready receipt.
