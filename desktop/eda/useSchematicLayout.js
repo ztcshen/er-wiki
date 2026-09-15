@@ -5,6 +5,7 @@ import { scopeKey } from "./reading-state.mjs";
 import { desktopLayoutCache } from "./layout-cache.mjs";
 import { createCachedLayoutTask } from "./cached-layout-task.mjs";
 import { readingToken, deferImprovement } from './layout-presentation.mjs';
+import { layoutObserver, modelGeometryIdentity } from './layout-observation.mjs';
 
 export function useSchematicLayout(modelId, model, reading, ready) {
   const { location, rememberedView, setView } = reading;
@@ -23,6 +24,16 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     sequence = useRef(0), forceNext = useRef(null);
   const key = JSON.stringify([modelId, shape, viewKey, revision]);
   const result = useMemo(() => refreshLayoutContent(raw, model), [raw, model]);
+  useEffect(() => {
+    let obsolete = false;
+    modelGeometryIdentity(model).then(layoutIdentity => {
+      if (obsolete) return;
+      layoutObserver.report({ modelId, layoutIdentity,
+        layoutStatus: location.level !== 'overview' ? 'pending' : error ? 'failed' : completed === key && raw ? (raw.status === 'degraded' ? 'degraded' : 'ready') : 'pending',
+        layoutMessage: error || raw?.validity?.reasons?.join(', ') || null });
+    }).catch(() => {});
+    return () => { obsolete = true; };
+  }, [modelId, model, raw, completed, key, error]);
   useEffect(() => {
     if (!ready || !input.model.tables.length) {
       setRaw(null);

@@ -17,6 +17,7 @@ function registerDesktopIpc({
   localized,
   nativeDialog,
   onWorkspaceReady = () => {},
+  onLayoutStatus = () => {},
   version: APP_VERSION,
 }) {
   function trusted(event) {
@@ -31,6 +32,11 @@ function registerDesktopIpc({
     }
   }
 
+  ipcMain.on('desktop:layout-status', (event, state) => {
+    try { trusted(event); } catch { return; }
+    if (typeof state?.requestId === 'string' && state.requestId.length <= 128 && typeof state.modelId === 'string' &&
+        /^[a-f0-9]{64}$/.test(state.layoutIdentity) && ['pending', 'ready', 'failed', 'degraded'].includes(state.layoutStatus)) onLayoutStatus(state);
+  });
   ipcMain.on("desktop:command-result", (event, result) => {
     try {
       trusted(event);

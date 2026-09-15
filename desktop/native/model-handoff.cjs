@@ -5,7 +5,7 @@ const { replacementArgs, modelCommandArgs } = require('./model-command-args.cjs'
 function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
   let readyId = null,
     pending = null,
-    running = false, sequence = 0, writes = Promise.resolve();
+    running = false, sequence = 0, writes = Promise.resolve(), activeRequestId = null, latestLayout = null, lastSuccess = null;
   const publish = (job, status, detail = {}) => {
     const value = { requestId: job.requestId, operation: job.operation || 'replace-model', targetId: job.targetId ?? null,
       sha256: job.sha256 ?? null, status, ok: status === 'pending' ? null : status === 'succeeded',
@@ -39,6 +39,11 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
       const detail = typeof result === 'object' && result ? result : { ok: result === true };
       if (detail.ok === true) {
         const output = {};
+        if (job.operation === 'replace-model' && detail.layoutIdentity) {
+          Object.assign(output, { layoutIdentity: detail.layoutIdentity, layoutStatus: detail.layoutStatus || 'pending' });
+          if (latestLayout?.requestId === job.requestId && latestLayout.modelId === job.targetId && latestLayout.layoutIdentity === detail.layoutIdentity)
+            Object.assign(output, { layoutStatus: latestLayout.layoutStatus, layoutMessage: latestLayout.layoutMessage });
+        }
         if (job.operation !== 'replace-model') {
           if (detail.modelId !== readyId || typeof detail.contentHash !== 'string' || !/^[a-f0-9]{64}$/.test(detail.contentHash)) throw Object.assign(new Error('Invalid current-model response'), { code: 'MODEL_RESPONSE_INVALID' });
           if (typeof detail.json !== 'string' || Buffer.byteLength(detail.json) > 20 * 1024 * 1024) throw Object.assign(new Error('Invalid or oversized model export'), { code: 'MODEL_FILE_TOO_LARGE' });
@@ -48,7 +53,9 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
             output.sha256 = createHash('sha256').update(detail.json).digest('hex');
           }
         }
-        await publish(job, 'succeeded', { errors: [], warnings: detail.warnings || [], ...output });
+        const success = { errors: [], warnings: detail.warnings || [], ...output };
+        lastSuccess = { job, detail: success };
+        await publish(job, 'succeeded', success);
       }
       else await failure(job, { code: detail.errorCode, message: detail.message || detail.error || 'Model replacement failed',
         errors: detail.errors, warnings: detail.warnings }, 'REPLACEMENT_FAILED');
@@ -59,6 +66,14 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
     }
   };
   return {
+    layoutStatus(state) {
+      if (state.requestId !== activeRequestId) return;
+      latestLayout = state;
+      if (!lastSuccess || lastSuccess.job.requestId !== state.requestId || lastSuccess.job.targetId !== state.modelId || lastSuccess.detail.layoutIdentity !== state.layoutIdentity) return;
+      if (lastSuccess.detail.layoutStatus !== 'pending') return;
+      lastSuccess.detail = { ...lastSuccess.detail, layoutStatus: state.layoutStatus, layoutMessage: state.layoutMessage };
+      void publish(lastSuccess.job, 'succeeded', lastSuccess.detail).catch(error => console.error('Layout receipt write failed:', error.message));
+    },
     ready(modelId) {
       readyId = modelId;
       void drain().catch((error) =>
@@ -68,6 +83,7 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
     async enqueue(argv, cwd) {
       if (!argv.some(value => ['--replace-model', '--export-model', '--inspect-model'].some(key => value === key || value.startsWith(key + '=')))) return false;
       const job = { requestId: randomUUID(), sequence: ++sequence, startedAt: new Date().toISOString() };
+      activeRequestId = job.requestId; latestLayout = null; lastSuccess = null;
       let args;
       try { args = modelCommandArgs(argv, cwd); job.targetId = args.targetId; job.operation = args.operation; }
       catch (error) { await failure(job, error, 'ARGUMENTS_INVALID'); throw error; }

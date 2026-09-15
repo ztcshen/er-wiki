@@ -10,6 +10,7 @@ import { ObjectType } from '@drawdb/data/constants';
 import { sqlExportModel } from '../review/sql-export-model.mjs';
 import { readWorkspace } from './read-workspace';
 import { assertReadableDraft } from './model-content.mjs';
+import { layoutObserver } from '../eda/layout-observation.mjs';
 
 export function useDesktopWorkspace(value) {
   const { setSelectedElement, setBulkSelectedElements } = useSelect();
@@ -59,7 +60,7 @@ export function useDesktopWorkspace(value) {
       }
       return true;
     };
-    const run = async ({ id, action, route, targetId, json, name, backupId, expectedContentHash, resolve }) => {
+    const run = async ({ id, requestId, action, route, targetId, json, name, backupId, expectedContentHash, resolve }) => {
       if (action === 'palette') { openCommandPalette(); return; }
       if (action === 'settings' || action === 'help') { openPanel(action); return; }
       if (busy) { const result = {ok:false,errorCode:'WORKSPACE_BUSY',message:tr('请等待当前操作完成')}; if (id) window.erDesktop.commandResult(id, result); resolve?.({...result,error:result.message}); return; }
@@ -77,8 +78,9 @@ export function useDesktopWorkspace(value) {
           if(current.current.readOnly)throw new Error('只读模式下不可保存模型');
           await current.current.save(); ok = true;
         } else if (action === 'replace' || action === 'replace-json') {
-          ok = await replaceWorkspace({ current, db, action, targetId, json, expectedContentHash });
+          ok = await replaceWorkspace({ current, db, action, targetId, json, expectedContentHash, requestId });
           if (ok) {
+            details = layoutObserver.current(requestId) || {};
             setSelectedElement(s => ({ ...s, element: ObjectType.NONE, id: -1, open: false, openDialogue: false }));
             setBulkSelectedElements([]);
             Toast.success(tr('当前模型已完整替换，图形已更新；模型 ID 保持不变'));

@@ -3,6 +3,7 @@ import { importModel, exportModel } from "./model-file";
 import { bindingIssues } from "../process/definition.mjs";
 import { replacementRecord, commitReplacement } from "./replace-model.mjs";
 import { modelContentHash, assertReadableDraft } from './model-content.mjs';
+import { layoutObserver, modelGeometryIdentity } from '../eda/layout-observation.mjs';
 
 export async function replaceWorkspace({
   current,
@@ -11,6 +12,7 @@ export async function replaceWorkspace({
   targetId,
   json,
   expectedContentHash,
+  requestId,
 }) {
   const initial = current.current;
   if (initial.readOnly || !initial.localWritable)
@@ -40,6 +42,7 @@ export async function replaceWorkspace({
   try { data = JSON.parse(file.json); }
   catch (error) { throw Object.assign(error, { code: 'JSON_INVALID' }); }
   const incoming = importModel(file.json, "model.json");
+  const layoutIdentity = requestId ? await modelGeometryIdentity(incoming) : null;
   if (bindingIssues(incoming.processModel, incoming.tables).length)
     throw new Error(
       "Replacement process bindings reference missing tables or fields",
@@ -82,6 +85,7 @@ export async function replaceWorkspace({
       .first();
     const next = replacementRecord(expected, incoming, data.title);
     await commitReplacement(db, expected, next, stillCurrent);
+    if (requestId) layoutObserver.begin(requestId, target, layoutIdentity);
     flushSync(() => current.current.applyReplacement(next));
     await new Promise((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(resolve)),

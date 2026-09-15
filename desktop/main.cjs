@@ -99,6 +99,7 @@ registerDesktopIpc({
   nativeDialog,
   version: APP_VERSION,
   onWorkspaceReady: modelId => handoff.ready(modelId),
+  onLayoutStatus: state => handoff.layoutStatus(state),
 });
 
 function createWindow() {
