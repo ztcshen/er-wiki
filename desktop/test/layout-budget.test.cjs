@@ -30,3 +30,13 @@ test('expired compaction budget launches no engine work', async () => {
   const result = await compactLayoutSeeds({ nodes: [{}, {}], level: 'column' }, { children: [{}, {}] }, { layout: async () => assert.fail('must not start') }, { budget: { expired: () => true } });
   assert.deepEqual(result, []);
 });
+
+test('scale fixture counts virtual junctions rather than confusing the threshold with table count', async () => {
+  const { largeProjectionModel } = await import('./fixtures/large-projection.mjs');
+  const { projectModel } = await import('../eda/model.mjs');
+  const source = largeProjectionModel(), projection = projectModel(source, { level: 'overview', labels: 'off' });
+  assert.equal(source.tables.length, 42); assert.equal(source.relationships.length, 81);
+  assert.equal(projection.nodes.filter(node => node.kind === 'junction').length, 40);
+  assert.equal(projection.nodes.length, 82);
+  assert.equal(projection.nodes.filter(node => node.kind === 'table').length, 42);
+});

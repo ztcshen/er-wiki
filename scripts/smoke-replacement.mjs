@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { checkReceipts } from './check-receipts.mjs';
 import { checkFieldSelection } from './check-field-selection.mjs';
 import { checkTableReview } from './check-table-review.mjs';
+import { checkLayoutProgress } from './check-layout-progress.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(path.join(root, "desktop/package.json"));
 const { _electron } = await import(
@@ -101,7 +102,10 @@ const doc = (title) => ({
 });
 try {
   await ready();
-  if (process.argv.includes('--table-review-only')) {
+  if (process.argv.includes('--layout-progress-only')) {
+    await checkLayoutProgress({ page });
+    assert.deepEqual(errors, []);
+  } else if (process.argv.includes('--table-review-only')) {
     await checkTableReview({ page, read, replace, out });
     assert.deepEqual(errors, []);
   } else if (process.argv.includes('--field-selection-only')) {

@@ -8,6 +8,8 @@ import { compactLayoutSeeds } from './compact-layout.mjs';
 
 export async function refinePositions(candidates, options = {}, elk) {
   let best = [...candidates].sort(compareCandidates)[0];
+  // Global synchronous WASM rerouting cannot be interrupted by a soft deadline.
+  // Larger projections already receive bounded, local ELK port candidates above.
   if (options.refinePositions === false || best.projection.nodes.length > 80 || options.budget?.expired()) return candidates;
   const results = [...candidates];
   let Avoid, aborted = false;

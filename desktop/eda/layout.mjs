@@ -10,6 +10,12 @@ import { layoutBudget } from './layout-budget.mjs';
 export async function arrangeSchematic(model, options={}, elk){
   options = { ...options, budget: options.budget || layoutBudget(options) };
   const candidateErrors = [];
+  const stages = [];
+  const measure = async (stage, run) => {
+    const start = options.budget.now();
+    try { return await run(); }
+    finally { stages.push({ stage, elapsedMs: options.budget.now() - start }); }
+  };
   // Node tests use the bundled fake worker; the desktop worker injects a real
   // ELK API worker. Loading elk.bundled inside WorkerGlobalScope is invalid.
   if(!elk){const {default:ELK}=await import('elkjs/lib/elk.bundled.js');elk=new ELK();}
@@ -35,8 +41,8 @@ export async function arrangeSchematic(model, options={}, elk){
         'elk.layered.crossingMinimization.greedySwitch.type':'TWO_SIDED','elk.spacing.nodeNode':'65',
         'elk.layered.spacing.nodeNodeBetweenLayers':'110','elk.layered.spacing.edgeNodeBetweenLayers':'30',
         'elk.spacing.edgeNode':'22','elk.spacing.edgeEdge':'14','elk.padding':'[top=40,left=40,bottom=40,right=40]'});
-      const base=await elk.layout(graph);validateLayout(base,p);
-      for(const {layout,placement}of await arrangePlaced(p,base,elk)){
+      const base=await measure('elk',()=>elk.layout(graph));validateLayout(base,p);
+      for(const {layout,placement}of await measure('placement',()=>arrangePlaced(p,base,elk))){
         validateLayout(layout,p);
         const metrics=scoreLayout(layout,p);
         if(placement&&metrics.overlaps)continue;
@@ -51,7 +57,8 @@ export async function arrangeSchematic(model, options={}, elk){
     results.sort(compareCandidates);
     if(options.optimize===false || options.budget.expired())return results;
     const stageOptions = { ...options, onCandidate: candidate => publish(candidate, cuts) };
-    return refinePositions(await optimizeLayouts(results,elk,stageOptions),stageOptions,elk);
+    const optimized = await measure('port-optimization',()=>optimizeLayouts(results,elk,stageOptions));
+    return measure('position-refinement',()=>refinePositions(optimized,stageOptions,elk));
   }
   let results=await candidates(projection),best=results[0];
   if(options.labels!=='off'&&options.level!=='system'){
@@ -70,6 +77,6 @@ export async function arrangeSchematic(model, options={}, elk){
   }
   const validity = candidateValidity(best);
   return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,validity,status:validity.valid?'ready':'degraded',optimization:best.optimization||'elk',longCuts,
-    diagnostics: { elapsedMs: options.budget.now()-options.budget.started, candidateErrors, stopReason: options.budget.expired()?'budget':'completed', realNodes: projection.nodes.filter(n=>n.kind==='table').length, virtualNodes: projection.nodes.filter(n=>n.kind!=='table').length, validCandidates: results.filter(r=>candidateValidity(r).valid).length },
+    diagnostics: { elapsedMs: options.budget.now()-options.budget.started, stages, candidateErrors, stopReason: options.budget.expired()?'budget':'completed', realNodes: projection.nodes.filter(n=>n.kind==='table').length, virtualNodes: projection.nodes.filter(n=>n.kind!=='table').length, refinementMode: projection.nodes.length > 80?'elk-bounded-ports':'positions-and-ports', validCandidates: results.filter(r=>candidateValidity(r).valid).length },
     candidates:results.map(({direction,seed,metrics,quality,placement,optimization})=>({direction,seed,metrics,quality,...(placement?{placement}:{}),...(optimization?{optimization}:{})}))};
 }
