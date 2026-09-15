@@ -1,5 +1,6 @@
 import { projectModel, domainsOf } from './model.mjs';
 import { cardinalityBadges } from './cardinality.mjs';
+import { tableBusinessName } from '../review/table-review.mjs';
 import { conditionText } from './relation-condition.mjs';
 
 // Text, colors, types and enum explanations do not change fixed-size geometry.
@@ -26,7 +27,7 @@ export function refreshLayoutContent(result, model) {
   const nodes = result.projection.nodes.map(n => {
     if (n.kind === 'table') {
       const table = tables.get(n.tableId); if (!table) return n;
-      return { ...n, title: table.name, comment: table.comment, totalFields: table.fields.length,
+      return { ...n, title: table.name, businessName: tableBusinessName(table), comment: table.comment, totalFields: table.fields.length,
         fields: n.fields.map(f => table.fields.find(next => next.id === f.id) || f),
         color: groups.get(n.tableId)?.color || table.color || '#64748b',
         domainName: groups.get(n.tableId)?.name || '未分组 / 公共结构', domainUnassigned: !groups.has(n.tableId) };

@@ -1,4 +1,5 @@
 import { parseFieldSize } from "../renderer/field-size.mjs";
+import { reviewContextErrors } from './table-review.mjs';
 import { resolveRelationSemantics, conditionSignature } from './relation-semantics.mjs';
 
 export const pairsOf = (relation) =>
@@ -95,6 +96,7 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
     const tablePath = `tables[${tablePosition}]`;
     const target = { tableId: table.id },
       fields = table.fields || [];
+    for (const error of reviewContextErrors(table.reviewContext)) push(error.code, 'error', target, { path: `${tablePath}.${error.path}` });
     if (!String(table.name || "").trim()) push("table_blank", "error", target);
     if (!fields.length)
       push("table_empty", "error", target, { table: table.name });

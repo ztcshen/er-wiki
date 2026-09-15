@@ -14,5 +14,6 @@ export function layoutCacheVersion(desktop, readFile = fs.readFileSync) {
     hash.update(key).update(JSON.parse(readFile(file)).devDependencies[key]);
   }
   hash.update(readFile(path.join(desktop, 'review/relation-semantics.mjs')));
+  hash.update(readFile(path.join(desktop, 'review/table-review.mjs')));
   return 'layout-cache-v1-' + hash.digest('hex').slice(0, 24);
 }

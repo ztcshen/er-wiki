@@ -1,5 +1,6 @@
 import { relationMessages } from './relation-semantics.mjs';
 export const issueMessages = {
+  TABLE_CONTEXT_INVALID: '表业务说明格式无效',
   ...relationMessages,
   table_id: "表 ID 重复，无法可靠区分对象",
   table_name: "同一模型范围存在重名表",

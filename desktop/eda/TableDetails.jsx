@@ -6,6 +6,8 @@ import {
 import { fieldEnumValues } from "@drawdb/utils/fieldEnumValues";
 import { tableRelationships } from "./presentation.mjs";
 import { cardinalityOf } from "./cardinality.mjs";
+import TableReviewDetails from './TableReviewDetails';
+import { tableBusinessName } from '../review/table-review.mjs';
 
 export default function TableDetails({
   table,
@@ -29,7 +31,8 @@ export default function TableDetails({
   );
   return (
     <div className="eda-table-details">
-      <h3>{table.name}</h3>
+      <h3>{tableBusinessName(table) || table.name}</h3>
+      {tableBusinessName(table) && <code>{table.name}</code>}
       <div className="eda-table-stats">
         <span>{table.fields.length} 字段</span>
         <span>{relations.length} 条关系</span>
@@ -178,6 +181,7 @@ export default function TableDetails({
           {!relations.length && <p>尚未配置关联关系</p>}
         </section>
       )}
+      <TableReviewDetails table={table} actions={actions} />
       <details className="eda-evidence">
         <summary>表说明与来源</summary>
         <p>{table.comment || "未提供表注释"}</p>

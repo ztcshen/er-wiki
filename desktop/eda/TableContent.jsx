@@ -20,7 +20,7 @@ export default function TableContent({
       (node.height - 32) / 2.4,
       12 / Math.max(scale, 0.15),
     );
-    const lines = compactTitle(m.title, node.width - 32, size);
+    const lines = compactTitle(m.businessName || m.title, node.width - 32, size);
     const start = (node.height - (lines.length - 1) * size * 1.15) / 2 - 4;
     return (
       <g data-eda-summary>
@@ -50,10 +50,12 @@ export default function TableContent({
   return (
     <>
       <text x="12" y="26" className="eda-node-title">
-        {fitText(m.title, node.width - 24, 14)}
+        <title>{m.businessName ? `${m.businessName} · ${m.title}` : m.title}</title>
+        {fitText(m.businessName || m.title, node.width - 24, 14)}
       </text>
       <text x="12" y="47" className="eda-small">
-        {fitText(m.domainUnassigned ? tr(m.domainName) : m.domainName, 230)} ·{" "}
+        <title>{m.title}</title>
+        {fitText(m.businessName ? m.title : m.domainUnassigned ? tr(m.domainName) : m.domainName, 230)} ·{" "}
         {m.totalFields} 个字段
       </text>
       {m.fields.length === 0 ? (
