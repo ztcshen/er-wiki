@@ -46,10 +46,16 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
   zoom accounts for SVG letterboxing and keeps the pointed world location stable.
   Navigation controls remain outside the exported diagram. Desktop detail panels
   reserve space down to 980px instead of covering the navigation controls.
-- Auto direction compares the same four orthogonal candidates; an explicit
-  horizontal or vertical choice compares two seeds in that direction. The scoring
-  order is unchanged. Direction is a per-model reading preference, not model data;
+- Auto direction keeps horizontal reading order and compares two horizontal
+  seeds. Vertical layout requires an explicit choice and compares two vertical
+  seeds; automatic optimization does not rotate the whole diagram. Candidate
+  readability is validated before comparing crossing counts and costs.
+  Direction is a per-model reading preference, not model data;
   default scope keys remain byte-compatible with previously saved camera positions.
+- Valid previews may appear before optimization finishes. Only real reader
+  interaction or explicit selection changes can defer a changed final geometry;
+  automatic viewport adjustments must not leave the initial preview awaiting
+  manual application.
 - Existing three-column cards, orthogonal routing, Bus/Hub/Net Labels, model editing,
   import/export and backup capabilities are retained.
 - Conditional references described by `reviewEvidence.condition = { field, value }`

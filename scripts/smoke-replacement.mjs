@@ -106,8 +106,8 @@ try {
   if (process.argv.includes('--agent-model-only')) {
     await checkAgentModel({ app, page, read, profile, out, root });
     assert.deepEqual(errors, []);
-  } else if (process.argv.includes('--layout-progress-only')) {
-    await checkLayoutProgress({ page });
+  } else if (process.argv.includes('--layout-progress-only') || process.argv.includes('--layout-idle-only')) {
+    await checkLayoutProgress({ page, app, interact: !process.argv.includes('--layout-idle-only') });
     assert.deepEqual(errors, []);
   } else if (process.argv.includes('--table-review-only')) {
     await checkTableReview({ page, read, replace, out });
