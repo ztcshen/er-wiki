@@ -1,3 +1,27 @@
+# v0.4.0 — Clearer ER relationships and safe Agent handoff
+
+- Self references use dedicated same-side orthogonal loops with clearance from table borders and amber highlighting. Original field mappings and 1/N cardinality are preserved; self references do not merge into inter-table buses.
+- Automatic layout keeps horizontal reading order. Vertical layout remains an explicit choice.
+- Long-table field navigation retains readable scale; field selection highlights its actual relationships instead of unrelated sibling branches.
+- Stable cardinality badge geometry, synchronized group colors, persistent geometry caches and current readability diagnostics.
+- Candidate failures are isolated under a shared soft budget. Valid previews survive timeouts; reader interaction prevents unexpected replacement by later optimized geometry.
+- Explicit diagnostics for ambiguous wire contacts, collinear routes and obstructed annotations. Unreadable results are marked degraded and are not cached as successful layouts.
+- Table details show ordered indexes/constraints, optional business purpose and row grain, evidence descriptions and existing process data bindings.
+- Shared model validation and SQL export restricted to declared physical foreign keys. Logical, inferred and unspecified relationships remain in the ER view and JSON.
+- Headless JSON preflight plus native model inspect/export/switch commands, no-clobber exports, protected full replacement using content hashes and correlated layout-status receipts.
+
+## Download
+
+Download `er-wiki-0.4.0-macos-arm64.zip` for macOS Apple Silicon. This release is
+ad-hoc signed, not Apple Developer ID signed or notarized. Windows/Linux binaries
+are not included. Replace the existing app instead of keeping multiple copies;
+model data is stored separately. Export important models before upgrading.
+
+Layout remains heuristic: dense graphs may be explicitly degraded. The application
+is offline/local-first; no Agent framework, hosted model service or database SQL
+execution is added. Public artifacts contain the fictional fulfillment example
+only, not private business models or local Agent instructions.
+
 # v0.3.0 — ER review and compact four-sided diagrams
 
 - Directly edit field length and numeric precision, enum values, relationship endpoints and composite field mappings.

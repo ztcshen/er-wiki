@@ -31,7 +31,8 @@ test('lexicographic order gives crossings precedence over all lower objectives',
 });
 test('ELK candidates produce finite orthogonal geometry and score in requested order',async()=>{const{arrangeSchematic}=await layoutModule,{compareScores,validateLayout}=await metricsModule;
   const m=fixture(),before=JSON.stringify(m),r=await arrangeSchematic(m,{level:'table',labels:'off',bundle:true,optimize:false});
-  validateLayout(r.layout,r.projection);assert.equal(r.metrics.overlaps,0);assert.equal(r.candidates.length,4);
+  validateLayout(r.layout,r.projection);assert.equal(r.metrics.overlaps,0);assert.equal(r.candidates.length,2);
+  assert(r.candidates.every(candidate=>candidate.direction==='RIGHT'));assert.deepEqual(r.candidates.map(candidate=>candidate.seed).sort(),[11,37]);
   for(const candidate of r.candidates)assert(compareScores(r.metrics,candidate.metrics)<=0);assert.equal(JSON.stringify(m),before);
 });
 test('hierarchical aggregation retains internal and cross-domain relationship coverage',async()=>{const{projectModel}=await modelModule;const m=fixture();m.groups=[{id:'a',name:'A',tableIds:['core','t0','t1'],color:'#123456'},{id:'b',name:'B',tableIds:['t2','t3','t4','t5'],color:'#654321'}];
@@ -42,5 +43,5 @@ test('long logical paths become labels while all source members remain recoverab
   assert(r.projection.nodes.some(n=>n.kind==='label'));assert.equal(r.projection.covered.length,6);assert.equal(JSON.stringify(m),before);
 });
 test('engine failure cannot partially write the input model',async()=>{const{arrangeSchematic}=await layoutModule;const m=fixture(),before=JSON.stringify(m);
-  await assert.rejects(arrangeSchematic(m,{level:'table'},{layout:async()=>{throw new Error('fixture engine failure');}}),/fixture engine failure/);assert.equal(JSON.stringify(m),before);
+  await assert.rejects(arrangeSchematic(m,{level:'table'},{layout:async()=>{throw new Error('fixture engine failure');}}),error=>error.code==='LAYOUT_NO_CANDIDATE'&&error.candidateErrors.length===2&&error.candidateErrors.every(candidate=>candidate.message==='fixture engine failure'));assert.equal(JSON.stringify(m),before);
 });
