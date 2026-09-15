@@ -27,6 +27,7 @@ export default function EdaScene({
   onView,
   selectedTable = null,
   selectedField = null,
+  selectedRelationshipIds = null,
   scale = 1,
   semanticZoom = true,
 }) {
@@ -38,11 +39,13 @@ export default function EdaScene({
   );
   const active = hover ? hover.netId : selectedNet;
   const activeRelation = hover ? hover.relationId : selectedRelation;
+  const activeIds = hover ? hover.refs : selectedRelationshipIds;
+  const hasActive = activeRelation != null || (activeIds !== null ? activeIds.length > 0 : !!active);
   const activeNet = result.projection.nets.find((n) => n.id === active);
   const activeMembers =
     activeRelation != null
       ? [relationMeta.get(activeRelation)].filter(Boolean)
-      : activeNet?.members || [];
+      : activeIds !== null ? activeIds.map(id => relationMeta.get(id)).filter(Boolean) : activeNet?.members || [];
   const compact = semanticZoom && isCompact(scale);
   const activeTables = new Set(
     activeMembers.flatMap((r) => [r.startTableId, r.endTableId]),
@@ -77,6 +80,7 @@ export default function EdaScene({
         ? {
             netId: ids.length === 1 ? ids[0] : null,
             relationId: refs.length === 1 ? refs[0] : null,
+            refs,
           }
         : null,
     );
@@ -90,8 +94,8 @@ export default function EdaScene({
     <DiagramViewport view={view} onView={onView} label="EDA 正交原理图">
       {(result.layout.edges || []).map((edge) => {
         const m = edgeMeta.get(edge.id),
-          highlight = matchesRelation(m, active, activeRelation),
-          dim = (active || activeRelation != null) && !highlight,
+          highlight = matchesRelation(m, active, activeRelation, activeIds),
+          dim = hasActive && !highlight,
           uncertain = m.refs.some(
             (id) => ['inferred', 'unknown', 'invalid'].includes(resolveRelationSemantics(relationMeta.get(id)).certainty) || resolveRelationSemantics(relationMeta.get(id)).conditionState === 'invalid',
           ),
@@ -171,6 +175,7 @@ export default function EdaScene({
               { netIds: [m.netId], refs },
               active,
               activeRelation,
+              activeIds,
             );
         const select = () =>
           virtual
@@ -191,7 +196,7 @@ export default function EdaScene({
             data-detail={m.kind === "table" && nodeCompact ? "summary" : "fields"}
             opacity={
               m.kind === "table" &&
-              (active || activeRelation != null) &&
+              hasActive &&
               !activeTables.has(m.tableId)
                 ? 0.3
                 : 1
@@ -340,6 +345,7 @@ export default function EdaScene({
           result={result}
           activeNet={active}
           activeRelation={activeRelation}
+          activeIds={activeIds}
           onSelect={onNet}
           onHover={hoverRelations}
           describe={describe}

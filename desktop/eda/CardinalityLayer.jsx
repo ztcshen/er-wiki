@@ -10,6 +10,7 @@ export default function CardinalityLayer({
   result,
   activeNet,
   activeRelation,
+  activeIds = null,
   onSelect,
   onHover,
   describe,
@@ -22,7 +23,7 @@ export default function CardinalityLayer({
   return (
     <g data-cardinality-layer>
       {badges.map((badge) => {
-        const active = matchesRelation(badge, activeNet, activeRelation),
+        const active = matchesRelation(badge, activeNet, activeRelation, activeIds),
           text = tr(badge.value);
         const color = active ? "var(--eda-active)" : "var(--wiki-muted)";
         const width = badge.value === "混合" ? 46 : 22;
@@ -44,7 +45,7 @@ export default function CardinalityLayer({
             role="button"
             tabIndex={0}
             aria-label={describe(badge.refs)}
-            opacity={(activeNet || activeRelation != null) && !active ? 0.2 : 1}
+            opacity={(activeNet || activeRelation != null || activeIds?.length) && !active ? 0.2 : 1}
             onClick={select}
             onKeyDown={(event) => {
               if (event.key === "Enter") select();
@@ -78,14 +79,14 @@ export default function CardinalityLayer({
         );
       })}
       {bundles.map((badge) => {
-        const active = matchesRelation(badge, activeNet, activeRelation);
+        const active = matchesRelation(badge, activeNet, activeRelation, activeIds);
         return (
           <g
             key={badge.id}
             transform={`translate(${badge.x},${badge.y})`}
             data-bundle-count={badge.count}
             pointerEvents="none"
-            opacity={(activeNet || activeRelation != null) && !active ? 0.2 : 1}
+            opacity={(activeNet || activeRelation != null || activeIds?.length) && !active ? 0.2 : 1}
           >
             <rect
               x="-32"

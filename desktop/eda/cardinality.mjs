@@ -28,9 +28,10 @@ export function relationCaption(
   return `${tableName(relation.startTableId)} (${card.start}) — (${card.end}) ${tableName(relation.endTableId)} · ${translate(card.name)}${condition ? ' · '+condition : ''}`;
 }
 
-export function matchesRelation(meta, netId, relationId) {
+export function matchesRelation(meta, netId, relationId, relationshipIds = null) {
   return relationId != null
     ? meta.refs.includes(relationId)
+    : relationshipIds !== null ? meta.refs.some(id => relationshipIds.includes(id))
     : !!netId && meta.netIds.includes(netId);
 }
 

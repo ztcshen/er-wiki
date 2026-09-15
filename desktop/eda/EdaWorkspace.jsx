@@ -5,6 +5,7 @@ import { modelGroups } from "@drawdb/utils/tableGroups";
 import { domainsOf } from "./model.mjs";
 import { relationBounds } from "./cardinality.mjs";
 import { deriveNets } from "./model.mjs";
+import { fieldRelationshipIds } from './field-selection.mjs';
 import { resolveType } from "@drawdb/utils/customTypes";
 import { checkModel } from "../review/model-checks.mjs";
 import StructureChecks from "../review/StructureChecks";
@@ -101,6 +102,7 @@ export default function EdaWorkspace({ modelId, ready }) {
   const { result, current: currentResult, busy, error } = schematic;
   const { view, setView } = reading;
   const { selectedNet, selectedTable, selectedField } = reading.location;
+  const selectedRelationshipIds = useMemo(() => selectedField == null ? null : fieldRelationshipIds(relationships, selectedTable, selectedField), [relationships, selectedTable, selectedField]);
   const switchMode = (mode) => {
     let nextScenario = scenario,
       nextActivity = activity;
@@ -215,6 +217,15 @@ export default function EdaWorkspace({ modelId, ready }) {
     );
     if (next) setView(next);
   };
+  const selectField = (tid, fid, focus = false) => {
+    pendingFocus.current = null;
+    pendingRelation.current = null;
+    setChecksOpen(false);
+    const projected = currentResult && result?.projection.nodes.some(n => n.kind === 'table' && n.tableId === tid && n.fields?.some(f => f.id === fid));
+    if (focus && !projected) navigate('column', '', tid, { selectedTable: tid, selectedField: fid });
+    else { setTable(tid); setField(fid); setNet(null); setFieldNets([]); }
+    if (focus) { pendingFocus.current = tid; setFocusRequest(n => n + 1); }
+  };
   useEffect(() => {
     if (!currentResult || pendingFocus.current === null) return;
     focusTable(pendingFocus.current, pendingFocus.current === selectedTable ? selectedField : null);
@@ -319,6 +330,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       ) {
         const id = detail.tableId;
         setSelectedElement((s) => ({ ...s, open: false, openDialogue: false }));
+        if (detail.fieldId != null) { selectField(id, detail.fieldId, true); return; }
         navigate(
           "column",
           domains.find((d) => d.tableIds.includes(id))?.id || "",
@@ -358,11 +370,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       setNet(null);
       setFieldNets([]);
     },
-    inspectField: (tid, fid) => {
-      navigate("column", "", tid, { selectedTable: tid, selectedField: fid });
-      pendingFocus.current = tid;
-      setFocusRequest((n) => n + 1);
-    },
+    inspectField: (tid, fid) => selectField(tid, fid, true),
     canFocus: currentResult && !!tableNode(selectedTable),
     focus: () => focusTable(selectedTable, selectedField),
     editRelation: (id) =>
@@ -557,6 +565,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                 result={result}
                 selectedTable={selectedTable}
                 selectedField={selectedField}
+                selectedRelationshipIds={selectedRelationshipIds}
                 scale={viewScale(view, viewport)}
                 semanticZoom={settings.edaSemanticZoom !== false}
                 selectedNet={selectedNet}
@@ -566,6 +575,8 @@ export default function EdaWorkspace({ modelId, ready }) {
                 onView={setView}
                 onEdit={editTable}
                 onNode={(node) => {
+                  pendingFocus.current = null;
+                  pendingRelation.current = null;
                   setChecksOpen(false);
                   if (node.kind === "domain") navigate("domain", node.domainId);
                   else {
@@ -580,6 +591,8 @@ export default function EdaWorkspace({ modelId, ready }) {
                   }
                 }}
                 onNet={(value, relationId = null) => {
+                  pendingFocus.current = null;
+                  pendingRelation.current = null;
                   setChecksOpen(false);
                   const ids = Array.isArray(value) ? value : [value];
                   setNet(ids[0] || null);
@@ -590,25 +603,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                     result.projection.nets.filter((n) => ids.includes(n.id)),
                   );
                 }}
-                onField={(tid, fid) => {
-                  pendingFocus.current = null;
-                  pendingRelation.current = null;
-                  setChecksOpen(false);
-                  const found = result.projection.nets.filter(
-                    (n) =>
-                      (n.targetTableId === tid &&
-                        n.targetFields.includes(fid)) ||
-                      n.members.some(
-                        (r) =>
-                          r.startTableId === tid &&
-                          (r.fields || [r]).some((p) => p.startFieldId === fid),
-                      ),
-                  );
-                  setFieldNets(found);
-                  setNet(found[0]?.id || null);
-                  setTable(tid);
-                  setField(fid);
-                }}
+                onField={(tid, fid) => selectField(tid, fid)}
               />
             )}
             {!tables.length && (
