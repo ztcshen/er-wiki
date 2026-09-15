@@ -2,20 +2,22 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { geometryKey, refreshLayoutContent } from "./layout-content.mjs";
 import { createLayoutTask } from "./layout-task.mjs";
 import { scopeKey } from "./reading-state.mjs";
+import { desktopLayoutCache } from "./layout-cache.mjs";
+import { createCachedLayoutTask } from "./cached-layout-task.mjs";
 
-export function useSchematicLayout(model, reading, ready) {
+export function useSchematicLayout(modelId, model, reading, ready) {
   const { location, rememberedView, setView } = reading;
   const viewKey = scopeKey(location);
   const shape = useMemo(() => geometryKey(model, location), [model, viewKey]);
-  const input = useMemo(() => ({ model, options: location }), [shape, viewKey]);
+  const input = useMemo(() => ({ model, options: location, shape }), [modelId, shape, viewKey]);
   const [revision, setRevision] = useState(0),
     [raw, setRaw] = useState(null);
   const [completed, setCompleted] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const job = useRef(null),
-    sequence = useRef(0);
-  const key = shape + viewKey + revision;
+    sequence = useRef(0), forceNext = useRef(null);
+  const key = JSON.stringify([modelId, shape, viewKey, revision]);
   const result = useMemo(() => refreshLayoutContent(raw, model), [raw, model]);
   useEffect(() => {
     if (!ready || !input.model.tables.length) {
@@ -24,10 +26,14 @@ export function useSchematicLayout(model, reading, ready) {
       return;
     }
     const id = ++sequence.current;
-    setBusy(true);
+    const force = forceNext.current === JSON.stringify([modelId, viewKey]);
+    forceNext.current = null;
+    setBusy(false);
     setError("");
-    const delay = setTimeout(() => {
-      const task = createLayoutTask(
+    const task = createCachedLayoutTask({
+      modelId, scope: viewKey, ...input, cache: desktopLayoutCache(), force,
+      onCompute: () => { if (sequence.current === id) setBusy(true); },
+      compute: () => createLayoutTask(
         () =>
           new Worker(new URL("./layout.worker.js", import.meta.url), {
             type: "module",
@@ -35,9 +41,10 @@ export function useSchematicLayout(model, reading, ready) {
         input.model,
         input.options,
         { id },
-      );
-      job.current = task;
-      task.promise
+      ),
+    });
+    job.current = task;
+    task.promise
         .then((value) => {
           if (sequence.current !== id) return;
           setRaw(value);
@@ -53,14 +60,11 @@ export function useSchematicLayout(model, reading, ready) {
         })
         .catch((failure) => {
           if (sequence.current !== id) return;
-          setError(failure.message);
+          if (failure.code !== "LAYOUT_CANCELLED") setError(failure.message);
           setBusy(false);
         });
-    }, 150);
-    job.current = { cancel: () => clearTimeout(delay) };
     return () => {
       sequence.current++;
-      clearTimeout(delay);
       job.current?.cancel();
       job.current = null;
     };
@@ -78,6 +82,6 @@ export function useSchematicLayout(model, reading, ready) {
     busy,
     error,
     cancel,
-    arrange: () => setRevision((n) => n + 1),
+    arrange: () => { forceNext.current = JSON.stringify([modelId, viewKey]); setRevision((n) => n + 1); },
   };
 }

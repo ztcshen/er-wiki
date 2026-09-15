@@ -12,6 +12,12 @@ them. Keep pull requests focused and include the exact problem and expected resu
 5. Run focused checks for the change; `npm test` contains synthetic model and
    shell-security checks, not a private-business regression suite.
 
+Do not run the full UI smoke suite for every edit. Prefer targeted unit tests and
+a build for logic, cache, and data-handling changes. Add a small UI check only
+when an interaction, rendered appearance, or unresolved integration risk requires
+it; use the full UI suite for a broader release check, not as a default local loop.
+Report which checks actually ran and stop when the relevant checks pass.
+
 The generated renderer lives in `work/drawdb`. Do not submit that directory.
 Maintain changes in the pinned patch or the desktop build integration.
 Do not change upstream versions without reviewing the lockfile, license notices,

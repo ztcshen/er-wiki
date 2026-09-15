@@ -17,6 +17,18 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
 
 ## UI decisions
 
+- Completed layouts are cached by model and reading scope in a separate disposable
+  IndexedDB database (`erwiki-layout-cache`), with a small in-memory front cache.
+  Only geometry and routing diagnostics are stored: current table/field text,
+  enums and relationship semantics are reconstructed from the live model.
+  Cache hits do not create an ELK worker or show the arranging state. Cache misses
+  keep the existing debounce, cancellation and worker timeout behavior.
+  Structural fingerprints and a build-time hash of layout code/dependency versions
+  invalidate stale geometry; release metadata alone does not invalidate it.
+  Arrange explicitly bypasses the cache once. Corruption, unavailable storage or
+  quota failures fall back to computation without touching model saves/backups.
+  Persistence is bounded to 32 recent scope entries / 32 MiB, with 8 MiB per entry;
+  entries replace the previous shape for that scope, not a version-history archive.
 - The header separates model identity from the **Quick search / ⌘K** entry and
   save/history controls. The More menu contains common grouped actions; All actions
   opens the complete catalogue using the `>` command-only prefix.

@@ -96,7 +96,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       checkModel(model, { typeInfo: (type) => resolveType(database, type) }),
     [model, database],
   );
-  const schematic = useSchematicLayout(model, reading, ready);
+  const schematic = useSchematicLayout(modelId, model, reading, ready);
   const { result, current: currentResult, busy, error } = schematic;
   const { view, setView } = reading;
   const { selectedNet, selectedTable, selectedField } = reading.location;
@@ -540,6 +540,7 @@ export default function EdaWorkspace({ modelId, ready }) {
             data-minimap={settings.edaMinimap !== false}
             id="canvas"
             data-layout-optimizer={result?.optimization}
+            data-layout-source={result?.cacheSource}
             data-eda-ready={
               ready && result && currentResult && !busy && !error
                 ? "true"

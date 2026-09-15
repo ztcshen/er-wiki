@@ -11,7 +11,7 @@ export async function arrangeSchematic(model, options={}, elk){
   // ELK API worker. Loading elk.bundled inside WorkerGlobalScope is invalid.
   if(!elk){const {default:ELK}=await import('elkjs/lib/elk.bundled.js');elk=new ELK();}
   if(model.tables.length>5000||model.relationships.length>20000)throw new Error('输入规模超过当前保护上限，请拆分模型');
-  let projection=projectModel(model,options);
+  let projection=projectModel(model,options),longCuts=[];
   if(!projection.nodes.length)return {projection,layout:{children:[],edges:[],width:800,height:500},metrics:{crossings:0,overlaps:0,length:0,bends:0},candidates:[]};
   async function candidates(p){
     if(p.nodes.length>1500||p.edges.length>6000)throw new Error('当前视图过大，请先选择更小的领域');
@@ -44,8 +44,8 @@ export async function arrangeSchematic(model, options={}, elk){
       m.refs.forEach(id=>lengths.set(id,(lengths.get(id)||0)+length));
     }
     for(const [id,length]of lengths)if(length>(options.longThreshold||1600))long.add(id);
-    if(long.size){projection=projectModel(model,options,long);results=await candidates(projection);best=results[0];}
+    if(long.size){longCuts=[...long];projection=projectModel(model,options,long);results=await candidates(projection);best=results[0];}
   }
-  return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,optimization:best.optimization||'elk',
+  return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,optimization:best.optimization||'elk',longCuts,
     candidates:results.map(({direction,seed,metrics,quality,placement,optimization})=>({direction,seed,metrics,quality,...(placement?{placement}:{}),...(optimization?{optimization}:{})}))};
 }
