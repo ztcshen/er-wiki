@@ -543,6 +543,11 @@ export default function EdaWorkspace({ modelId, ready }) {
               reading={reading}
               navigate={(...args) => {
                 setChecksOpen(false);
+                if (args[3]?.selectedField != null) {
+                  setSearch('');
+                  selectField(args[3].selectedTable, args[3].selectedField, true);
+                  return;
+                }
                 navigate(...args);
               }}
             />

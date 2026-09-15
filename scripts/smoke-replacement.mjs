@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { checkReceipts } from './check-receipts.mjs';
+import { checkFieldSelection } from './check-field-selection.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(path.join(root, "desktop/package.json"));
 const { _electron } = await import(
@@ -99,7 +100,10 @@ const doc = (title) => ({
 });
 try {
   await ready();
-  if (process.argv.includes('--receipts-only')) {
+  if (process.argv.includes('--field-selection-only')) {
+    await checkFieldSelection({ app, page, read, replace, out });
+    assert.deepEqual(errors, []);
+  } else if (process.argv.includes('--receipts-only')) {
     await checkReceipts({ app, page, read, profile, out });
     assert.deepEqual(errors, []);
   } else {
