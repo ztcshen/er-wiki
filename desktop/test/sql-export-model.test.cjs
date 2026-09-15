@@ -1,24 +1,12 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { registerHooks } = require('node:module');
-const { pathToFileURL } = require('node:url');
 const path = require('node:path');
 const fs = require('node:fs');
 const { createRequire } = require('node:module');
-const root = pathToFileURL(path.resolve(__dirname, '../../work/drawdb/src') + '/').href;
-// Only the pinned upstream tree uses bundler-style extensionless imports.
-registerHooks({ resolve(specifier, context, next) {
-  if (context.parentURL?.startsWith(root) && specifier.startsWith('.')) {
-    const url = new URL(specifier, context.parentURL);
-    for (const suffix of ['', '.js', '/index.js']) {
-      const candidate = new URL(url.href + suffix);
-      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return next(candidate.href, context);
-    }
-  }
-  return next(specifier, context);
-} });
+const loader = import('../../scripts/lib/upstream-node.mjs');
 
 test('actual MySQL and SQLite exporters emit only declared physical constraints without changing the model', async () => {
+  await loader;
   const { sqlExportModel } = await import('../review/sql-export-model.mjs');
   const { conditionalModel } = await import('./fixtures/conditional-model.mjs');
   const { exportSQL } = await import('../../work/drawdb/src/utils/exportSQL/index.js');
