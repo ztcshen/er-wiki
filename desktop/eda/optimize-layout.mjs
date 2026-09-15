@@ -68,6 +68,7 @@ export async function optimizeLayouts(baselines, elk, options) {
       const metrics = scoreLayout(layout, projection), quality = layoutQuality(layout, projection, metrics, options.targetAspectRatio);
       if (!candidateValidity({ projection, layout, metrics, quality }).valid) return;
       results.push({ ...base, projection, layout, metrics, quality, optimization: `compact / ${changes.length} ports / ${strategy}` });
+      options.onCandidate?.(results.at(-1));
     };
     // Optional optimization failures leave the already-valid baseline available.
     for (const changes of combinations) try { await run(changes, base.layout); } catch { /* reject this candidate */ }

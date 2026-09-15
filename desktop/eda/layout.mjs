@@ -16,7 +16,14 @@ export async function arrangeSchematic(model, options={}, elk){
   if(model.tables.length>5000||model.relationships.length>20000)throw new Error('输入规模超过当前保护上限，请拆分模型');
   let projection=projectModel(model,options),longCuts=[];
   if(!projection.nodes.length)return {projection,layout:{children:[],edges:[],width:800,height:500},metrics:{crossings:0,overlaps:0,length:0,bends:0},candidates:[]};
-  async function candidates(p){
+  let published = null;
+  const publish = (candidate, cuts) => {
+    if (candidateValidity(candidate).valid && (!published || compareCandidates(candidate, published) < 0)) {
+      published = candidate;
+      options.onCandidate?.({ ...candidate, status: 'ready', validity: { valid: true, reasons: [] }, longCuts: cuts, candidates: [] });
+    }
+  };
+  async function candidates(p, cuts = []){
     if(p.nodes.length>1500||p.edges.length>6000)throw new Error('当前视图过大，请先选择更小的领域');
     const results=[];
     const directions = ['RIGHT', 'DOWN'].includes(options.direction) ? [options.direction] : ['RIGHT', 'DOWN'];
@@ -34,6 +41,7 @@ export async function arrangeSchematic(model, options={}, elk){
         const metrics=scoreLayout(layout,p);
         if(placement&&metrics.overlaps)continue;
         results.push({projection:p,layout,metrics,quality:layoutQuality(layout,p,metrics,options.targetAspectRatio),direction,seed,...(placement?{placement}:{})});
+        publish(results.at(-1), cuts);
       }
       } catch (error) {
         candidateErrors.push({ direction, seed, message: error.message || String(error) });
@@ -42,7 +50,8 @@ export async function arrangeSchematic(model, options={}, elk){
     if(!results.length)throw Object.assign(new Error('No layout candidate completed; check constraints or retry'), { code: 'LAYOUT_NO_CANDIDATE', candidateErrors });
     results.sort(compareCandidates);
     if(options.optimize===false || options.budget.expired())return results;
-    return refinePositions(await optimizeLayouts(results,elk,options),options,elk);
+    const stageOptions = { ...options, onCandidate: candidate => publish(candidate, cuts) };
+    return refinePositions(await optimizeLayouts(results,elk,stageOptions),stageOptions,elk);
   }
   let results=await candidates(projection),best=results[0];
   if(options.labels!=='off'&&options.level!=='system'){
@@ -54,7 +63,7 @@ export async function arrangeSchematic(model, options={}, elk){
     for(const [id,length]of lengths)if(length>(options.longThreshold||1600))long.add(id);
     if(long.size && !options.budget.expired()){
       try {
-        const nextProjection=projectModel(model,options,long),nextResults=await candidates(nextProjection);
+        const nextProjection=projectModel(model,options,long),nextResults=await candidates(nextProjection,[...long]);
         longCuts=[...long];projection=nextProjection;results=nextResults;best=results[0];
       } catch (error) { candidateErrors.push({ stage: 'net-labels', message: error.message }); }
     }

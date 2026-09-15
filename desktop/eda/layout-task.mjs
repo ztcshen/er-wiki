@@ -1,14 +1,15 @@
+import { candidateValidity, compareCandidates } from './layout-quality.mjs';
 // One request owns one worker and deadline. Cancellation never writes a model.
 export function createLayoutTask(
   createWorker,
   model,
   options,
-  { id = 1, timeoutMs = 25000 } = {},
+  { id = 1, timeoutMs = 25000, onProgress = () => {} } = {},
 ) {
   let worker,
     timer,
     finished = false,
-    rejectTask;
+    rejectTask, best = null;
   const dispose = () => {
     clearTimeout(timer);
     worker?.terminate();
@@ -25,16 +26,26 @@ export function createLayoutTask(
       worker = createWorker();
       timer = setTimeout(
         () =>
-          finish(null, new Error("布局超时，请缩小领域或重试。原模型未改变。")),
+          best ? finish({ ...best, diagnostics: { ...best.diagnostics, stopReason: 'timeout', optimizationComplete: false } })
+            : finish(null, new Error("布局超时，请缩小领域或重试。原模型未改变。")),
         timeoutMs,
       );
       worker.onmessage = ({ data }) => {
-        if (data.id !== id) return;
-        finish(data.result, data.error ? new Error(data.error) : null);
+        if (finished || data.id !== id) return;
+        if (data.type === 'progress') {
+          if (candidateValidity(data.result).valid && (!best || compareCandidates(data.result, best) < 0)) {
+            best = data.result; onProgress(best);
+          }
+          return;
+        }
+        if (data.type && data.type !== 'final') return;
+        if (data.error && best) finish({ ...best, diagnostics: { ...best.diagnostics, stopReason: 'engine-error', message: data.error, optimizationComplete: false } });
+        else finish(data.result, data.error ? new Error(data.error) : null);
       };
-      worker.onerror = (event) =>
-        finish(null, new Error(event.message || "布局引擎未能启动"));
-      worker.postMessage({ id, model, options });
+      worker.onerror = (event) => best
+        ? finish({ ...best, diagnostics: { ...best.diagnostics, stopReason: 'engine-error', optimizationComplete: false } })
+        : finish(null, new Error(event.message || "布局引擎未能启动"));
+      worker.postMessage({ id, model, options: { ...options, softBudgetMs: Math.min(options?.softBudgetMs ?? 23000, Math.max(0, timeoutMs - 500)) } });
     } catch (error) {
       finish(null, error);
     }

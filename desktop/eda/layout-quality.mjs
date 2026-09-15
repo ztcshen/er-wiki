@@ -72,6 +72,7 @@ export function layoutQuality(layout, projection, metrics, targetAspect = 1.8) {
 }
 
 export function candidateValidity(candidate) {
+  candidate = candidate || {};
   const reasons = [];
   if (!['crossings', 'overlaps', 'length', 'bends', 'collinearConflicts', 'illegalContacts'].every(key => Number.isFinite(candidate.metrics?.[key])) ||
       !['nodeIntrusions', 'labelOverlaps', 'badgeOverlaps', 'annotationIntrusions'].every(key => Number.isFinite(candidate.quality?.[key]))) reasons.push('DIAGNOSTICS_MISSING');

@@ -24,6 +24,7 @@ export async function refinePositions(candidates, options = {}, elk) {
       if (!candidateValidity({ projection, layout, metrics, quality }).valid) return;
       const result = { ...base, projection, layout, metrics, quality, optimization: `position / ${kind}` };
       if (compareCandidates(result, best) < 0) best = result;
+      options.onCandidate?.(result);
       return result;
     } catch (error) {
       // A WASM fault invalidates the engine for this worker, not the saved model.
