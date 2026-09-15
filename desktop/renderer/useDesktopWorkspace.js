@@ -60,10 +60,11 @@ export function useDesktopWorkspace(value) {
     const run = async ({ id, action, route, targetId, json, name, backupId, resolve }) => {
       if (action === 'palette') { openCommandPalette(); return; }
       if (action === 'settings' || action === 'help') { openPanel(action); return; }
-      if (busy) { if (id) window.erDesktop.commandResult(id, false); resolve?.({ok:false,error:tr('请等待当前操作完成')}); return; }
+      if (busy) { const result = {ok:false,errorCode:'WORKSPACE_BUSY',message:tr('请等待当前操作完成')}; if (id) window.erDesktop.commandResult(id, result); resolve?.({...result,error:result.message}); return; }
       busy = true;
       let ok = false;
       let failure;
+      let details = {};
       try {
         await settleEditor();
         if (!current.current.ready) throw new Error('模型尚未载入，请稍后重试');
@@ -131,11 +132,14 @@ export function useDesktopWorkspace(value) {
         }
       } catch (error) {
         failure=tr(error.message || '操作失败，模型未关闭');
+        details = { errorCode: error.code || 'COMMAND_FAILED', message: failure,
+          errors: error.errors || [], warnings: error.warnings || [] };
         if(!resolve)Toast.error({ content: failure, duration: 8 });
       } finally {
         busy = false;
-        if (id) window.erDesktop.commandResult(id, ok);
-        resolve?.({ok,error:failure});
+        const result = {ok,error:failure,...details};
+        if (id) window.erDesktop.commandResult(id, result);
+        resolve?.(result);
       }
     };
     const remove = window.erDesktop.onCommand(run);

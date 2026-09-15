@@ -38,7 +38,7 @@ function registerDesktopIpc({
       return;
     }
     if (typeof result?.id === "string")
-      bridge.settle(result.id, result.ok === true);
+      bridge.settle(result.id, result.result ?? (result.ok === true));
   });
   ipcMain.on('desktop:workspace-ready', (event, modelId) => {
     try { trusted(event); } catch { return; }

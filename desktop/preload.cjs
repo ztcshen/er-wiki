@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('erDesktop', Object.freeze({
   confirmReplace: value => ipcRenderer.invoke('desktop:confirm-replace', value),
   workspaceReady: modelId => ipcRenderer.send('desktop:workspace-ready', modelId),
   requestClose: () => ipcRenderer.invoke('desktop:request-close'),
-  commandResult: (id, ok) => ipcRenderer.send('desktop:command-result', { id, ok }),
+  commandResult: (id, result) => ipcRenderer.send('desktop:command-result', { id, result }),
   onCommand: callback => {
     const listener = (_event, command) => callback(command);
     ipcRenderer.on('desktop:command', listener);
