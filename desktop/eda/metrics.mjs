@@ -1,3 +1,4 @@
+import { wireConflicts } from './wire-conflicts.mjs';
 export function sectionsOf(edge){return (edge.sections||[]).map(s=>[s.startPoint,...(s.bendPoints||[]),s.endPoint]);}
 export function scoreLayout(layout, projection){
   const meta=new Map(projection.edges.map(e=>[e.id,e]));
@@ -26,16 +27,19 @@ export function scoreLayout(layout, projection){
   let length=0;
   for(const spans of lanes.values()){spans.sort((a,b)=>a[0]-b[0]);let start=spans[0][0],end=spans[0][1];
     for(const [a,b]of spans.slice(1)){if(a<=end+.01)end=Math.max(end,b);else{length+=end-start;start=a;end=b;}}length+=end-start;}
-  return {crossings:cross.size,overlaps,length:Math.round(length),bends};
+  return {crossings:cross.size,overlaps,length:Math.round(length),bends,...wireConflicts(segments,layout,projection)};
 }
 export function compareScores(a,b){for(const key of ['crossings','overlaps','length','bends'])if(a[key]!==b[key])return a[key]-b[key];return 0;}
 
 export function validateLayout(layout, projection){
   const ids=new Set((layout.children||[]).map(n=>n.id));
-  if(ids.size!==projection.nodes.length)throw new Error('布局结果缺失节点');
+  if(ids.size!==projection.nodes.length||(layout.children||[]).length!==projection.nodes.length||projection.nodes.some(n=>!ids.has(n.id)))throw new Error('布局结果缺失节点');
   for(const n of layout.children||[])if(![n.x,n.y,n.width,n.height].every(Number.isFinite))throw new Error('布局坐标无效');
   if((layout.edges||[]).length!==projection.edges.length)throw new Error('布局结果缺失关系');
+  const expectedEdges=new Set(projection.edges.map(e=>e.id)),actualEdges=new Set((layout.edges||[]).map(e=>e.id));
+  if(actualEdges.size!==expectedEdges.size||[...expectedEdges].some(id=>!actualEdges.has(id)))throw new Error('布局结果缺失关系');
   for(const e of layout.edges||[]){if(!e.sections?.length)throw new Error('布局结果缺失布线路径');
+    for(const p of sectionsOf(e))if(p.some(point=>!point||![point.x,point.y].every(Number.isFinite)))throw new Error('布局坐标无效');
     for(const p of sectionsOf(e))for(let i=1;i<p.length;i++)if(![p[i].x,p[i].y].every(Number.isFinite)||
       Math.abs(p[i].x-p[i-1].x)>.01&&Math.abs(p[i].y-p[i-1].y)>.01)throw new Error('收到非正交路径');}
 }

@@ -108,6 +108,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     }
     const pid=port(n,relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y),relation?badgeY:undefined);
     n.ports.find(p=>p.id===pid).fieldIds=[...fids];
+    if (!indices.length && !relation) n.ports.find(p=>p.id===pid).aggregateId = idOf('summary-port', [n.id, side]);
     return pid;
   };
   const labelPort=(net,key,side)=>{

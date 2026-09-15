@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 // translation change must not force every model through the layout engine again.
 export function layoutCacheVersion(desktop, readFile = fs.readFileSync) {
   const hash = createHash('sha256');
-  for (const name of ['model', 'layout', 'layout-content', 'layout-snapshot', 'metrics', 'ports', 'cardinality', 'relation-condition',
+  for (const name of ['model', 'layout', 'layout-content', 'layout-snapshot', 'metrics', 'wire-conflicts', 'ports', 'cardinality', 'relation-condition',
     'elk-graph', 'placement', 'optimize-layout', 'refine-positions', 'position-candidates', 'compact-layout', 'obstacle-router', 'layout-quality']) {
     hash.update(name).update(readFile(path.join(desktop, 'eda', name + '.mjs')));
   }
