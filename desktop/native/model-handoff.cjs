@@ -1,30 +1,13 @@
-const path = require("node:path");
 const { createHash, randomUUID } = require("node:crypto");
-const { readModelFile } = require("../files.cjs");
-
-function replacementArgs(argv, cwd) {
-  if (!argv.some(value => value === '--replace-model' || value.startsWith('--replace-model='))) return null;
-  const get = (key) => {
-    const matches = argv.map((value,index)=>({value,index})).filter(({value})=>value === key || value.startsWith(key+'='));
-    if (matches.length !== 1)
-      throw new Error("Expected exactly one " + key);
-    const match=matches[0];
-    const value = match.value === key ? argv[match.index + 1] : match.value.slice(key.length+1);
-    if (!value || value.startsWith("--")) throw new Error("Missing " + key);
-    return value;
-  };
-  const targetId = get("--model-id");
-  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(targetId))
-    throw new Error("Invalid model ID");
-  return { targetId, file: path.resolve(cwd, get("--replace-model")) };
-}
+const { readModelFile, atomicWrite } = require("../files.cjs");
+const { replacementArgs, modelCommandArgs } = require('./model-command-args.cjs');
 
 function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
   let readyId = null,
     pending = null,
     running = false, sequence = 0, writes = Promise.resolve();
   const publish = (job, status, detail = {}) => {
-    const value = { requestId: job.requestId, operation: 'replace-model', targetId: job.targetId ?? null,
+    const value = { requestId: job.requestId, operation: job.operation || 'replace-model', targetId: job.targetId ?? null,
       sha256: job.sha256 ?? null, status, ok: status === 'pending' ? null : status === 'succeeded',
       layoutStatus: 'not_observed', startedAt: job.startedAt,
       ...(status === 'pending' ? {} : { finishedAt: new Date().toISOString() }), ...detail };
@@ -44,16 +27,29 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
     running = true;
     clearTimeout(job.timer);
     try {
-      if (readyId !== job.targetId)
+      if (job.targetId != null && readyId !== job.targetId)
         throw Object.assign(new Error("Replacement target does not match the open model"), { code: 'TARGET_MISMATCH' });
       const result = await request({
-        action: "replace-json",
+        action: job.operation === 'replace-model' ? "replace-json" : 'read-current',
         requestId: job.requestId,
         targetId: job.targetId,
         json: job.json,
+        expectedContentHash: job.expectedContentHash,
       });
       const detail = typeof result === 'object' && result ? result : { ok: result === true };
-      if (detail.ok === true) await publish(job, 'succeeded', { errors: [], warnings: detail.warnings || [] });
+      if (detail.ok === true) {
+        const output = {};
+        if (job.operation !== 'replace-model') {
+          if (detail.modelId !== readyId || typeof detail.contentHash !== 'string' || !/^[a-f0-9]{64}$/.test(detail.contentHash)) throw Object.assign(new Error('Invalid current-model response'), { code: 'MODEL_RESPONSE_INVALID' });
+          if (typeof detail.json !== 'string' || Buffer.byteLength(detail.json) > 20 * 1024 * 1024) throw Object.assign(new Error('Invalid or oversized model export'), { code: 'MODEL_FILE_TOO_LARGE' });
+          Object.assign(output, { targetId: detail.modelId, contentHash: detail.contentHash, hasUnsavedChanges: detail.hasUnsavedChanges, draftStatus: detail.draftStatus });
+          if (job.operation === 'export-model') {
+            await atomicWrite(job.file, detail.json, { overwrite: job.overwrite === true });
+            output.sha256 = createHash('sha256').update(detail.json).digest('hex');
+          }
+        }
+        await publish(job, 'succeeded', { errors: [], warnings: detail.warnings || [], ...output });
+      }
       else await failure(job, { code: detail.errorCode, message: detail.message || detail.error || 'Model replacement failed',
         errors: detail.errors, warnings: detail.warnings }, 'REPLACEMENT_FAILED');
     } catch (error) {
@@ -70,10 +66,10 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
       );
     },
     async enqueue(argv, cwd) {
-      if (!argv.some(value => value === '--replace-model' || value.startsWith('--replace-model='))) return false;
+      if (!argv.some(value => ['--replace-model', '--export-model', '--inspect-model'].some(key => value === key || value.startsWith(key + '=')))) return false;
       const job = { requestId: randomUUID(), sequence: ++sequence, startedAt: new Date().toISOString() };
       let args;
-      try { args = replacementArgs(argv, cwd); job.targetId = args.targetId; }
+      try { args = modelCommandArgs(argv, cwd); job.targetId = args.targetId; job.operation = args.operation; }
       catch (error) { await failure(job, error, 'ARGUMENTS_INVALID'); throw error; }
       if (pending || running) {
         const error = Object.assign(new Error("A model replacement is already in progress"), { code: 'WORKSPACE_BUSY' });
@@ -83,8 +79,8 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
       running = true;
       try {
         await publish(job, 'pending');
-        const json = await readModelFile(args.file);
-        const sha256 = createHash("sha256").update(json).digest("hex");
+        const json = args.operation === 'replace-model' ? await readModelFile(args.file) : undefined;
+        const sha256 = json === undefined ? null : createHash("sha256").update(json).digest("hex");
         job.sha256 = sha256;
         await publish(job, 'pending');
         pending = {

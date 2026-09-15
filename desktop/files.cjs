@@ -5,7 +5,7 @@ const { MAX_FILE_BYTES } = require('./security.cjs');
 
 // Write beside the selected target, flush, then replace; a failed write never
 // truncates the previous model. The renderer never supplies filesystem paths.
-async function atomicWrite(target, contents) {
+async function atomicWrite(target, contents, { overwrite = true } = {}) {
   const temporary = path.join(path.dirname(target), `.${path.basename(target)}.${randomUUID()}.tmp`);
   let handle;
   try {
@@ -14,7 +14,8 @@ async function atomicWrite(target, contents) {
     await handle.sync();
     await handle.close();
     handle = null;
-    await fs.rename(temporary, target);
+    if (overwrite) await fs.rename(temporary, target);
+    else await fs.link(temporary, target); // Atomic no-clobber publication after flush.
   } finally {
     if (handle) await handle.close();
     await fs.unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; });
