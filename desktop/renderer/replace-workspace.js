@@ -2,6 +2,7 @@ import { flushSync } from "react-dom";
 import { importModel, exportModel } from "./model-file";
 import { bindingIssues } from "../process/definition.mjs";
 import { replacementRecord, commitReplacement } from "./replace-model.mjs";
+import { modelContentHash, assertReadableDraft } from './model-content.mjs';
 
 export async function replaceWorkspace({
   current,
@@ -9,6 +10,7 @@ export async function replaceWorkspace({
   action,
   targetId,
   json,
+  expectedContentHash,
 }) {
   const initial = current.current;
   if (initial.readOnly || !initial.localWritable)
@@ -21,6 +23,14 @@ export async function replaceWorkspace({
       ? await window.erDesktop.openModel("replace-json")
       : { json };
   if (!file) return false;
+  if (expectedContentHash != null) {
+    assertReadableDraft(document);
+    if (typeof expectedContentHash !== 'string' || !/^[a-f0-9]{64}$/.test(expectedContentHash)) throw Object.assign(new Error('Invalid expected content hash'), { code: 'CONTENT_HASH_INVALID' });
+    const checkedContent = current.current.getContentKey();
+    const actual = await modelContentHash(JSON.parse(exportModel(current.current.snapshot)));
+    if (actual !== expectedContentHash || current.current.getContentKey() !== checkedContent)
+      throw Object.assign(new Error('Model content changed since the Agent read it; read the current model again'), { code: 'CONTENT_HASH_MISMATCH' });
+  }
   if (
     typeof file.json !== "string" ||
     new TextEncoder().encode(file.json).length > 20 * 1024 * 1024

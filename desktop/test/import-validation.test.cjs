@@ -39,3 +39,13 @@ test('invalid imports and replacements reject before touching database, view, ba
     assert.deepEqual(snapshot, { diagramId: 'same', tables: ['original'] });
   }
 });
+
+test('a stale expected content hash rejects replacement before import or writes', async () => {
+  const { modelContentHash } = await import('../renderer/model-content.mjs');
+  const old = { title: 'Original', tables: [], relationships: [] }, expectedContentHash = await modelContentHash(old);
+  const current = { current: { ready: true, localWritable: true, readOnly: false, snapshot: { diagramId: 'same', document: { ...old, title: 'Human edit' } }, getContentKey: () => 'human-edit' } };
+  const replaceWorkspace = load('../renderer/replace-workspace.js', { modelContentHash, document: {}, assertReadableDraft() {},
+    exportModel: snapshot => JSON.stringify(snapshot.document), importModel: () => assert.fail('must reject before import') }, 'replaceWorkspace');
+  await assert.rejects(replaceWorkspace({ current, action: 'replace-json', targetId: 'same', json: '{}', expectedContentHash }), error => error.code === 'CONTENT_HASH_MISMATCH');
+  assert.equal(current.current.snapshot.document.title, 'Human edit');
+});
