@@ -19,3 +19,6 @@ for(const cwd of [source,path.join(root,'desktop')]){
     throw new Error('Refusing npm ci through a node_modules symlink. Use a normal dependency install for setup.');
   execFileSync(npm,['ci','--no-audit','--no-fund'],{cwd,stdio:'inherit',shell:process.platform==='win32'});
 }
+// Tests and headless validation consume the pinned, patched schema too, so a
+// clean setup must prepare it before either command runs (not only at build).
+execFileSync(process.execPath,[path.join(root,'scripts/prepare-renderer.mjs')],{cwd:root,stdio:'inherit'});
