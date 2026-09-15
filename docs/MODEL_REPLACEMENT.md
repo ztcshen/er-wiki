@@ -39,6 +39,33 @@ contains only the latest operation's target ID, content SHA256 and result. `ok: 
 means pending; `ok: true` means committed and applied. A launcher exit code alone is
 not proof of replacement. This receipt is not a model revision log.
 
+Each attempted replacement receives a generated `requestId` before argument or
+file validation. The receipt includes `operation: "replace-model"`, `status`
+(`pending`, `succeeded`, `failed`), `errorCode`, `message`, and structured
+`errors: [{code, path, message}]` when available. Failed file reads can have a null
+`sha256`; failed argument parsing can have a null `targetId`. A newer request's
+receipt is not overwritten by an older request finishing late. Callers must
+observe a new matching request identity rather than accept an earlier success.
+Only one replacement may execute at a time. `layoutStatus: "not_observed"` means
+the model result is known but rendering completion is not yet observed; it must
+not be interpreted as layout ready. If the receipt file itself cannot be written,
+the operation reports an error rather than guaranteeing an on-disk receipt.
+
+### Headless preflight
+
+After the repository's normal setup, validate a full document without opening the
+app or changing the input file:
+
+```sh
+node scripts/validate-model.mjs --file examples/fulfillment.drawdb.json --json
+```
+
+Standard output is one JSON object with the normalized copy, errors and warnings.
+Exit code 0 permits warnings, 2 means invalid JSON/model, and 1 means an argument
+or file-read error. The command uses the pinned dialect type catalogue, including
+length/precision checks. Browser-only custom type metadata is unavailable and
+reported as a warning. No SQL or evidence locator is executed or fetched.
+
 ## Focused verification
 
 `npm test` covers identity retention, stale/write-failure rejection, CLI arguments
@@ -47,3 +74,5 @@ verify validation, failure preservation, picker confirmation/cancellation, nativ
 handoff, same process/window/renderer, model count, live EDA refresh and persistence.
 Set `ER_WIKI_TEST_APP` to test a packaged executable. `ER_WIKI_PACKAGE_OUT` can direct
 packaging to a temporary directory before updating the one fixed application entry.
+Use `--receipts-only` for the narrow success/validation-failure/JSON-failure
+native handoff check; it does not run the broader replacement scenarios.

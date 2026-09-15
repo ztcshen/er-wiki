@@ -773,7 +773,7 @@ git diff --check
 | S01 | 完成 | 1285446 | build-replacement、security、workbench 共 16 项通过；npm run build 通过；git diff --check 通过（沿用原执行记录） | 本次文档整理未重跑；未跑 UI，符合本步验证范围 |
 | S02 | 完成 | feat: unify relationship semantics and model validation | 43 项定向测试通过；生成编辑代码实测改名/撤销；导入与替换失败无写入；构建及 diff 检查通过 | 未跑 UI；本机安装交付待完成 |
 | S03 | 完成 | 2227c2f + 后续提示验收提交 | 4 项真实 SQL 导入/导出测试；构建通过；隔离 Electron 命令搜索→导出文件→跳过原因提示通过，无页面错误 | 仅桌面定向验证；未跑全套 UI；本机安装待应用退出 |
-| S04 | 进行中：预检已实现 | feat: add headless model validation command | CLI 文件失败/JSON 失败/非法长度/只读输入测试通过；与 SQL 测试共 5 项通过 | 结构化回执链路尚未完成；不算整步验收 |
+| S04 | 完成 | ca8af27、5127d37、29bf0b7 + 交接验收提交 | CLI 预检；23 项交接/安全定向检查及新增超时检查通过；构建通过；隔离 Electron 成功/条件失败/JSON 失败的原生回执验证通过 | layoutStatus 明确为 not_observed，S10 再观测；本机更新待正在运行的应用退出 |
 | S05 | 待执行 | — | — | — |
 | S06 | 待执行 | — | — | — |
 | S07 | 待执行 | — | — | — |

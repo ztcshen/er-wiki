@@ -6,6 +6,20 @@ const path = require('node:path');
 const { createModelHandoff } = require('../native/model-handoff.cjs');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
+test('workspace readiness timeout ends with an identified failed receipt', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'er-handoff-timeout-'));
+  try {
+    const file = path.join(dir, 'model.json'); await fs.writeFile(file, '{}');
+    let terminal;
+    const done = new Promise(resolve => { terminal = resolve; });
+    const handoff = createModelHandoff({ request: async () => assert.fail('workspace not ready'),
+      timeoutMs: 5, writeResult: async result => { if (result.status === 'failed') terminal(result); } });
+    await handoff.enqueue(['--replace-model', file, '--model-id', 'example'], dir);
+    const result = await done;
+    assert.equal(result.errorCode, 'WORKSPACE_TIMEOUT'); assert.equal(result.ok, false); assert(result.requestId);
+  } finally { await fs.rm(dir, { recursive: true, force: true }); }
+});
+
 test('each parse/read failure replaces old success with an identified terminal receipt', async () => {
   const results = [{ ok: true, requestId: 'old' }];
   const handoff = createModelHandoff({ request: async () => true, writeResult: async value => results.push(value) });
