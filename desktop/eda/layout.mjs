@@ -42,7 +42,7 @@ export async function arrangeSchematic(model, options={}, elk){
         'elk.layered.spacing.nodeNodeBetweenLayers':'110','elk.layered.spacing.edgeNodeBetweenLayers':'30',
         'elk.spacing.edgeNode':'22','elk.spacing.edgeEdge':'14','elk.padding':'[top=40,left=40,bottom=40,right=40]'});
       const base=await measure('elk',()=>elk.layout(graph));validateLayout(base,p);
-      for(const {layout,placement}of await measure('placement',()=>arrangePlaced(p,base,elk))){
+      for(const {layout,placement}of await measure('placement',()=>arrangePlaced(p,base,elk,{...options,onPlacementError:(error,strategy)=>candidateErrors.push({stage:'placement',direction,seed,strategy,message:error.message})}))){
         validateLayout(layout,p);
         const metrics=scoreLayout(layout,p);
         if(placement&&metrics.overlaps)continue;

@@ -47,11 +47,12 @@ export function satisfiesPlacement(layout, hints) {
   });
 }
 
-export async function arrangePlaced(projection, base, elk) {
+export async function arrangePlaced(projection, base, elk, options = {}) {
   const hints = placementHints(projection);
   if (!hints.length) return [{ layout: base }];
   const positions = placementPositions(base, hints), candidates = [];
   for (const strategy of ['BRANDES_KOEPF', 'INTERACTIVE']) {
+    if (options.budget?.expired()) break;
     const graph = elkGraph(projection, { ...base.layoutOptions,
       'elk.layered.cycleBreaking.strategy': 'INTERACTIVE',
       'elk.layered.layering.strategy': 'INTERACTIVE',
@@ -60,8 +61,10 @@ export async function arrangePlaced(projection, base, elk) {
       'elk.layered.nodePlacement.strategy': strategy,
       'elk.separateConnectedComponents': 'false',
     }, positions);
-    const layout = await elk.layout(graph);
-    if (satisfiesPlacement(layout, hints)) candidates.push({ layout, placement: strategy });
+    try {
+      const layout = await elk.layout(graph);
+      if (satisfiesPlacement(layout, hints)) candidates.push({ layout, placement: strategy });
+    } catch (error) { options.onPlacementError?.(error, strategy); }
   }
   return candidates;
 }

@@ -40,3 +40,19 @@ test('scale fixture counts virtual junctions rather than confusing the threshold
   assert.equal(projection.nodes.length, 82);
   assert.equal(projection.nodes.filter(node => node.kind === 'table').length, 42);
 });
+
+test('relative-placement strategies honor the shared budget and preserve earlier success', async () => {
+  const { arrangePlaced } = await import('../eda/placement.mjs');
+  const projection = { level: 'overview', nodes: [
+    { id: 'a', tableId: 'a', kind: 'table', width: 100, height: 80, ports: [] },
+    { id: 'b', tableId: 'b', kind: 'table', width: 100, height: 80, ports: [], placement: { belowTableId: 'a' } },
+  ], edges: [] };
+  const base = { children: projection.nodes.map((node, index) => ({ ...node, x: 0, y: index * 300 })) };
+  let calls = 0;
+  const engine = { layout: async graph => { if (calls++) throw new Error('second placement failed'); return graph; } };
+  assert.equal((await arrangePlaced(projection, base, engine)).length, 1);
+  assert.equal(calls, 2);
+  calls = 0;
+  assert.equal((await arrangePlaced(projection, base, engine, { budget: { expired: () => calls > 0 } })).length, 1);
+  assert.equal(calls, 1);
+});
