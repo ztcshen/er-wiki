@@ -4,10 +4,11 @@ import { rectanglesOverlap } from './obstacle-router.mjs';
 
 // ShrinkTree (ELK SPOrE) proposes topology-preserving compaction, not routes.
 // Never reuse its old edge geometry: every accepted seed is routed by libavoid.
-export async function compactLayoutSeeds(projection, layout, elk) {
+export async function compactLayoutSeeds(projection, layout, elk, options = {}) {
   if (!elk || projection.nodes.length > 80 || layout.children.length < 2) return [];
   const seeds = [], hints = placementHints(projection);
   for (const orthogonal of [true, false]) for (const gap of [80, 120]) {
+    if (options.budget?.expired()) break;
     try {
       const compact = await elk.layout({ id: 'compaction', layoutOptions: {
         'elk.algorithm': 'org.eclipse.elk.sporeCompaction',

@@ -8,12 +8,14 @@ import { compactLayoutSeeds } from './compact-layout.mjs';
 
 export async function refinePositions(candidates, options = {}, elk) {
   let best = [...candidates].sort(compareCandidates)[0];
-  if (options.refinePositions === false || best.projection.nodes.length > 80) return candidates;
+  if (options.refinePositions === false || best.projection.nodes.length > 80 || options.budget?.expired()) return candidates;
   const results = [...candidates];
   let Avoid, aborted = false;
   try { Avoid = await loadObstacleRouter(); } catch { return results; }
-  const started = performance.now(), budget = options.positionBudgetMs ?? 6000;
+  const now = options.budget?.now || (() => performance.now());
+  const started = now(), budget = Math.min(options.positionBudgetMs ?? 6000, options.budget?.remaining() ?? 6000);
   const route = (base, seed, changes, kind) => {
+    if (aborted || now() - started >= budget || options.budget?.expired()) return;
     try {
       const projection = movePorts(base.projection, changes);
       const layout = routeObstacles(Avoid, projection, seed);
@@ -37,7 +39,7 @@ export async function refinePositions(candidates, options = {}, elk) {
     const variants = [suggestions, ...base.projection.edges.map(e => suggestions.filter(s => [...e.sources, ...e.targets].includes(s.id)))];
     const seen = new Set();
     for (const changes of variants) {
-      if (aborted || performance.now() - started >= budget) break;
+      if (aborted || now() - started >= budget) break;
       const key = JSON.stringify(changes);
       if (!changes.length || seen.has(key)) continue;
       seen.add(key); route(base, seed, changes, kind + ' / four-sides');
@@ -47,18 +49,20 @@ export async function refinePositions(candidates, options = {}, elk) {
   trySides(best, best.layout, 'ports');
   const compact = async () => {
     const base = best;
-    for (const seed of await compactLayoutSeeds(base.projection, base.layout, elk)) {
-      if (aborted || performance.now() - started >= budget) break;
+    if (now() - started >= budget) return;
+    const localBudget = { expired: () => now() - started >= budget || !!options.budget?.expired() };
+    for (const seed of await compactLayoutSeeds(base.projection, base.layout, elk, { ...options, budget: localBudget })) {
+      if (aborted || now() - started >= budget) break;
       route(base, seed.layout, [], seed.kind);
       trySides(base, seed.layout, seed.kind);
     }
   };
   await compact();
-  for (let round = 0; round < 4 && !aborted && performance.now() - started < budget; round++) {
+  for (let round = 0; round < 4 && !aborted && now() - started < budget; round++) {
     const base = best;
     const moves = positionCandidates(base.projection, base.layout, base.projection.nodes.length > 30 ? 24 : 64);
     for (const move of moves) {
-      if (aborted || performance.now() - started >= budget) break;
+      if (aborted || now() - started >= budget) break;
       const seed = structuredClone(base.layout), movedIds = new Set();
       for (const m of move.moves || [move]) {
         const node = seed.children.find(n => n.id === m.nodeId);
@@ -89,7 +93,7 @@ export async function refinePositions(candidates, options = {}, elk) {
     if (best === base) break;
     results.push(best);
   }
-  if (!aborted && performance.now() - started < budget) await compact();
+  if (!aborted && now() - started < budget) await compact();
   if (!results.includes(best)) results.push(best);
   return results.sort(compareCandidates);
 }

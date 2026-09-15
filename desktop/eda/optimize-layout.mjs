@@ -48,11 +48,13 @@ export async function optimizeLayouts(baselines, elk, options) {
   const initial = [...baselines].sort(compareCandidates).slice(0, 2);
   if (initial[0].projection.nodes.length > 250) return results; // Keep large diagrams within the worker deadline.
   for (const base of initial) {
+    if (options.budget?.expired()) break;
     const suggestions = portSuggestions(base.projection, base.layout, base.projection.nodes.length > 80 ? 2 : 6);
     const combinations = [[], ...suggestions.map(s => [s])];
     for (let i = 0; i < suggestions.length; i++) for (let j = i + 1; j < suggestions.length; j++) combinations.push([suggestions[i], suggestions[j]]);
     if (suggestions.length > 2) combinations.push(suggestions);
     const run = async (changes, seed, strategy = 'BRANDES_KOEPF') => {
+      if (options.budget?.expired()) return;
       const projection = movePorts(base.projection, changes), hints = placementHints(projection);
       const positions = placementPositions(seed, hints);
       const graph = elkGraph(projection, { ...base.layout.layoutOptions,
