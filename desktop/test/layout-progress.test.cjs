@@ -38,3 +38,13 @@ test('engine failure after progress retains the validated candidate', async () =
   w.onmessage({ data: { id: 1, type: 'final', error: 'synthetic failure' } });
   assert.equal((await task.promise).diagnostics.stopReason, 'engine-error');
 });
+
+test('a degraded final message cannot supersede valid progress', async () => {
+  const { createLayoutTask } = await import('../eda/layout-task.mjs');
+  const w = worker(), task = createLayoutTask(() => w, {}, {});
+  w.onmessage({ data: { id: 1, type: 'progress', result: candidate() } });
+  const bad = candidate(); bad.status = 'degraded'; bad.quality.badgeOverlaps = 1;
+  w.onmessage({ data: { id: 1, type: 'final', result: bad } });
+  const result = await task.promise;
+  assert.equal(result.status, 'ready'); assert.equal(result.quality.badgeOverlaps, 0);
+});

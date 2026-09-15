@@ -25,7 +25,7 @@ export async function arrangeSchematic(model, options={}, elk){
   let published = null;
   const publish = (candidate, cuts) => {
     if (candidateValidity(candidate).valid && (!published || compareCandidates(candidate, published) < 0)) {
-      published = candidate;
+      published = { ...candidate, longCuts: cuts };
       options.onCandidate?.({ ...candidate, status: 'ready', validity: { valid: true, reasons: [] }, longCuts: cuts, candidates: [] });
     }
   };
@@ -74,6 +74,10 @@ export async function arrangeSchematic(model, options={}, elk){
         longCuts=[...long];projection=nextProjection;results=nextResults;best=results[0];
       } catch (error) { candidateErrors.push({ stage: 'net-labels', message: error.message }); }
     }
+  }
+  if (published && compareCandidates(published, best) < 0) {
+    best = published; projection = published.projection; longCuts = published.longCuts;
+    if (!results.includes(published)) results = [...results, published];
   }
   const validity = candidateValidity(best);
   return {projection:best.projection,layout:best.layout,metrics:best.metrics,quality:best.quality,validity,status:validity.valid?'ready':'degraded',optimization:best.optimization||'elk',longCuts,

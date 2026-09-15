@@ -39,6 +39,9 @@ export function createLayoutTask(
           return;
         }
         if (data.type && data.type !== 'final') return;
+        if (data.type === 'final' && !data.error && best && (!candidateValidity(data.result).valid || compareCandidates(best, data.result) < 0)) {
+          finish({ ...best, diagnostics: { ...data.result?.diagnostics, stopReason: 'best-validated-candidate' } }); return;
+        }
         if (data.error && best) finish({ ...best, diagnostics: { ...best.diagnostics, stopReason: 'engine-error', message: data.error, optimizationComplete: false } });
         else finish(data.result, data.error ? new Error(data.error) : null);
       };
