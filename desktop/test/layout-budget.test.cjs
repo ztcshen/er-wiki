@@ -9,10 +9,10 @@ test('later candidate exceptions preserve an earlier valid result', async () => 
   const result = await arrangeSchematic(model, { labels: 'off', optimize: false }, { layout: async graph => {
     if (calls++ > 0) throw new Error('synthetic candidate failure'); return placed(graph);
   } });
-  assert.equal(result.status, 'ready'); assert.equal(calls, 4);
-  assert.equal(result.diagnostics.candidateErrors.length, 3);
+  assert.equal(result.status, 'ready'); assert.equal(calls, 2);
+  assert.equal(result.diagnostics.candidateErrors.length, 1);
   assert.equal(result.projection.nodes.length, 2);
-  await assert.rejects(arrangeSchematic(model, { labels: 'off', optimize: false }, { layout: async () => { throw new Error('all failed'); } }), error => error.code === 'LAYOUT_NO_CANDIDATE' && error.candidateErrors.length === 4);
+  await assert.rejects(arrangeSchematic(model, { labels: 'off', optimize: false }, { layout: async () => { throw new Error('all failed'); } }), error => error.code === 'LAYOUT_NO_CANDIDATE' && error.candidateErrors.length === 2);
 });
 
 test('one shared deadline stops further candidates and optional optimization', async () => {
@@ -23,6 +23,15 @@ test('one shared deadline stops further candidates and optional optimization', a
   } });
   assert.equal(calls, 1); assert.equal(result.status, 'ready');
   assert.equal(result.diagnostics.stopReason, 'budget');
+});
+
+test('automatic layout stays horizontal and vertical requires an explicit request', async () => {
+  const { arrangeSchematic } = await import('../eda/layout.mjs');
+  for (const [direction, expected] of [[undefined, 'RIGHT'], ['AUTO', 'RIGHT'], ['DOWN', 'DOWN']]) {
+    const seen = [];
+    await arrangeSchematic(model, { direction, labels: 'off', optimize: false }, { layout: async graph => { seen.push(graph.layoutOptions['elk.direction']); return placed(graph); } });
+    assert.deepEqual(seen, [expected, expected]);
+  }
 });
 
 test('expired compaction budget launches no engine work', async () => {

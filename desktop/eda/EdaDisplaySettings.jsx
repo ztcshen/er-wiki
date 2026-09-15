@@ -43,7 +43,7 @@ export default function EdaDisplaySettings({
             value={direction}
             onChange={(e) => reading.setPart("direction")(e.target.value)}
           >
-            <option value="AUTO">自动（优先减少交叉）</option>
+            <option value="AUTO">自动（保持横向阅读）</option>
             <option value="RIGHT">横向</option>
             <option value="DOWN">纵向</option>
           </select>

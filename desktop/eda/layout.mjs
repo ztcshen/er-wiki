@@ -32,7 +32,9 @@ export async function arrangeSchematic(model, options={}, elk){
   async function candidates(p, cuts = []){
     if(p.nodes.length>1500||p.edges.length>6000)throw new Error('当前视图过大，请先选择更小的领域');
     const results=[];
-    const directions = ['RIGHT', 'DOWN'].includes(options.direction) ? [options.direction] : ['RIGHT', 'DOWN'];
+    // Preserve horizontal reading order unless the reader explicitly asks DOWN.
+    // AUTO still optimizes ports/routes, but no longer rotates the whole diagram.
+    const directions = [options.direction === 'DOWN' ? 'DOWN' : 'RIGHT'];
     for(const [direction,seed]of directions.flatMap(direction => [11, 37].map(seed => [direction, seed]))){
       if (options.budget.expired()) break;
       try {

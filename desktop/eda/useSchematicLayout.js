@@ -19,6 +19,12 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     [error, setError] = useState("");
   const [improvement, setImprovement] = useState(null);
   const latest = useRef(null);
+  const userIntent = useRef(0);
+  useEffect(() => {
+    const record = event => { if (event.isTrusted) userIntent.current++; };
+    for (const type of ['pointerdown', 'wheel', 'keydown']) document.addEventListener(type, record, true);
+    return () => { for (const type of ['pointerdown', 'wheel', 'keydown']) document.removeEventListener(type, record, true); };
+  }, []);
   latest.current = { view: reading.view, location };
   const job = useRef(null),
     sequence = useRef(0), forceNext = useRef(null);
@@ -41,7 +47,7 @@ export function useSchematicLayout(modelId, model, reading, ready) {
       return;
     }
     const id = ++sequence.current;
-    let preview = null, previewToken = null;
+    let preview = null, previewToken = null, previewSelection = null, previewIntent = 0;
     setImprovement(null);
     const firstView = value => {
       if (!rememberedView) {
@@ -68,6 +74,8 @@ export function useSchematicLayout(modelId, model, reading, ready) {
           preview = value;
           firstView(value);
           previewToken = readingToken(latest.current.view, latest.current.location);
+          previewSelection = readingToken(null, latest.current.location);
+          previewIntent = userIntent.current;
           setRaw(value); setCompleted(key);
         } },
       ),
@@ -76,12 +84,13 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     task.promise
         .then((value) => {
           if (sequence.current !== id) return;
-          if (deferImprovement(preview, value, previewToken, readingToken(latest.current.view, latest.current.location)))
+          const interacted = userIntent.current !== previewIntent || readingToken(null, latest.current.location) !== previewSelection;
+          if (deferImprovement(preview, value, previewToken, readingToken(latest.current.view, latest.current.location), interacted))
             setImprovement({ value, key, id });
           else setRaw(value);
           setCompleted(key);
           setBusy(false);
-          if (!preview) firstView(value);
+          if (!preview || !interacted) firstView(value);
         })
         .catch((failure) => {
           if (sequence.current !== id) return;

@@ -9,4 +9,5 @@ test('changed geometry is deferred after camera or selection changes, not after 
   assert.equal(deferImprovement(preview, final, token, readingToken(view, { selectedTable: 0, selectedField: 1 })), true);
   assert.equal(deferImprovement(preview, structuredClone(preview), token, 'changed'), false);
   assert.equal(deferImprovement(null, final, token, 'changed'), false);
+  assert.equal(deferImprovement(preview, final, token, 'automatic viewport adjustment', false), false);
 });
