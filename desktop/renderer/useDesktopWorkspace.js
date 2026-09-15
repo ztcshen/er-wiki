@@ -7,6 +7,7 @@ import { openPanel, openCommandPalette } from './commands';
 import { replaceWorkspace } from './replace-workspace';
 import { useSelect } from '@drawdb/hooks';
 import { ObjectType } from '@drawdb/data/constants';
+import { sqlExportModel } from '../review/sql-export-model.mjs';
 
 export function useDesktopWorkspace(value) {
   const { setSelectedElement, setBulkSelectedElements } = useSelect();
@@ -103,9 +104,11 @@ export function useDesktopWorkspace(value) {
         } else if (action === 'export-sql') {
           const { exportSQL } = await import('@drawdb/utils/exportSQL');
           const snapshot = current.current.snapshot;
-          const sql = exportSQL({...snapshot,relationships:snapshot.references});
+          const { model, skippedRelationships } = sqlExportModel(snapshot);
+          const sql = exportSQL(model);
           if (!sql) throw new Error('当前数据库类型不支持 SQL 导出，请使用 JSON');
           ok = await window.erDesktop.exportAsset({name:snapshot.name,extension:'sql',content:sql});
+          if (ok && skippedRelationships.length) Toast.warning({ content: `${tr('未导出为物理外键的关系')} (${skippedRelationships.length}): ${skippedRelationships.map(r => `${r.name || r.id}: ${tr(r.reason)}`).join('; ')}`, duration: 0 });
         } else if (action === 'switch') {
           if(typeof targetId!=='string'||!/^[a-zA-Z0-9_-]{1,128}$/.test(targetId))throw new Error('无效的模型标识');
           if(targetId===current.current.snapshot.diagramId){ok=true;return;}

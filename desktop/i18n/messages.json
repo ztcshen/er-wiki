@@ -1,4 +1,9 @@
 {
+  "未导出为物理外键的关系": "Relationships omitted from physical foreign keys",
+  "INVALID_ENDPOINTS": "Invalid endpoints",
+  "CONDITIONAL_RELATIONSHIP": "Conditional relationship",
+  "NOT_DECLARED_PHYSICAL": "Not declared physical",
+  "PHYSICAL_CONDITION_CONFLICT": "Physical foreign key has a business predicate",
   "关系性质无效": "Invalid relationship kind",
   "关系基数无效": "Invalid relationship cardinality",
   "关系依据格式无效": "Invalid relationship evidence",
