@@ -108,7 +108,12 @@ export function useDesktopWorkspace(value) {
           const sql = exportSQL(model);
           if (!sql) throw new Error('当前数据库类型不支持 SQL 导出，请使用 JSON');
           ok = await window.erDesktop.exportAsset({name:snapshot.name,extension:'sql',content:sql});
-          if (ok && skippedRelationships.length) Toast.warning({ content: `${tr('未导出为物理外键的关系')} (${skippedRelationships.length}): ${skippedRelationships.map(r => `${r.name || r.id}: ${tr(r.reason)}`).join('; ')}`, duration: 0 });
+          if (ok && skippedRelationships.length) {
+            const counts = skippedRelationships.reduce((all, relation) => {
+              all[relation.reason] = (all[relation.reason] || 0) + 1; return all;
+            }, {});
+            Toast.warning({ content: `${tr('未导出为物理外键的关系')} (${skippedRelationships.length}): ${Object.entries(counts).map(([reason, count]) => `${tr(reason)} × ${count}`).join('; ')}`, duration: 0 });
+          }
         } else if (action === 'switch') {
           if(typeof targetId!=='string'||!/^[a-zA-Z0-9_-]{1,128}$/.test(targetId))throw new Error('无效的模型标识');
           if(targetId===current.current.snapshot.diagramId){ok=true;return;}
