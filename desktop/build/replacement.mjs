@@ -1,35 +1,35 @@
 // Reuse the workspace's complete hydration path for live document replacement.
+import { uniqueAnchor, replaceOnce } from './anchors.mjs';
+
 export function integrateReplacement(code) {
-  const start = code.indexOf("    const applyDiagramState = (diagram) => {");
-  const end = code.indexOf("    const resetEditorState = () => {", start);
-  if (start < 0 || end < start)
+  const start = uniqueAnchor(code, "    const applyDiagramState = (diagram) => {");
+  const end = uniqueAnchor(code, "    const resetEditorState = () => {");
+  if (end < start)
     throw new Error("Replacement hydration anchor changed");
-  const body = code
+  let body = code
     .slice(start, end)
     .trimEnd()
-    .replace(/^    /gm, "  ")
-    .replace(
+    .replace(/^    /gm, "  ");
+  if (!body.endsWith("  };")) throw new Error("Replacement hydration closing anchor changed");
+  body = replaceOnce(body,
       "const applyDiagramState = (diagram) => {",
       "const applyDiagramState = useCallback((diagram) => {",
-    )
-    .replace(
-      /\};$/,
-      "}, [setDatabase, setTables, setRelationships, setAreas, setReviewGroups, setGroupView, setNotes, setTransform, setTypes, setEnums, setViews, setSaveState]);",
     );
+  body = body.slice(0, -2) + "}, [setDatabase, setTables, setRelationships, setAreas, setReviewGroups, setGroupView, setNotes, setTransform, setTypes, setEnums, setViews, setSaveState]);";
   code = code.slice(0, start) + code.slice(end);
-  code = code.replace(
+  code = replaceOnce(code,
     "  const load = useCallback(async () => {",
     body + "\n\n  const load = useCallback(async () => {",
   );
-  code = code.replace(
+  code = replaceOnce(code,
     "  const savedModelContentRef = useRef(null);",
     "  const savedModelContentRef = useRef(null);\n  const replacementLockRef = useRef(false);",
   );
-  code = code.replace(
+  code = replaceOnce(code,
     "  const save = useCallback(async () => {",
     "  const save = useCallback(async () => {\n    if (replacementLockRef.current) return;",
   );
-  code = code.replace(
+  code = replaceOnce(code,
     "    isDirty: () => modelContent !== savedModelContentRef.current,",
     `    isDirty: () => modelContent !== savedModelContentRef.current,
     getContentKey: () => modelContent,

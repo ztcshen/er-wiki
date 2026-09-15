@@ -1,11 +1,7 @@
 import path from 'node:path';
 import { modulePath } from './build/paths.mjs';
 import { integrateReplacement } from './build/replacement.mjs';
-
-function replaceOnce(code, anchor, replacement) {
-  if (code.split(anchor).length !== 2) throw new Error(`Desktop integration anchor changed: ${anchor.slice(0, 70)}`);
-  return code.replace(anchor, replacement);
-}
+import { replaceOnce } from './build/anchors.mjs';
 
 export function integrateDesktop(here) {
   here=modulePath(here);

@@ -756,8 +756,8 @@ git diff --check
 
 | 步骤 | 状态 | 提交 | 已执行验证 | 未验证/限制 |
 |---|---|---|---|---|
-| S00 | 待执行 | — | — | — |
-| S01 | 待执行 | — | — | — |
+| S00 | 完成 | 基线 2b48d82 | 工作树干净；已有依赖可用；确认依赖符号链接，未重装 | 未改用户应用或模型 |
+| S01 | 完成 | fix: fail closed on replacement build anchor drift | build-replacement、security、workbench 共 16 项通过；npm run build 通过；git diff --check 通过 | 未跑 UI，符合本步验证范围 |
 | S02 | 待执行 | — | — | — |
 | S03 | 待执行 | — | — | — |
 | S04 | 待执行 | — | — | — |
