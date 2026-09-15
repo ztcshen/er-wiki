@@ -7,11 +7,27 @@ const { modelCommandArgs } = require('../native/model-command-args.cjs');
 const { createModelHandoff } = require('../native/model-handoff.cjs');
 test('model commands require explicit export paths and validate concurrency hashes', () => {
   assert.deepEqual(modelCommandArgs(['--inspect-model'], '/tmp'), { operation: 'inspect-model' });
+  assert.deepEqual(modelCommandArgs(['--switch-model', '--model-id', 'example'], '/tmp'), { operation: 'switch-model', targetId: 'example' });
+  assert.throws(() => modelCommandArgs(['--switch-model'], '/tmp'));
+  assert.throws(() => modelCommandArgs(['--switch-model=example', '--model-id', 'example'], '/tmp'));
   assert.equal(modelCommandArgs(['--export-model', 'a.json', '--model-id', 'example'], '/tmp').file, '/tmp/a.json');
   assert.equal(modelCommandArgs(['--replace-model', 'a.json', '--model-id', 'example', '--expected-content-hash', 'a'.repeat(64)], '/tmp').expectedContentHash, 'a'.repeat(64));
   assert.throws(() => modelCommandArgs(['--export-model', '--model-id', 'example'], '/tmp'));
   assert.throws(() => modelCommandArgs(['--inspect-model', '--replace-model', 'a'], '/tmp'));
   assert.throws(() => modelCommandArgs(['--inspect-model', '--overwrite'], '/tmp'));
+});
+
+test('native switch delegates to the existing safe renderer action without replacing model content', async () => {
+  let finish;
+  const done = new Promise(resolve => { finish = resolve; });
+  const requests = [];
+  const handoff = createModelHandoff({ request: async request => { requests.push(request); return { ok: true }; }, writeResult: async result => { if(result.status !== 'pending') finish(result); } });
+  handoff.ready('current');
+  await handoff.enqueue(['--switch-model', '--model-id', 'target'], '/tmp');
+  assert.equal((await done).ok, true);
+  assert.equal(requests[0].action, 'switch');
+  assert.equal(requests[0].targetId, 'target');
+  assert.equal(requests[0].json, undefined);
 });
 test('native inspect/export are read commands; export never clobbers without explicit overwrite', async () => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'er-model-export-'));

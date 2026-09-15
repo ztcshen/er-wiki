@@ -9,7 +9,7 @@ const get = (argv, key, optional = false) => {
   return result;
 };
 function modelCommandArgs(argv, cwd) {
-  const operations = ['--replace-model', '--export-model', '--inspect-model'].filter(key => has(argv, key));
+  const operations = ['--replace-model', '--export-model', '--inspect-model', '--switch-model'].filter(key => has(argv, key));
   if (!operations.length) return null;
   if (operations.length !== 1) throw new Error('Choose exactly one model operation');
   const operation = operations[0].slice(2);
@@ -20,8 +20,9 @@ function modelCommandArgs(argv, cwd) {
   const overwrite = argv.includes('--overwrite');
   if (overwrite && (operation !== 'export-model' || argv.filter(value => value === '--overwrite').length !== 1)) throw new Error('Overwrite is only valid for explicit exports');
   if (operation === 'inspect-model' && argv.filter(value => value === '--inspect-model').length !== 1) throw new Error('Invalid inspect flag');
+  if (operation === 'switch-model' && argv.filter(value => value === '--switch-model').length !== 1) throw new Error('Invalid switch flag');
   return { operation, ...(targetId === undefined ? {} : { targetId }),
-    ...(operation === 'inspect-model' ? {} : { file: path.resolve(cwd, get(argv, '--' + operation)) }),
+    ...(['inspect-model', 'switch-model'].includes(operation) ? {} : { file: path.resolve(cwd, get(argv, '--' + operation)) }),
     ...(expectedContentHash === undefined ? {} : { expectedContentHash }), ...(overwrite ? { overwrite: true } : {}) };
 }
 function replacementArgs(argv, cwd) {

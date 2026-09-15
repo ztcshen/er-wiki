@@ -27,10 +27,10 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
     running = true;
     clearTimeout(job.timer);
     try {
-      if (job.targetId != null && readyId !== job.targetId)
+      if (job.operation !== 'switch-model' && job.targetId != null && readyId !== job.targetId)
         throw Object.assign(new Error("Replacement target does not match the open model"), { code: 'TARGET_MISMATCH' });
       const result = await request({
-        action: job.operation === 'replace-model' ? "replace-json" : 'read-current',
+        action: job.operation === 'replace-model' ? "replace-json" : job.operation === 'switch-model' ? 'switch' : 'read-current',
         requestId: job.requestId,
         targetId: job.targetId,
         json: job.json,
@@ -44,7 +44,7 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
           if (latestLayout?.requestId === job.requestId && latestLayout.modelId === job.targetId && latestLayout.layoutIdentity === detail.layoutIdentity)
             Object.assign(output, { layoutStatus: latestLayout.layoutStatus, layoutMessage: latestLayout.layoutMessage });
         }
-        if (job.operation !== 'replace-model') {
+        if (['inspect-model', 'export-model'].includes(job.operation)) {
           if (detail.modelId !== readyId || typeof detail.contentHash !== 'string' || !/^[a-f0-9]{64}$/.test(detail.contentHash)) throw Object.assign(new Error('Invalid current-model response'), { code: 'MODEL_RESPONSE_INVALID' });
           if (typeof detail.json !== 'string' || Buffer.byteLength(detail.json) > 20 * 1024 * 1024) throw Object.assign(new Error('Invalid or oversized model export'), { code: 'MODEL_FILE_TOO_LARGE' });
           Object.assign(output, { targetId: detail.modelId, contentHash: detail.contentHash, hasUnsavedChanges: detail.hasUnsavedChanges, draftStatus: detail.draftStatus });
@@ -81,7 +81,7 @@ function createModelHandoff({ request, writeResult, timeoutMs = 120000 }) {
       );
     },
     async enqueue(argv, cwd) {
-      if (!argv.some(value => ['--replace-model', '--export-model', '--inspect-model'].some(key => value === key || value.startsWith(key + '=')))) return false;
+      if (!argv.some(value => ['--replace-model', '--export-model', '--inspect-model', '--switch-model'].some(key => value === key || value.startsWith(key + '=')))) return false;
       const job = { requestId: randomUUID(), sequence: ++sequence, startedAt: new Date().toISOString() };
       activeRequestId = job.requestId; latestLayout = null; lastSuccess = null;
       let args;
