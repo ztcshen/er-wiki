@@ -140,7 +140,7 @@ export default function EdaScene({
                   d={pathText(points)}
                   fill="none"
                   stroke={
-                    highlight
+                    m.kind === 'self' ? relationColor(m, relationMeta, domainByTable) : highlight
                       ? "var(--eda-active)"
                       : conditionColor || relationColor(m, relationMeta, domainByTable)
                   }
@@ -151,7 +151,7 @@ export default function EdaScene({
                 />
               </g>
             ))}
-            {m.kind === "conditional" && (edge.labels || []).map((label) => (
+            {['conditional', 'self'].includes(m.kind) && (edge.labels || []).map((label) => (
               <g key={label.id} transform={`translate(${label.x},${label.y})`}
                 data-eda-condition={label.text} pointerEvents="none">
                 <rect width={label.width} height={label.height} rx="5"

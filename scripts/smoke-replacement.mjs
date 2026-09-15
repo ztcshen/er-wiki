@@ -8,6 +8,7 @@ import { checkFieldSelection } from './check-field-selection.mjs';
 import { checkTableReview } from './check-table-review.mjs';
 import { checkLayoutProgress } from './check-layout-progress.mjs';
 import { checkAgentModel } from './check-agent-model.mjs';
+import { checkSelfReference } from './check-self-reference.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(path.join(root, "desktop/package.json"));
 const { _electron } = await import(
@@ -103,7 +104,10 @@ const doc = (title) => ({
 });
 try {
   await ready();
-  if (process.argv.includes('--agent-model-only')) {
+  if (process.argv.includes('--self-reference-only')) {
+    await checkSelfReference({ page, replace, read, out });
+    assert.deepEqual(errors, []);
+  } else if (process.argv.includes('--agent-model-only')) {
     await checkAgentModel({ app, page, read, profile, out, root });
     assert.deepEqual(errors, []);
   } else if (process.argv.includes('--layout-progress-only') || process.argv.includes('--layout-idle-only')) {

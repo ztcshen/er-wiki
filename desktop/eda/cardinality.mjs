@@ -25,7 +25,7 @@ export function relationCaption(
 ) {
   const card = cardinalityOf(relation);
   const condition = conditionText(relation);
-  return `${tableName(relation.startTableId)} (${card.start}) — (${card.end}) ${tableName(relation.endTableId)} · ${translate(card.name)}${condition ? ' · '+condition : ''}`;
+  return `${relation.startTableId === relation.endTableId ? translate('表内关联')+' · ' : ''}${tableName(relation.startTableId)} (${card.start}) — (${card.end}) ${tableName(relation.endTableId)} · ${translate(card.name)}${condition ? ' · '+condition : ''}`;
 }
 
 export function matchesRelation(meta, netId, relationId, relationshipIds = null) {

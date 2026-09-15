@@ -31,7 +31,9 @@ export function tableRelationships(tableId, relationships) {
       relation.startTableId === tableId || relation.endTableId === tableId,
   );
 }
+export const SELF_REFERENCE_COLOR = '#c47b08';
 export function relationColor(edge, relations, domains, fallback = "#8a9db0") {
+  if (edge.kind === 'self') return SELF_REFERENCE_COLOR;
   const colors = edge.refs.map((id) => {
     const relation = relations.get(id);
     const source = domains.get(relation?.startTableId),

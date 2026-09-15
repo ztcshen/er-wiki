@@ -6,6 +6,7 @@ import { layoutQuality, compareCandidates, candidateValidity } from './layout-qu
 import { optimizeLayouts } from './optimize-layout.mjs';
 import { refinePositions } from './refine-positions.mjs';
 import { layoutBudget } from './layout-budget.mjs';
+import { movePorts, SELF_REFERENCE_CLEARANCE } from './ports.mjs';
 
 export async function arrangeSchematic(model, options={}, elk){
   options = { ...options, budget: options.budget || layoutBudget(options) };
@@ -29,8 +30,8 @@ export async function arrangeSchematic(model, options={}, elk){
       options.onCandidate?.({ ...candidate, status: 'ready', validity: { valid: true, reasons: [] }, longCuts: cuts, candidates: [] });
     }
   };
-  async function candidates(p, cuts = []){
-    if(p.nodes.length>1500||p.edges.length>6000)throw new Error('当前视图过大，请先选择更小的领域');
+  async function candidates(original, cuts = []){
+    if(original.nodes.length>1500||original.edges.length>6000)throw new Error('当前视图过大，请先选择更小的领域');
     const results=[];
     // Preserve horizontal reading order unless the reader explicitly asks DOWN.
     // AUTO still optimizes ports/routes, but no longer rotates the whole diagram.
@@ -38,11 +39,13 @@ export async function arrangeSchematic(model, options={}, elk){
     for(const [direction,seed]of directions.flatMap(direction => [11, 37].map(seed => [direction, seed]))){
       if (options.budget.expired()) break;
       try {
+      const selfPorts=original.nodes.flatMap(node=>node.ports.filter(port=>port.selfReference).map(port=>({id:port.id,side:seed===11?'EAST':'WEST'})));
+      const p=selfPorts.length?movePorts(original,selfPorts):original;
       const graph=elkGraph(p,{'elk.algorithm':'layered','elk.edgeRouting':'ORTHOGONAL',
         'elk.direction':direction,'elk.randomSeed':String(seed),'elk.layered.crossingMinimization.strategy':'LAYER_SWEEP',
         'elk.layered.crossingMinimization.greedySwitch.type':'TWO_SIDED','elk.spacing.nodeNode':'65',
         'elk.layered.spacing.nodeNodeBetweenLayers':'110','elk.layered.spacing.edgeNodeBetweenLayers':'30',
-        'elk.spacing.edgeNode':'22','elk.spacing.edgeEdge':'14','elk.padding':'[top=40,left=40,bottom=40,right=40]'});
+        'elk.spacing.edgeNode':'22','elk.spacing.edgeEdge':'14','elk.spacing.nodeSelfLoop':String(SELF_REFERENCE_CLEARANCE),'elk.padding':'[top=40,left=40,bottom=40,right=40]'});
       const base=await measure('elk',()=>elk.layout(graph));validateLayout(base,p);
       for(const {layout,placement}of await measure('placement',()=>arrangePlaced(p,base,elk,{...options,onPlacementError:(error,strategy)=>candidateErrors.push({stage:'placement',direction,seed,strategy,message:error.message})}))){
         validateLayout(layout,p);
@@ -65,7 +68,7 @@ export async function arrangeSchematic(model, options={}, elk){
   let results=await candidates(projection),best=results[0];
   if(options.labels!=='off'&&options.level!=='system'){
     const long=new Set(),lengths=new Map();const meta=new Map(projection.edges.map(e=>[e.id,e]));
-    for(const e of best.layout.edges){const m=meta.get(e.id);if(m.kind==='label-stub'||m.kind==='conditional'||m.netIds.some(id=>(options.expanded||[]).includes(id)))continue;
+    for(const e of best.layout.edges){const m=meta.get(e.id);if(m.kind==='self'||m.kind==='label-stub'||m.kind==='conditional'||m.netIds.some(id=>(options.expanded||[]).includes(id)))continue;
       const length=sectionsOf(e).reduce((sum,p)=>sum+p.slice(1).reduce((n,b,i)=>n+Math.abs(b.x-p[i].x)+Math.abs(b.y-p[i].y),0),0);
       m.refs.forEach(id=>lengths.set(id,(lengths.get(id)||0)+length));
     }

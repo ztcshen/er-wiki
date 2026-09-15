@@ -4,6 +4,7 @@ export const PORT_SIDES = {
   NORTH: { dx: 0, dy: -1, avoid: 1 }, SOUTH: { dx: 0, dy: 1, avoid: 2 },
   WEST: { dx: -1, dy: 0, avoid: 4 }, EAST: { dx: 1, dy: 0, avoid: 8 },
 };
+export const SELF_REFERENCE_CLEARANCE = 38;
 export const isVerticalPort = side => side === 'NORTH' || side === 'SOUTH';
 
 export function movePorts(projection, changes) {

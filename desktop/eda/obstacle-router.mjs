@@ -1,6 +1,6 @@
 // ELK supplies the skeleton; libavoid routes free-position candidates without
 // forcing related tables back into successive layers. Both run in the worker.
-import { PORT_SIDES } from './ports.mjs';
+import { PORT_SIDES, SELF_REFERENCE_CLEARANCE } from './ports.mjs';
 import { cardinalityBadges } from './cardinality.mjs';
 let loading;
 export function loadObstacleRouter() {
@@ -70,6 +70,21 @@ export function routeObstacles(Avoid, projection, seed) {
     const connections = projection.edges.map(edge => {
       if (edge.sources.length !== 1 || edge.targets.length !== 1) throw new Error('Unsupported projected hyperedge');
       const connection = new Avoid.ConnRef(router, endpoints.get(edge.sources[0]), endpoints.get(edge.targets[0]));
+      if (edge.kind === 'self') {
+        const owner = projection.nodes.find(node => node.ports.some(port => port.id === edge.sources[0]));
+        const position = layout.children.find(node => node.id === owner.id);
+        const pins = [edge.sources[0], edge.targets[0]].map(id => owner.ports.find(port => port.id === id));
+        const side = pins[0].layoutOptions['elk.port.side'];
+        if (!['EAST', 'WEST'].includes(side) || pins[1].layoutOptions['elk.port.side'] !== side) throw new Error('Self reference requires same-side row ports');
+        // libavoid still chooses the obstacle-free orthogonal route. Checkpoints
+        // keep the local return rail clear of the table border and 1/N badges.
+        const checkpoints = own(new Avoid.CheckpointVector());
+        for (const pin of pins) {
+          const point = own(new Avoid.Point(position.x + pin.x + (side === 'EAST' ? SELF_REFERENCE_CLEARANCE : -SELF_REFERENCE_CLEARANCE), position.y + pin.y));
+          checkpoints.push_back(own(new Avoid.Checkpoint(point)));
+        }
+        connection.setRoutingCheckpoints(checkpoints);
+      }
       return { edge, connection };
     });
     router.processTransaction();

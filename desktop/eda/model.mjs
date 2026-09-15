@@ -14,10 +14,11 @@ export function deriveNets(model) {
     const condition=relationCondition(r,source);
     // Alternative business-type branches are NOT one electrical net with all
     // unconditional references to this PK. Keep each review relation traceable.
-    const key=idOf('net',[target.id,pairs.map(p=>p.endFieldId),...(condition?[r.id,condition]:[])]);
+    const selfReference = source.id === target.id;
+    const key=idOf('net',[target.id,pairs.map(p=>p.endFieldId),...(selfReference?['self',r.id]:[]),...(condition?[r.id,condition]:[])]);
     if(!nets.has(key))nets.set(key,{id:key,targetTableId:target.id,targetFields:pairs.map(p=>p.endFieldId),
       name:`${target.name}.${pairs.map(p=>target.fields.find(f=>f.id===p.endFieldId).name).join('+')}${condition?' · '+conditionText(r,source):''}`,
-      condition,members:[]});
+      condition,selfReference,members:[]});
     nets.get(key).members.push(r);
   }
   return [...nets.values()].sort((a,b)=>a.id.localeCompare(b.id)).map((n,i)=>({...n,code:`N${String(i+1).padStart(3,'0')}`}));
@@ -47,7 +48,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     return id;
   };
   const connect=(source,target,net,refs,kind='wire')=>{
-    const label=kind==='conditional'?conditionLabel(refs[0],model.tables.find(t=>t.id===refs[0].startTableId)):null;
+    const label=kind==='conditional'||kind==='self'&&relationCondition(refs[0])?conditionLabel(refs[0],model.tables.find(t=>t.id===refs[0].startTableId)):null;
     edges.push({id:`wire-${edges.length}`,sources:[source],targets:[target],
       netIds:Array.isArray(net)?net:[net.id],refs:refs.map(r=>r.id),kind,
       ...(label?{labels:[{id:`condition-${edges.length}`,...label}]}:{})});
@@ -97,7 +98,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
       conditionPorts.get(key).push(r.id);
     }
   }
-  const tablePort=(tid,fids,side,relation=null)=>{
+  const tablePort=(tid,fids,side,relation=null,selfRole=null)=>{
     const n=nodes.get(idOf('table',tid));if(!n)return null;
     const indices=fids.map(fid=>n.fields.findIndex(f=>f.id===fid)).filter(i=>i>=0);
     let y=indices.length?78+30*(indices.reduce((s,i)=>s+i,0)/indices.length)+15:65;
@@ -106,8 +107,10 @@ export function projectModel(model, options={}, longCuts=new Set()) {
       const branches=conditionPorts.get(JSON.stringify([tid,fids,side]))||[relation.id];
       y+=branches.length===1?6:-8+16*branches.indexOf(relation.id)/(branches.length-1);
     }
-    const pid=port(n,relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y),relation?badgeY:undefined);
+    if (selfRole && !indices.length) y += selfRole.endsWith(':end') ? -10 : 10;
+    const pid=port(n,selfRole?[fids,selfRole]:relation?[fids,relation.id]:fids,side,Math.min(n.height-8,y),relation?badgeY:undefined);
     n.ports.find(p=>p.id===pid).fieldIds=[...fids];
+    if (selfRole) n.ports.find(p=>p.id===pid).selfReference = true;
     if (!indices.length && !relation) n.ports.find(p=>p.id===pid).aggregateId = idOf('summary-port', [n.id, side]);
     return pid;
   };
@@ -118,6 +121,14 @@ export function projectModel(model, options={}, longCuts=new Set()) {
   };
   for(const net of touching){
     const members=net.members.filter(r=>nodes.has(idOf('table',r.startTableId))||nodes.has(idOf('table',r.endTableId)));
+    if (net.selfReference) {
+      for (const r of members) {
+        const a=tablePort(r.endTableId,pairsOf(r).map(p=>p.endFieldId),'EAST',null,`${r.id}:end`);
+        const b=tablePort(r.startTableId,pairsOf(r).map(p=>p.startFieldId),'EAST',null,`${r.id}:start`);
+        if(a&&b){connect(a,b,net,[r],'self');covered.add(r.id);}
+      }
+      continue;
+    }
     const wires=[],labels=[];
     for(const r of members){
       const owner=nodes.has(idOf('table',r.endTableId)),child=nodes.has(idOf('table',r.startTableId));

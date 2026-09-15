@@ -5,6 +5,7 @@ import {
   matchesRelation,
 } from "./cardinality.mjs";
 import { tr } from "../i18n/renderer";
+import { SELF_REFERENCE_COLOR } from './presentation.mjs';
 
 export default function CardinalityLayer({
   result,
@@ -20,12 +21,13 @@ export default function CardinalityLayer({
     [result, activeRelation],
   );
   const bundles = useMemo(() => bundleBadges(result), [result]);
+  const selfRefs = new Set(result.projection.nets.filter(net => net.selfReference).flatMap(net => net.members.map(relation => relation.id)));
   return (
     <g data-cardinality-layer>
       {badges.map((badge) => {
         const active = matchesRelation(badge, activeNet, activeRelation, activeIds),
           text = tr(badge.value);
-        const color = active ? "var(--eda-active)" : "var(--wiki-muted)";
+        const color = badge.refs.every(id => selfRefs.has(id)) ? SELF_REFERENCE_COLOR : active ? "var(--eda-active)" : "var(--wiki-muted)";
         const width = badge.width;
         const select = () =>
           onSelect(

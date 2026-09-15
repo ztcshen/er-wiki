@@ -5,6 +5,7 @@ import { modelGroups } from "@drawdb/utils/tableGroups";
 import { domainsOf } from "./model.mjs";
 import { relationBounds } from "./cardinality.mjs";
 import { deriveNets } from "./model.mjs";
+import { SELF_REFERENCE_COLOR } from './presentation.mjs';
 import { fieldRelationshipIds } from './field-selection.mjs';
 import { resolveType } from "@drawdb/utils/customTypes";
 import { checkModel } from "../review/model-checks.mjs";
@@ -643,6 +644,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                   <span>1 / N</span>
                   <span className="eda-legend-dash" />
                   待核关联
+                  {result.projection.nets.some(net => net.selfReference) && <span style={{color:SELF_REFERENCE_COLOR}}>↶ {tr('表内关联')}</span>}
                 </div>
                 {settings.edaMinimap !== false && (
                   <EdaMinimap
