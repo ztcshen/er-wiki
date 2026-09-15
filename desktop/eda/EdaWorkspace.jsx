@@ -529,6 +529,9 @@ export default function EdaWorkspace({ modelId, ready }) {
           </p>
         )}
         {currentResult && result?.status === 'degraded' && <p role="status" className="eda-warning">{tr('布局仍有可读性冲突，已保留完整图；此结果不会缓存。')} {result.validity?.reasons.join(', ')}</p>}
+        {currentResult && busy && <p role="status" className="eda-warning">{tr('已显示可用布局，正在继续优化。')} <button onClick={schematic.cancel}>{tr('取消')}</button></p>}
+        {schematic.hasImprovement && <p role="status" className="eda-warning">{tr('优化已完成，当前查看位置保持不变。')} <button onClick={schematic.applyImprovement}>{tr('应用优化结果')}</button></p>}
+        {currentResult && error && <p role="status" className="eda-warning">{tr(error)}</p>}
         <div
           className="eda-body"
           data-directory={showDirectory}
@@ -617,19 +620,19 @@ export default function EdaWorkspace({ modelId, ready }) {
                 当前模型尚无表。使用“新增”添加表，或在“更多”中导入模型。
               </div>
             )}
-            {(busy || (result && !currentResult && !error)) && (
+            {((busy && !currentResult) || (result && !currentResult && !error)) && (
               <div className="eda-state" role="status">
                 正在整理关系…<button onClick={schematic.cancel}>取消</button>
               </div>
             )}
-            {error && (
+            {error && !currentResult && (
               <div className="eda-state eda-error" role="alert">
                 {tr(error)}
                 <button onClick={schematic.arrange}>重试</button>
                 <button onClick={() => setTools("model")}>打开模型编辑</button>
               </div>
             )}
-            {result && currentResult && !busy && !error && (
+            {result && currentResult && !error && (
               <>
                 <div className="eda-reading-legend" aria-label="ER 图例">
                   <span className="eda-legend-dot" />

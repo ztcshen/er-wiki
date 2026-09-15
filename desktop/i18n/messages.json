@@ -1,4 +1,7 @@
 {
+  "已显示可用布局，正在继续优化。": "A usable layout is visible while optimization continues.",
+  "优化已完成，当前查看位置保持不变。": "Optimization finished. Your current view is preserved.",
+  "应用优化结果": "Apply optimized layout",
   "布局仍有可读性冲突，已保留完整图；此结果不会缓存。": "Layout still has readability conflicts. The full diagram is retained; this result is not cached.",
   "哪些流程步骤使用此表": "Process steps using this table",
   "未提供": "Not provided",

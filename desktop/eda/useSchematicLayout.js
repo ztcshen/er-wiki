@@ -4,6 +4,7 @@ import { createLayoutTask } from "./layout-task.mjs";
 import { scopeKey } from "./reading-state.mjs";
 import { desktopLayoutCache } from "./layout-cache.mjs";
 import { createCachedLayoutTask } from "./cached-layout-task.mjs";
+import { readingToken, deferImprovement } from './layout-presentation.mjs';
 
 export function useSchematicLayout(modelId, model, reading, ready) {
   const { location, rememberedView, setView } = reading;
@@ -15,6 +16,9 @@ export function useSchematicLayout(modelId, model, reading, ready) {
   const [completed, setCompleted] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [improvement, setImprovement] = useState(null);
+  const latest = useRef(null);
+  latest.current = { view: reading.view, location };
   const job = useRef(null),
     sequence = useRef(0), forceNext = useRef(null);
   const key = JSON.stringify([modelId, shape, viewKey, revision]);
@@ -26,6 +30,14 @@ export function useSchematicLayout(modelId, model, reading, ready) {
       return;
     }
     const id = ++sequence.current;
+    let preview = null, previewToken = null;
+    setImprovement(null);
+    const firstView = value => {
+      if (!rememberedView) {
+        const view = [0, 0, Math.max(300, value.layout.width || 800), Math.max(250, value.layout.height || 500)];
+        latest.current = { ...latest.current, view }; setView(view);
+      }
+    };
     const force = forceNext.current === JSON.stringify([modelId, viewKey]);
     forceNext.current = null;
     setBusy(false);
@@ -40,23 +52,25 @@ export function useSchematicLayout(modelId, model, reading, ready) {
           }),
         input.model,
         input.options,
-        { id },
+        { id, onProgress: value => {
+          if (sequence.current !== id || preview) return;
+          preview = value;
+          firstView(value);
+          previewToken = readingToken(latest.current.view, latest.current.location);
+          setRaw(value); setCompleted(key);
+        } },
       ),
     });
     job.current = task;
     task.promise
         .then((value) => {
           if (sequence.current !== id) return;
-          setRaw(value);
+          if (deferImprovement(preview, value, previewToken, readingToken(latest.current.view, latest.current.location)))
+            setImprovement({ value, key, id });
+          else setRaw(value);
           setCompleted(key);
           setBusy(false);
-          if (!rememberedView)
-            setView([
-              0,
-              0,
-              Math.max(300, value.layout.width || 800),
-              Math.max(250, value.layout.height || 500),
-            ]);
+          if (!preview) firstView(value);
         })
         .catch((failure) => {
           if (sequence.current !== id) return;
@@ -74,6 +88,7 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     job.current?.cancel();
     job.current = null;
     setBusy(false);
+    setImprovement(null);
     setError("已取消布局，原模型未改变。");
   };
   return {
@@ -82,6 +97,11 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     busy,
     error,
     cancel,
+    hasImprovement: improvement?.key === key && improvement?.id === sequence.current,
+    applyImprovement: () => {
+      if (improvement?.key !== key || improvement?.id !== sequence.current) return;
+      setRaw(improvement.value); setImprovement(null);
+    },
     arrange: () => { forceNext.current = JSON.stringify([modelId, viewKey]); setRevision((n) => n + 1); },
   };
 }
