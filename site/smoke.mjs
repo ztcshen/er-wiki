@@ -10,7 +10,7 @@ const { chromium } = await import(
 const external = process.env.ER_WIKI_DEMO_URL;
 const server = external ? null : await serve();
 const target =
-  external || "http://127.0.0.1:" + server.address().port + "/er-wiki/";
+  external || "http://127.0.0.1:" + server.address().port + "/er-wiki/demo.html";
 const output = await fs.mkdtemp(path.join(root, "work/static-demo-"));
 const browser = await chromium.launch({
   headless: true,
@@ -65,6 +65,20 @@ try {
     ).endsWith("/releases/latest"),
   );
   await capture("desktop-overview.png");
+  const point = await page.locator('[data-eda-wire] path').evaluateAll(es => {
+    for(const e of es)for(const ratio of [.5,.3,.7]){
+      const p=e.getPointAtLength(e.getTotalLength()*ratio),m=e.getScreenCTM();
+      const q={x:m.a*p.x+m.c*p.y+m.e,y:m.b*p.x+m.d*p.y+m.f};
+      if(document.elementFromPoint(q.x,q.y)?.closest('[data-eda-wire]')===e.closest('[data-eda-wire]'))return q;
+    }
+    throw new Error('No visible wire hit target');
+  });
+  await page.mouse.dblclick(point.x,point.y);
+  await page.getByRole('dialog',{name:'Relationship explanation'}).waitFor();
+  assert((await page.getByRole('dialog').innerText()).includes('Cardinality does not imply'));
+  await capture('desktop-relationship.png');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.getByRole('dialog').count(),0);
   await page
     .getByRole("searchbox", { name: "Search model" })
     .fill("orders.status");

@@ -1,6 +1,14 @@
 # Read-only ER demo
 
-Live URL: <https://ztcshen.github.io/er-wiki/>
+Introduction: <https://ztcshen.github.io/er-wiki/> (English), `zh.html` (Chinese).
+Live demo: <https://ztcshen.github.io/er-wiki/demo.html>.
+
+The root is a static, JavaScript-free product introduction built from
+`landing.mjs` and `landing.css`. Vite builds the existing interactive entry
+`index.html`, which the build publishes as `demo.html`. Language links are plain
+HTML navigation. The introduction uses a real web-renderer screenshot, not a
+competitor comparison. `social.html` is a compact capture layout for the prepared
+1200×630 social image; GitHub's repository social-preview setting is manual.
 
 This is a small demonstration entry point, not a second editing product. It uses
 the existing EdaScene, TableContent, CardinalityLayer, EdaInspector, TableDetails,
@@ -26,7 +34,8 @@ node site/verify.mjs
 node site/serve.mjs
 ```
 
-Open `http://127.0.0.1:8769/er-wiki/`. The server is a local read-only static preview.
+Open `http://127.0.0.1:8769/er-wiki/` for the introduction, or append `demo.html`
+for the interactive example. The server is a local read-only static preview.
 The deployable output is **site/dist only**, never the repository root, desktop
 bundle, work directory or a user's application-data folder.
 
@@ -41,6 +50,9 @@ a lightweight in-memory locale module; no Electron bridge is present.
 `ER_WIKI_CHROMIUM_EXECUTABLE` to an existing compatible browser. Set
 `ER_WIKI_DEMO_URL` to check the deployed page instead of the local static server.
 The check covers desktop/mobile, browsing, no edits, languages/themes and requests/storage.
+For deployed checks, supply the full `demo.html` URL. `node site/smoke-landing.mjs`
+separately checks both static languages, responsive layouts, local requests,
+heading structure and the CTA into the real demo.
 
 ## Deployment
 

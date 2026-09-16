@@ -1,17 +1,44 @@
 # ER Wiki
 
-**[▶ 在线体验 ER Demo](https://ztcshen.github.io/er-wiki/)** — 无需安装和登录，仅包含虚构示例。
+## 让复杂数据库 Schema 的 ER 图保持可读。
 
-一个本地优先的数据库模型桌面工作台，基于 Electron、drawDB、ELK 和 libavoid。
-支持简体中文、English 和跟随系统，切换语言不会改写模型内容。
-社区版与原有业务工作区使用不同的数据目录。
+**把 EDA / 电路布线思想带到数据库关系图。** 当 Schema 已经画不进一块白板，
+问题不只是把所有关系画出来，而是让人看得懂。ER Wiki 用正交布线、避障和共享总线
+组织连接，让关系线更容易追踪。
 
-**以 ER 图为核心的桌面模型工作台。**
-[GitHub 仓库](https://github.com/ztcshen/er-wiki) ·
-[下载与发布说明](https://github.com/ztcshen/er-wiki/releases) ·
-[CI 状态](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
+**[打开在线 Demo ↗](https://ztcshen.github.io/er-wiki/demo.html)** ·
+[产品介绍](https://ztcshen.github.io/er-wiki/zh.html) ·
+[下载桌面版](https://github.com/ztcshen/er-wiki/releases/latest) · [English](README.md)
+
+桌面离线优先 · AGPL-3.0 开源 · SQL 本机导入 · 无应用遥测
+
+![当前 Web 渲染器真实效果：虚构电商履约模型的正交关系线与共享连接](docs/images/routing-preview.png)
+
+13 张虚构表、19 条关系。这是实际渲染器的截图，不是竞品对比或大型 Schema 性能证明。
+打开 demo 可悬停追踪、双击查看字段映射、基数和关联依据。
 
 源码版本见 [package.json](package.json)；已发布版本与安装包以 Releases 为准。
+
+## 为什么借鉴 EDA 布线？
+
+表不断增加，共享字段、高扇出核心表和跨领域关联会让 ER 图变成一团线。
+数据库 Schema 与电路原理图面临相似的可视化问题：节点多、连接多，二维空间有限。
+ER Wiki 不仅关注表的位置，也关注**每条关系应该怎么走**。
+
+- 路径：ELK 正交布局与 libavoid 避障布线。
+- 连接：共享总线、高扇出汇聚点和可追踪的 Net Label。
+- 端口：表的四边都能连线，保留字段映射与 1/N 基数。
+- 导航：总图 → 领域 → 表 → 字段，结合搜索和小地图逐层阅读。
+
+布局是有预算限制的启发式搜索，不保证全局最优；密集图仍可能明确提示降级。
+详见[实现与取舍](docs/WORKBENCH_DESIGN.md)。
+
+## 在本机维护模型
+
+Electron 桌面版支持本机解析 SQL、编辑表和关系、JSON 导入导出，以及 SVG/PNG 导出。
+在线 demo 只读，使用预计算布局；不是数据库迁移引擎，也不自动推断业务流程。
+应用无需云端账号，可离线使用；无应用遥测，不自动上传模型。只有主动检查更新时访问
+GitHub，在线页面仍有正常网页请求。底层复用 drawDB、ELK、libavoid 和 React。
 
 ## 从结构总览，到表字段，再到单条关系
 
@@ -21,6 +48,11 @@
 ![真实桌面：ER 工作台、表字段列表与关联关系](docs/images/fulfillment-workspace-zh.png)
 
 ## 桌面工作流
+
+<details>
+<summary>展开更多阅读和编辑能力</summary>
+
+- 双击连线弹出关系说明：关联字段、1/N 含义、条件和业务依据；共享总线可选择单条关系。在线 demo 同步支持。
 
 - 四边字段端口、正交避障布线和 SPOrE 空白压缩，保留字段绑定、1/N 基数与相对位置约束。
 - 直接编辑字段长度和精度、配置枚举、实时检查结构；不引入评审留痕或版本基线流程。
@@ -37,6 +69,8 @@
 - 修改显示名称、说明和枚举不重排整图；结构变化重新布局。
 - SQL 本机解析预览后导入新模型；JSON 带版本号并兼容旧文件。
 - 自动或手动本地备份，恢复为副本；SVG / PNG 导出当前视图、领域或完整总图。
+
+</details>
 
 详见[使用说明](docs/USER_GUIDE.md)和[安装、签名与公证说明](docs/DESKTOP_RELEASE.md)。
 也可以[直接打开在线案例](https://ztcshen.github.io/er-wiki/)，体验缩放、分组、表字段搜索、枚举和关系追踪。

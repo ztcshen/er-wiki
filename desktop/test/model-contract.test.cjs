@@ -7,6 +7,7 @@ const setup = async () => {
 };
 
 test('MySQL text/blob without length round-trips without changing schema', async () => {
+  await import('../../scripts/lib/upstream-node.mjs');
   const { validateModelDocument } = await import('../review/model-contract.mjs');
   const { dbToTypes } = await import('../../work/drawdb/src/data/datatypes.js');
   for (const type of ['TINYTEXT', 'TEXT', 'MEDIUMTEXT', 'LONGTEXT', 'BLOB', 'MEDIUMBLOB']) {

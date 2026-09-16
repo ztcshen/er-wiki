@@ -1,21 +1,61 @@
 # ER Wiki
 
-**[▶ Try the Live ER Demo](https://ztcshen.github.io/er-wiki/)** — no installation or sign-in. Read-only, fictional data only.
+## Readable ER diagrams for complex database schemas.
 
-An offline-first desktop workspace for understanding and editing database models.
-Built with Electron, drawDB, ELK and libavoid. The desktop interface supports English,
-Simplified Chinese and the system default without translating your model content.
+**EDA-style routing for database relationships.** When a schema no longer fits on
+a whiteboard, drawing every relationship is only half the problem. ER Wiki applies
+orthogonal routing, obstacle avoidance and shared buses to make those connections
+easier to follow.
+
+**[Try Live Demo ↗](https://ztcshen.github.io/er-wiki/demo.html)** ·
+[Project introduction](https://ztcshen.github.io/er-wiki/) ·
+[Desktop download](https://github.com/ztcshen/er-wiki/releases/latest)
+
+Offline-first desktop · AGPL-3.0 · Local SQL import · No application telemetry
+
+![Actual ER Wiki web renderer: orthogonal paths and shared connections in the fictional fulfillment schema](docs/images/routing-preview.png)
+
+13 fictional tables / 19 relationships. This is the real web renderer, not a
+competitor comparison or a large-schema benchmark. Hover to trace; double-click
+a wire for its fields, cardinality and recorded evidence.
 
 [![CI](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml/badge.svg)](https://github.com/ztcshen/er-wiki/actions/workflows/ci.yml)
 
-**ER-first desktop workspace.** [Source](https://github.com/ztcshen/er-wiki) ·
-[Downloads and release notes](https://github.com/ztcshen/er-wiki/releases)
-
 [中文说明](README.zh-CN.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
-## Explore the schema. Follow a relationship. Edit the model.
+## Why route relationships like circuits?
+
+Growing schemas can turn into spaghetti diagrams: shared keys, high-fanout tables
+and cross-domain links compete for the same space. Database schemas and circuit
+schematics share that visualization problem — many nodes, many connections,
+limited 2D space. ER Wiki focuses on **how relationships are routed**, not just
+where the tables sit.
+
+- **Paths:** ELK orthogonal layouts and libavoid obstacle routing.
+- **Connections:** shared relation buses, high-fanout junctions and traceable Net Labels.
+- **Ports:** connections on all four sides, preserving field mappings and 1/N cardinality.
+- **Navigation:** full overview → domain → table → column, with search and a minimap.
+
+Layout is heuristic, not globally optimal. Dense graphs may still be marked
+degraded. See [implementation and trade-offs](docs/WORKBENCH_DESIGN.md).
+
+## Work on the model, locally
+
+The Electron desktop app imports SQL locally, edits table/relationship definitions,
+round-trips JSON and exports SVG/PNG. The hosted demo is read-only and uses
+precomputed layouts. Neither is a database migration engine or an automatic
+business-process inference tool.
+
+The desktop works offline without a hosted account or application telemetry.
+Update checks contact GitHub only when requested; the hosted site uses normal
+web requests. Built on drawDB, ELK, libavoid, React and Electron; English/Chinese
+interface switching does not translate model content.
+
+<details>
+<summary>More reading and editing capabilities</summary>
 
 - Orthogonal ER diagrams, shared relation buses and high-fanout junctions.
+- Double-click a wire for a compact explanation of its fields, cardinality and evidence; choose individual relationships on a shared bus. Try it in the live demo.
 - Four-sided field ports, obstacle-avoiding routing and topology-aware SPOrE compaction; field identity and 1/N cardinality stay intact.
 - Direct length/precision editing, enum editing and live structural checks without adding a review-history workflow.
 - Replace a complete model in the running workspace without restarting or creating another model copy.
@@ -35,6 +75,8 @@ Simplified Chinese and the system default without translating your model content
 - Navigation minimap, cursor-anchored zoom, 100% reading scale and remembered layout direction.
 - 1 / N endpoint cardinality, individual relationship tracing and focus within bundles or Net Labels.
 - No hosted account, cloud-sharing service or application telemetry is required.
+
+</details>
 
 ## See the actual desktop
 

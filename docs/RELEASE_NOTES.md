@@ -1,3 +1,16 @@
+# v0.4.1 — Relationship explanations and reliable boundary routing
+
+- New bilingual, static product introduction centered on EDA-style routing, with a real renderer screenshot, explicit limits and a separate interactive demo. README first screens and sharing metadata follow the same message.
+
+- Double-click an ER wire to open a compact relationship explanation: endpoint fields, cardinality, conditions and recorded business evidence. Shared buses offer a relationship selector; Escape closes the dialog. Also available in the public fulfillment demo.
+- Preserve distinct conditional ports in boundary-label views, fixing overlapping and falsely touching wires when exploring related tables.
+- Avoid table/cardinality overlaps when placing bus count badges, and repair baseline routes before compactness optimization.
+- Accept MySQL TEXT/BLOB fields without an explicit size during model import, without changing their definitions.
+
+Download `er-wiki-0.4.1-macos-arm64.zip` for macOS Apple Silicon. Ad-hoc signed;
+not Developer ID signed or notarized. Windows/Linux binaries are not included.
+Private business models are not distributed. The demo uses fictional fulfillment data only.
+
 # v0.4.0 — Clearer ER relationships and safe Agent handoff
 
 - Self references use dedicated same-side orthogonal loops with clearance from table borders and amber highlighting. Original field mappings and 1/N cardinality are preserved; self references do not merge into inter-table buses.

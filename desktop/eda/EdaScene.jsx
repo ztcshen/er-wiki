@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import DiagramViewport from "../diagram/DiagramViewport";
 import { sectionsOf } from "./metrics.mjs";
 import TableContent from "./TableContent";
@@ -33,6 +33,8 @@ export default function EdaScene({
   semanticZoom = true,
 }) {
   const [hover, setHover] = useState(null);
+  const clickTimer=useRef(null);
+  useEffect(()=>()=>clearTimeout(clickTimer.current),[result]);
   const nodeMeta = new Map(result.projection.nodes.map((n) => [n.id, n])),
     edgeMeta = new Map(result.projection.edges.map((e) => [e.id, e]));
   const relationMeta = new Map(
@@ -118,10 +120,12 @@ export default function EdaScene({
             aria-label={describe(m.refs)}
             onPointerEnter={() => hoverRelations(m.netIds, m.refs)}
             onPointerLeave={() => setHover(null)}
-            onDoubleClick={(e)=>{e.preventDefault();e.stopPropagation();onExplain?.({refs:m.refs,x:e.clientX,y:e.clientY});}}
-            onClick={() =>
-              onNet(m.netIds, m.refs.length === 1 ? m.refs[0] : null)
-            }
+            onDoubleClick={(e)=>{clearTimeout(clickTimer.current);e.preventDefault();e.stopPropagation();onExplain?.({refs:m.refs,x:e.clientX,y:e.clientY});}}
+            onClick={() => {
+              clearTimeout(clickTimer.current);
+              const select=()=>onNet(m.netIds,m.refs.length===1?m.refs[0]:null);
+              if(onExplain)clickTimer.current=setTimeout(select,250);else select();
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.shiftKey) {
                 e.preventDefault(); const box=e.currentTarget.getBoundingClientRect();

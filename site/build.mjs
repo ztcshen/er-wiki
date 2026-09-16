@@ -9,6 +9,7 @@ import { integrateDesktop } from "../desktop/integrate.mjs";
 import { createUiLocalizer } from "../scripts/localize-ui.mjs";
 import { rendererAliases } from "../desktop/build/aliases.mjs";
 import { modulePath } from "../desktop/build/paths.mjs";
+import { landingHTML } from './landing.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)),
   root = path.dirname(here),
@@ -113,10 +114,16 @@ await build({
 });
 for (const file of artifacts)
   fs.copyFileSync(path.join(generated, file), path.join(here, "dist", file));
+fs.renameSync(path.join(here,'dist/index.html'),path.join(here,'dist/demo.html'));
+fs.writeFileSync(path.join(here,'dist/index.html'),landingHTML('en'));
+fs.writeFileSync(path.join(here,'dist/zh.html'),landingHTML('zh'));
+fs.writeFileSync(path.join(here,'dist/social.html'),landingHTML('en').replace('<body>','<body class="social-card">'));
+fs.copyFileSync(path.join(here,'landing.css'),path.join(here,'dist/landing.css'));
 for (const [from, to] of [
   ["LICENSE", "LICENSE.txt"],
   ["NOTICE", "NOTICE.txt"],
-  ["desktop/assets/icon.png", "cover.png"],
+  ["docs/images/routing-preview.png", "routing-preview.png"],
+  ["docs/images/social-preview.png", "social-preview.png"],
   ["desktop/assets/icon.svg", "icon.svg"],
 ])
   fs.copyFileSync(path.join(root, from), path.join(here, "dist", to));

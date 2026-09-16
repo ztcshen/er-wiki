@@ -1,5 +1,18 @@
 # Desktop demo snapshots
 
+## Current website assets (0.4.1 candidate)
+
+`routing-preview.png` is an unmodified 1440×900 screenshot of the current
+read-only Web demo, using the canonical fictional fulfillment model (13 tables,
+19 relationships). Unlike the older images below, it is not a desktop screenshot.
+`social-preview.png` is a 1200×630 browser capture of the compact `social.html`
+sharing layout, composed from that actual renderer image and the product headline.
+It is also the prepared GitHub social-preview asset; repository settings are not
+changed by adding this file. Refresh with `site/smoke.mjs` and
+`site/smoke-landing.mjs`, inspect the outputs, then copy the corresponding captures.
+
+## Historical desktop captures
+
 The fulfillment PNGs are unmodified screenshots of the packaged ER Wiki Community
 desktop app. They show the all-table overview, ER field workspace, domain drilldown,
 relationship tracing, orders table editor and quick search in English and Chinese,

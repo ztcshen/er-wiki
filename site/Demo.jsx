@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import catalogue from "./generated/catalogue.json";
 import { tr, useLocale } from "./locale";
 import EdaScene from "../desktop/eda/EdaScene";
+import RelationPopup from '../desktop/eda/RelationPopup';
 import EdaMinimap from "../desktop/eda/EdaMinimap";
 import EdaInspector from "../desktop/eda/EdaInspector";
 import { searchModel } from "../desktop/eda/reading-state.mjs";
@@ -29,6 +30,8 @@ export default function Demo() {
   const [selection, setSelection] = useState(blank),
     [panelOpen, setPanelOpen] = useState(false),
     [directoryOpen, setDirectoryOpen] = useState(false);
+  const [relationPopup,setRelationPopup]=useState(null);
+  useEffect(()=>setRelationPopup(null),[scope]);
   const [query, setQuery] = useState(""),
     [loaded, setLoaded] = useState(null),
     [error, setError] = useState(""),
@@ -410,6 +413,7 @@ export default function Demo() {
               onEdit={(id) => inspect(id)}
               onField={inspect}
               onNet={selectNet}
+              onExplain={setRelationPopup}
             />
           )}
           {!result && !error && (
@@ -496,6 +500,7 @@ export default function Demo() {
           </p>
         </details>
       </footer>
+      {relationPopup&&<RelationPopup request={relationPopup} tables={model.tables} relationships={model.relationships} onClose={()=>setRelationPopup(null)}/>}
     </main>
   );
 }

@@ -52,7 +52,10 @@ test('bundle count boxes participate in obstruction checks', async () => {
   value.layout.children = [{ id: 'box', x: 40, y: -5, width: 20, height: 5 }];
   value.projection.nodes = [{ id: 'box', kind: 'table', tableId: 'box', ports: [] }];
   const quality = layoutQuality(value.layout, value.projection, scoreLayout(value.layout, value.projection));
-  assert(quality.badgeOverlaps > 0);
+  assert.equal(quality.badgeOverlaps, 0, 'A movable badge avoids the small obstruction');
+  Object.assign(value.layout.children[0], {x:-100,y:-100,width:400,height:300});
+  const blocked = layoutQuality(value.layout, value.projection, scoreLayout(value.layout, value.projection));
+  assert(blocked.badgeOverlaps > 0, 'No free position must still report obstruction');
 });
 
 test('all unreadable baseline candidates yield explicit degraded diagnostics without deleting tables', async () => {
