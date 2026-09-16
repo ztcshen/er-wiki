@@ -20,6 +20,7 @@ export default function EdaScene({
   selectedRelation = null,
   showCardinality = true,
   onNet,
+  onExplain,
   onNode,
   onEdit,
   onField,
@@ -117,11 +118,15 @@ export default function EdaScene({
             aria-label={describe(m.refs)}
             onPointerEnter={() => hoverRelations(m.netIds, m.refs)}
             onPointerLeave={() => setHover(null)}
+            onDoubleClick={(e)=>{e.preventDefault();e.stopPropagation();onExplain?.({refs:m.refs,x:e.clientX,y:e.clientY});}}
             onClick={() =>
               onNet(m.netIds, m.refs.length === 1 ? m.refs[0] : null)
             }
             onKeyDown={(e) => {
-              if (e.key === "Enter")
+              if (e.key === "Enter" && e.shiftKey) {
+                e.preventDefault(); const box=e.currentTarget.getBoundingClientRect();
+                onExplain?.({refs:m.refs,x:box.x+box.width/2,y:box.y+box.height/2});
+              } else if (e.key === "Enter")
                 onNet(m.netIds, m.refs.length === 1 ? m.refs[0] : null);
             }}
           >

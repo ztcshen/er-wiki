@@ -1,0 +1,8 @@
+.eda-relation-popup{position:fixed;margin:0;width:480px;max-width:calc(100vw - 24px);max-height:min(430px,calc(100vh - 24px));overflow:auto;padding:20px;border:1px solid #94a3b855;border-radius:12px;background:var(--eda-panel,#fff);color:var(--eda-text,#183048);box-shadow:0 16px 50px #0f172a33;font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+.eda-relation-popup::backdrop{background:#0f172a18}
+.eda-relation-popup header{display:flex;align-items:center;justify-content:space-between;font-size:16px;margin-bottom:12px}
+.eda-relation-popup button{border:0;background:transparent;color:inherit;font-size:22px;cursor:pointer}
+.eda-relation-popup h3{font-size:14px;margin:12px 0}.eda-relation-popup h3 span{color:#087f8c;white-space:nowrap}
+.eda-relation-popup small{opacity:.65}.eda-relation-popup select{display:block;width:100%;margin-top:6px;background:inherit;color:inherit;padding:6px;border:1px solid #94a3b855;border-radius:6px}
+.eda-relation-mapping{background:#94a3b812;padding:8px 12px;border-radius:6px;margin-top:12px;font-family:monospace}
+.dark .eda-relation-popup{background:#1e293b;color:#e2e8f0}

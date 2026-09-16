@@ -22,6 +22,7 @@ import {
 } from "./camera.mjs";
 import { tr } from "../i18n/renderer";
 import EdaScene from "./EdaScene";
+import RelationPopup from './RelationPopup';
 import EdaMinimap from "./EdaMinimap";
 import EdaEditors from "./EdaEditors";
 import EdaToolbar from "./EdaToolbar";
@@ -57,6 +58,8 @@ export default function EdaWorkspace({ modelId, ready }) {
   const [processConfigOpen, setProcessConfigOpen] = useState(false);
   const [checksOpen, setChecksOpen] = useState(false);
   const pendingRelation = useRef(null);
+  const [relationPopup,setRelationPopup]=useState(null);
+  useEffect(()=>setRelationPopup(null),[modelId,reader.mode]);
   const { scenario, activity } = processSelection(
     processModel,
     reader.scenarioId,
@@ -584,6 +587,7 @@ export default function EdaWorkspace({ modelId, ready }) {
                 view={view}
                 onView={setView}
                 onEdit={editTable}
+                onExplain={setRelationPopup}
                 onNode={(node) => {
                   pendingFocus.current = null;
                   pendingRelation.current = null;
@@ -774,6 +778,7 @@ export default function EdaWorkspace({ modelId, ready }) {
         readOnly={layout.readOnly}
       />
       <EdaEditors tools={tools} setTools={setTools} />
+      {relationPopup&&<RelationPopup request={relationPopup} tables={tables} relationships={relationships} onClose={()=>setRelationPopup(null)}/>}
       {reader.mode === "er" && (
         <DiagramExport
           model={model}
