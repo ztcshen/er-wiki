@@ -8,6 +8,7 @@ import { refinePositions } from './refine-positions.mjs';
 import { layoutBudget } from './layout-budget.mjs';
 import { movePorts, SELF_REFERENCE_CLEARANCE } from './ports.mjs';
 import { loadObstacleRouter, routeObstacles } from './obstacle-router.mjs';
+import {placeIsolatedTables} from './isolated-placement.mjs';
 
 export async function arrangeSchematic(model, options={}, elk){
   options = { ...options, budget: options.budget || layoutBudget(options) };
@@ -25,7 +26,15 @@ export async function arrangeSchematic(model, options={}, elk){
   let projection=projectModel(model,options),longCuts=[];
   if(!projection.nodes.length)return {projection,layout:{children:[],edges:[],width:800,height:500},metrics:{crossings:0,overlaps:0,length:0,bends:0},candidates:[]};
   let published = null;
+  const settle = candidate => {
+    const layout=placeIsolatedTables(candidate.projection,candidate.layout);
+    if(layout===candidate.layout)return candidate;
+    const metrics=scoreLayout(layout,candidate.projection);
+    return {...candidate,layout,metrics,quality:layoutQuality(layout,candidate.projection,metrics,options.targetAspectRatio)};
+  };
+  const finishCandidates = candidates => candidates.map(settle).sort(compareCandidates);
   const publish = (candidate, cuts) => {
+    candidate=settle(candidate);
     if (candidateValidity(candidate).valid && (!published || compareCandidates(candidate, published) < 0)) {
       published = { ...candidate, longCuts: cuts };
       options.onCandidate?.({ ...candidate, status: 'ready', validity: { valid: true, reasons: [] }, longCuts: cuts, candidates: [] });
@@ -48,7 +57,8 @@ export async function arrangeSchematic(model, options={}, elk){
         'elk.layered.spacing.nodeNodeBetweenLayers':'110','elk.layered.spacing.edgeNodeBetweenLayers':'30',
         'elk.spacing.edgeNode':'22','elk.spacing.edgeEdge':'14','elk.spacing.nodeSelfLoop':String(SELF_REFERENCE_CLEARANCE),'elk.padding':'[top=40,left=40,bottom=40,right=40]'});
       const base=await measure('elk',()=>elk.layout(graph));validateLayout(base,p);
-      for(const {layout,placement}of await measure('placement',()=>arrangePlaced(p,base,elk,{...options,onPlacementError:(error,strategy)=>candidateErrors.push({stage:'placement',direction,seed,strategy,message:error.message})}))){
+      for(const {layout:placed,placement}of await measure('placement',()=>arrangePlaced(p,base,elk,{...options,onPlacementError:(error,strategy)=>candidateErrors.push({stage:'placement',direction,seed,strategy,message:error.message})}))){
+        const layout=placeIsolatedTables(p,placed);
         validateLayout(layout,p);
         const metrics=scoreLayout(layout,p);
         if(placement&&metrics.overlaps)continue;
@@ -75,10 +85,10 @@ export async function arrangeSchematic(model, options={}, elk){
     }
     if(!results.length)throw Object.assign(new Error('No layout candidate completed; check constraints or retry'), { code: 'LAYOUT_NO_CANDIDATE', candidateErrors });
     results.sort(compareCandidates);
-    if(options.optimize===false || options.budget.expired())return results;
+    if(options.optimize===false || options.budget.expired())return finishCandidates(results);
     const stageOptions = { ...options, onCandidate: candidate => publish(candidate, cuts) };
     const optimized = await measure('port-optimization',()=>optimizeLayouts(results,elk,stageOptions));
-    return measure('position-refinement',()=>refinePositions(optimized,stageOptions,elk));
+    return finishCandidates(await measure('position-refinement',()=>refinePositions(optimized,stageOptions,elk)));
   }
   let results=await candidates(projection),best=results[0];
   if(options.labels!=='off'&&options.level!=='system'){
