@@ -137,8 +137,15 @@ export function checkModel(model, { typeInfo = () => ({}) } = {}) {
       )
         push("null_default", "warning", location, params);
       const info = typeInfo(field.type) || {};
+      // The upstream catalogue marks TEXT/BLOB as sized for editor controls,
+      // but MySQL accepts these declarations without a length. Preserve them
+      // on round-trip rather than inventing a size during process-only imports.
+      const omittedTextSize = model.database === 'mysql' &&
+        /^(?:TINY|MEDIUM|LONG)?(?:TEXT|BLOB)$/i.test(field.type) &&
+        String(field.size ?? '').trim() === '';
       if (
         (info.isSized || info.hasPrecision) &&
+        !omittedTextSize &&
         !parseFieldSize(field.size, info.hasPrecision).valid
       )
         push("field_size", "error", location, params);

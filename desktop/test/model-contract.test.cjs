@@ -6,6 +6,27 @@ const setup = async () => {
   return conditionalModel();
 };
 
+test('MySQL text/blob without length round-trips without changing schema', async () => {
+  const { validateModelDocument } = await import('../review/model-contract.mjs');
+  const { dbToTypes } = await import('../../work/drawdb/src/data/datatypes.js');
+  for (const type of ['TINYTEXT', 'TEXT', 'MEDIUMTEXT', 'LONGTEXT', 'BLOB', 'MEDIUMBLOB']) {
+    const input = await setup(); input.database = 'mysql';
+    const field = input.tables[0].fields[0];
+    field.type = type; delete field.size;
+    const before = JSON.stringify(input);
+    const options = { typeInfo: t => dbToTypes.mysql[t] || {} };
+    const result = validateModelDocument(input, options);
+    assert(!result.errors.some(e => e.code === 'field_size'), type);
+    assert.equal(JSON.stringify(input), before);
+    assert.equal(result.model.tables[0].fields[0].size, undefined);
+    field.size = '-1';
+    if (dbToTypes.mysql[type].isSized)
+      assert(validateModelDocument(input, options).errors.some(e => e.code === 'field_size'), type);
+    field.type = 'VARCHAR'; delete field.size;
+    assert(validateModelDocument(input, options).errors.some(e => e.code === 'field_size'));
+  }
+});
+
 test('numeric zero entity identifiers survive the complete validation contract', async () => {
   const { validateModelDocument } = await import('../review/model-contract.mjs');
   const input = await setup(), table = input.tables[0], oldTable = table.id, oldField = table.fields[0].id;
