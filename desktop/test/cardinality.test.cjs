@@ -8,6 +8,16 @@ const fixture = values => ({ tables: [{ id: 'parent', name: 'orders', fields: [{
   relationships: values.map((value, i) => ({ id: `r${i}`, startTableId: `child${i}`, startFieldId: 'fk', endTableId: 'parent', endFieldId: 'pk', cardinality: value })), groups: [] });
 const arrange = async (model, options = {}) => (await layoutModule).arrangeSchematic(model, { level: 'overview', labels: 'off', direction: 'RIGHT', ...options });
 
+test('bundle count moves away from an obstacle instead of overprinting it', async () => {
+  const {bundleBadges}=await cardinality;
+  const result={projection:{nodes:[],nets:[],edges:[{id:'bus',kind:'bus',refs:['a','b'],netIds:[],sources:[],targets:[]}]},
+    layout:{children:[{id:'obstacle',x:60,y:65,width:80,height:30}],edges:[{id:'bus',sections:[{startPoint:{x:0,y:100},endPoint:{x:200,y:100}}]}]}};
+  const before=JSON.stringify(result),[badge]=bundleBadges(result);
+  assert.equal(badge.count,2);
+  assert(!(badge.x-32<140&&badge.x+32>60&&badge.y-8<95&&badge.y+8>65));
+  assert.equal(JSON.stringify(result),before);
+});
+
 test('cardinality follows original relationship endpoints, never graph direction or optionality', async () => {
   const { cardinalityOf, cardinalityBadges } = await cardinality;
   assert.deepEqual(cardinalityOf({ cardinality: 'one_to_many' }), { start: '1', end: 'N', name: '一对多' });

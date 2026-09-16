@@ -7,6 +7,7 @@ import { optimizeLayouts } from './optimize-layout.mjs';
 import { refinePositions } from './refine-positions.mjs';
 import { layoutBudget } from './layout-budget.mjs';
 import { movePorts, SELF_REFERENCE_CLEARANCE } from './ports.mjs';
+import { loadObstacleRouter, routeObstacles } from './obstacle-router.mjs';
 
 export async function arrangeSchematic(model, options={}, elk){
   options = { ...options, budget: options.budget || layoutBudget(options) };
@@ -53,6 +54,20 @@ export async function arrangeSchematic(model, options={}, elk){
         if(placement&&metrics.overlaps)continue;
         results.push({projection:p,layout,metrics,quality:layoutQuality(layout,p,metrics,options.targetAspectRatio),direction,seed,...(placement?{placement}:{})});
         publish(results.at(-1), cuts);
+        // Repair the baseline before spending the deadline on compactness.
+        // ELK can leave shared corridors touching despite distinct net IDs.
+        // Keep its placement and let the obstacle router separate the wires.
+        if (!candidateValidity(results.at(-1)).valid && !options.budget.expired()) {
+          try {
+            const repaired = await measure('baseline-routing', async () => routeObstacles(await loadObstacleRouter(),p,layout));
+            validateLayout(repaired,p);
+            const repairedMetrics=scoreLayout(repaired,p);
+            results.push({projection:p,layout:repaired,metrics:repairedMetrics,
+              quality:layoutQuality(repaired,p,repairedMetrics,options.targetAspectRatio),direction,seed,
+              ...(placement?{placement}:{}),optimization:'baseline obstacle routing'});
+            publish(results.at(-1),cuts);
+          } catch (error) { candidateErrors.push({stage:'baseline-routing',direction,seed,message:error.message}); }
+        }
       }
       } catch (error) {
         candidateErrors.push({ direction, seed, message: error.message || String(error) });

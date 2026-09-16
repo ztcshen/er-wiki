@@ -172,6 +172,10 @@ export function cardinalityBadges(result, selectedRelation = null) {
 
 export function bundleBadges(result) {
   const meta = new Map(result.projection.edges.map((edge) => [edge.id, edge]));
+  const occupied = [...(result.layout.children || []),
+    ...(result.layout.edges || []).flatMap(e => e.labels || []),
+    ...cardinalityBadges(result).map(b => ({x:b.x-b.width/2,y:b.y-b.height/2,width:b.width,height:b.height}))];
+  const overlaps = (a,b) => a.x < b.x+b.width+3 && a.x+a.width+3 > b.x && a.y < b.y+b.height+3 && a.y+a.height+3 > b.y;
   return (result.layout.edges || []).flatMap((edge) => {
     const info = meta.get(edge.id);
     if (!["bus", "domain"].includes(info?.kind)) return [];
@@ -188,13 +192,20 @@ export function bundleBadges(result) {
       }));
     });
     const segment = segments.sort((a, b) => b.length - a.length)[0];
+    if (!segment) return [];
+    const candidates = segments.flatMap(s => [.5,.25,.75].flatMap(r => [-20,20,-36,36].map(offset => ({
+      x:s.a.x+(s.b.x-s.a.x)*r+(s.a.x===s.b.x?offset+Math.sign(offset)*24:0),
+      y:s.a.y+(s.b.y-s.a.y)*r+(s.a.y===s.b.y?offset:0),
+    }))));
+    const position = candidates.find(p => !occupied.some(b=>overlaps({x:p.x-32,y:p.y-8,width:64,height:16},b))) ||
+      {x:(segment.a.x+segment.b.x)/2,y:(segment.a.y+segment.b.y)/2-12};
+    occupied.push({x:position.x-32,y:position.y-8,width:64,height:16});
     return segment
       ? [
           {
             ...info,
             count: info.refs.length,
-            x: (segment.a.x + segment.b.x) / 2,
-            y: (segment.a.y + segment.b.y) / 2 - 12,
+            ...position,
           },
         ]
       : [];
