@@ -1,4 +1,5 @@
 // Independently authored fictional retail fulfillment schema. No row data.
+import {writeExampleLocales} from './localize-example.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,3 +76,4 @@ fs.writeFileSync(path.join(root,'examples/fulfillment.sql'),'-- Fictional educat
 // Documentation images must come from the packaged app, not a second renderer.
 // Run scripts/capture-demo.mjs after packaging to refresh PNG snapshots and SVG.
 console.log('Generated fictional fulfillment demo: '+tables.length+' tables, '+relationships.length+' relationships.');
+writeExampleLocales();

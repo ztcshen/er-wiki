@@ -61,5 +61,7 @@ export function landingHTML(language='en'){
 <section class="two"><article><h2>${c.privacy}</h2><p>${c.privacyText}</p></article><article><h2>${c.architecture}</h2><p>${c.architectureText}</p><a href="${repo}/blob/main/docs/WORKBENCH_DESIGN.md">${c.source} →</a></article></section>
 <aside class="limits"><h2>${c.limits}</h2><p>${c.limitsText}</p><a href="${repo}/blob/main/docs/KNOWN_LIMITATIONS.md">${c.limitLink} →</a></aside>
 <section class="closing"><h2>${c.end}</h2><p>${c.endText}</p><div class="actions"><a class="primary" href="./demo.html">${c.try} ↗</a><a href="${repo}">${c.github} →</a></div><small>${c.platform}</small></section></main>
-<footer><span>ER Wiki · ${c.footer}</span><a href="./LICENSE.txt">AGPL-3.0</a><a href="./THIRD_PARTY.txt">Credits</a></footer></body></html>`;
+<footer><span>ER Wiki · ${c.footer}</span><a href="./LICENSE.txt">AGPL-3.0</a><a href="./THIRD_PARTY.txt">Credits</a></footer></body></html>`
+ .replaceAll('./demo.html',`./demo.html?lang=${language}`)
+ .replaceAll('./routing-preview.png',language==='zh'?'./routing-preview-zh.png':'./routing-preview.png');
 }

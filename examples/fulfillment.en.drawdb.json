@@ -1,0 +1,2648 @@
+{
+  "title": "Commerce fulfillment · Fictional schema",
+  "database": "mysql",
+  "tables": [
+    {
+      "id": "customers",
+      "name": "customers",
+      "comment": "Fictional demo. Customer identity schema only; no personal records.",
+      "x": 0,
+      "y": 0,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "customers.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "customers.customer_code",
+          "name": "customer_code",
+          "type": "VARCHAR",
+          "size": "32",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Customer code",
+          "reviewChineseName": "Customer code"
+        },
+        {
+          "id": "customers.display_name",
+          "name": "display_name",
+          "type": "VARCHAR",
+          "size": "80",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Display name",
+          "reviewChineseName": "Display name"
+        },
+        {
+          "id": "customers.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_customers",
+          "fields": [
+            "customer_code"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": []
+    },
+    {
+      "id": "products",
+      "name": "products",
+      "comment": "Fictional demo. Products identified by SKU; complex variants are not modeled.",
+      "x": 450,
+      "y": 0,
+      "color": "#3276b9",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "products.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "products.sku",
+          "name": "sku",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "SKU",
+          "reviewChineseName": "SKU"
+        },
+        {
+          "id": "products.name",
+          "name": "name",
+          "type": "VARCHAR",
+          "size": "120",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Product name",
+          "reviewChineseName": "Product name"
+        },
+        {
+          "id": "products.active",
+          "name": "active",
+          "type": "BOOLEAN",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Active",
+          "reviewChineseName": "Active"
+        },
+        {
+          "id": "products.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_products",
+          "fields": [
+            "sku"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "sku"
+      ]
+    },
+    {
+      "id": "warehouses",
+      "name": "warehouses",
+      "comment": "Fictional demo. Warehouses used for dispatch and returned goods.",
+      "x": 900,
+      "y": 0,
+      "color": "#3276b9",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "warehouses.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "warehouses.warehouse_code",
+          "name": "warehouse_code",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Warehouse code",
+          "reviewChineseName": "Warehouse code"
+        },
+        {
+          "id": "warehouses.name",
+          "name": "name",
+          "type": "VARCHAR",
+          "size": "80",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Warehouse name",
+          "reviewChineseName": "Warehouse name"
+        },
+        {
+          "id": "warehouses.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_warehouses",
+          "fields": [
+            "warehouse_code"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": []
+    },
+    {
+      "id": "inventory",
+      "name": "inventory",
+      "comment": "Fictional demo. One stock record per warehouse and SKU; available = on hand minus reserved.",
+      "x": 1350,
+      "y": 0,
+      "color": "#3276b9",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "inventory.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "inventory.warehouse_id",
+          "name": "warehouse_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Warehouse",
+          "reviewChineseName": "Warehouse"
+        },
+        {
+          "id": "inventory.product_id",
+          "name": "product_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Product",
+          "reviewChineseName": "Product"
+        },
+        {
+          "id": "inventory.on_hand",
+          "name": "on_hand",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "On hand",
+          "reviewChineseName": "On hand"
+        },
+        {
+          "id": "inventory.reserved",
+          "name": "reserved",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Reserved quantity",
+          "reviewChineseName": "Reserved quantity"
+        },
+        {
+          "id": "inventory.version",
+          "name": "version",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Lock version",
+          "reviewChineseName": "Lock version"
+        },
+        {
+          "id": "inventory.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_inventory",
+          "fields": [
+            "warehouse_id",
+            "product_id"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "on_hand",
+        "reserved"
+      ]
+    },
+    {
+      "id": "orders",
+      "name": "orders",
+      "comment": "Fictional demo. Customer orders can split into multiple warehouse fulfillments and partial shipments.",
+      "x": 0,
+      "y": 420,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "orders.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "orders.order_no",
+          "name": "order_no",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Order number",
+          "reviewChineseName": "Order number"
+        },
+        {
+          "id": "orders.customer_id",
+          "name": "customer_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Customer",
+          "reviewChineseName": "Customer"
+        },
+        {
+          "id": "orders.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Order status",
+          "reviewChineseName": "Order status",
+          "reviewEnumValues": [
+            {
+              "value": "DRAFT",
+              "label": "Draft"
+            },
+            {
+              "value": "CONFIRMED",
+              "label": "Confirmed"
+            },
+            {
+              "value": "PARTIAL",
+              "label": "Partially fulfilled"
+            },
+            {
+              "value": "FULFILLED",
+              "label": "Fulfilled"
+            },
+            {
+              "value": "CANCELLED",
+              "label": "Cancelled"
+            }
+          ]
+        },
+        {
+          "id": "orders.currency",
+          "name": "currency",
+          "type": "CHAR",
+          "size": "3",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Currency",
+          "reviewChineseName": "Currency"
+        },
+        {
+          "id": "orders.total_minor",
+          "name": "total_minor",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Amount in minor units",
+          "reviewChineseName": "Amount in minor units"
+        },
+        {
+          "id": "orders.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_orders",
+          "fields": [
+            "order_no"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "order_no",
+        "status"
+      ]
+    },
+    {
+      "id": "order_items",
+      "name": "order_items",
+      "comment": "Fictional demo. Order lines retain quantity and unit price at purchase time.",
+      "x": 450,
+      "y": 420,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "order_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "order_items.order_id",
+          "name": "order_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Order",
+          "reviewChineseName": "Order"
+        },
+        {
+          "id": "order_items.product_id",
+          "name": "product_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Product",
+          "reviewChineseName": "Product"
+        },
+        {
+          "id": "order_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Ordered quantity",
+          "reviewChineseName": "Ordered quantity"
+        },
+        {
+          "id": "order_items.unit_price_minor",
+          "name": "unit_price_minor",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Unit price in minor units",
+          "reviewChineseName": "Unit price in minor units"
+        },
+        {
+          "id": "order_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity"
+      ]
+    },
+    {
+      "id": "stock_reservations",
+      "name": "stock_reservations",
+      "comment": "Fictional demo. Order lines can reserve stock across warehouses; releasing a reservation is not dispatch.",
+      "x": 900,
+      "y": 420,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "stock_reservations.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "stock_reservations.order_item_id",
+          "name": "order_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Order line",
+          "reviewChineseName": "Order line"
+        },
+        {
+          "id": "stock_reservations.inventory_id",
+          "name": "inventory_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Warehouse stock",
+          "reviewChineseName": "Warehouse stock"
+        },
+        {
+          "id": "stock_reservations.reservation_key",
+          "name": "reservation_key",
+          "type": "VARCHAR",
+          "size": "64",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Idempotency key",
+          "reviewChineseName": "Idempotency key"
+        },
+        {
+          "id": "stock_reservations.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Reserved quantity",
+          "reviewChineseName": "Reserved quantity"
+        },
+        {
+          "id": "stock_reservations.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Reservation status",
+          "reviewChineseName": "Reservation status",
+          "reviewEnumValues": [
+            {
+              "value": "RESERVED",
+              "label": "Reserved"
+            },
+            {
+              "value": "CONSUMED",
+              "label": "Consumed"
+            },
+            {
+              "value": "RELEASED",
+              "label": "Released"
+            }
+          ]
+        },
+        {
+          "id": "stock_reservations.expires_at",
+          "name": "expires_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Expires at",
+          "reviewChineseName": "Expires at"
+        },
+        {
+          "id": "stock_reservations.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_stock_reservations",
+          "fields": [
+            "reservation_key"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity",
+        "status"
+      ]
+    },
+    {
+      "id": "fulfillments",
+      "name": "fulfillments",
+      "comment": "Fictional demo. An order can split into fulfillments by warehouse and processing batch.",
+      "x": 1350,
+      "y": 420,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "fulfillments.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "fulfillments.order_id",
+          "name": "order_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Order",
+          "reviewChineseName": "Order"
+        },
+        {
+          "id": "fulfillments.warehouse_id",
+          "name": "warehouse_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Dispatch warehouse",
+          "reviewChineseName": "Dispatch warehouse"
+        },
+        {
+          "id": "fulfillments.fulfillment_no",
+          "name": "fulfillment_no",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Fulfillment number",
+          "reviewChineseName": "Fulfillment number"
+        },
+        {
+          "id": "fulfillments.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Fulfillment status",
+          "reviewChineseName": "Fulfillment status",
+          "reviewEnumValues": [
+            {
+              "value": "PLANNED",
+              "label": "Planned"
+            },
+            {
+              "value": "PICKING",
+              "label": "Picking"
+            },
+            {
+              "value": "PACKED",
+              "label": "Packed"
+            },
+            {
+              "value": "SHIPPED",
+              "label": "Shipped"
+            },
+            {
+              "value": "CANCELLED",
+              "label": "Cancelled"
+            }
+          ]
+        },
+        {
+          "id": "fulfillments.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_fulfillments",
+          "fields": [
+            "fulfillment_no"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "fulfillment_no",
+        "status"
+      ]
+    },
+    {
+      "id": "fulfillment_items",
+      "name": "fulfillment_items",
+      "comment": "Fictional demo. Warehouse fulfillment lines link explicitly to order lines and stock reservations.",
+      "x": 0,
+      "y": 840,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "fulfillment_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "fulfillment_items.fulfillment_id",
+          "name": "fulfillment_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Fulfillment",
+          "reviewChineseName": "Fulfillment"
+        },
+        {
+          "id": "fulfillment_items.order_item_id",
+          "name": "order_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Order line",
+          "reviewChineseName": "Order line"
+        },
+        {
+          "id": "fulfillment_items.reservation_id",
+          "name": "reservation_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Stock reservation",
+          "reviewChineseName": "Stock reservation"
+        },
+        {
+          "id": "fulfillment_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Fulfilled quantity",
+          "reviewChineseName": "Fulfilled quantity"
+        },
+        {
+          "id": "fulfillment_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity"
+      ]
+    },
+    {
+      "id": "shipments",
+      "name": "shipments",
+      "comment": "Fictional demo. Fulfillments can split into parcels; delivery status is independent of picking and packing.",
+      "x": 450,
+      "y": 840,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "shipments.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "shipments.fulfillment_id",
+          "name": "fulfillment_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Fulfillment",
+          "reviewChineseName": "Fulfillment"
+        },
+        {
+          "id": "shipments.carrier_code",
+          "name": "carrier_code",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Carrier",
+          "reviewChineseName": "Carrier"
+        },
+        {
+          "id": "shipments.tracking_no",
+          "name": "tracking_no",
+          "type": "VARCHAR",
+          "size": "64",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Tracking number",
+          "reviewChineseName": "Tracking number"
+        },
+        {
+          "id": "shipments.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Shipment status",
+          "reviewChineseName": "Shipment status",
+          "reviewEnumValues": [
+            {
+              "value": "CREATED",
+              "label": "Created"
+            },
+            {
+              "value": "IN_TRANSIT",
+              "label": "In transit"
+            },
+            {
+              "value": "DELIVERED",
+              "label": "Delivered"
+            },
+            {
+              "value": "EXCEPTION",
+              "label": "Exception"
+            }
+          ]
+        },
+        {
+          "id": "shipments.shipped_at",
+          "name": "shipped_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Shipped at",
+          "reviewChineseName": "Shipped at"
+        },
+        {
+          "id": "shipments.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "status"
+      ]
+    },
+    {
+      "id": "shipment_items",
+      "name": "shipment_items",
+      "comment": "Fictional demo. Parcel lines support partial shipments rather than keeping a single tracking number on the order.",
+      "x": 900,
+      "y": 840,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "shipment_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "shipment_items.shipment_id",
+          "name": "shipment_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Shipment",
+          "reviewChineseName": "Shipment"
+        },
+        {
+          "id": "shipment_items.fulfillment_item_id",
+          "name": "fulfillment_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Fulfillment line",
+          "reviewChineseName": "Fulfillment line"
+        },
+        {
+          "id": "shipment_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Shipped quantity",
+          "reviewChineseName": "Shipped quantity"
+        },
+        {
+          "id": "shipment_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity"
+      ]
+    },
+    {
+      "id": "returns",
+      "name": "returns",
+      "comment": "Fictional demo. Returns are separate from refunds; payment and refund accounting are outside this example.",
+      "x": 1350,
+      "y": 840,
+      "color": "#bd7a24",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "returns.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "returns.order_id",
+          "name": "order_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Original order",
+          "reviewChineseName": "Original order"
+        },
+        {
+          "id": "returns.return_no",
+          "name": "return_no",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Return number",
+          "reviewChineseName": "Return number"
+        },
+        {
+          "id": "returns.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Return status",
+          "reviewChineseName": "Return status",
+          "reviewEnumValues": [
+            {
+              "value": "REQUESTED",
+              "label": "Requested"
+            },
+            {
+              "value": "APPROVED",
+              "label": "Approved"
+            },
+            {
+              "value": "RECEIVED",
+              "label": "Received"
+            },
+            {
+              "value": "CLOSED",
+              "label": "Closed"
+            },
+            {
+              "value": "REJECTED",
+              "label": "Rejected"
+            }
+          ]
+        },
+        {
+          "id": "returns.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_returns",
+          "fields": [
+            "return_no"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "return_no",
+        "status"
+      ]
+    },
+    {
+      "id": "return_items",
+      "name": "return_items",
+      "comment": "Fictional demo. Return lines link to shipped lines and distinguish restocking, quarantine and disposal.",
+      "x": 0,
+      "y": 1260,
+      "color": "#bd7a24",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "return_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "ID",
+          "reviewChineseName": "ID"
+        },
+        {
+          "id": "return_items.return_id",
+          "name": "return_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Return",
+          "reviewChineseName": "Return"
+        },
+        {
+          "id": "return_items.shipment_item_id",
+          "name": "shipment_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Original shipment line",
+          "reviewChineseName": "Original shipment line"
+        },
+        {
+          "id": "return_items.warehouse_id",
+          "name": "warehouse_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Receiving warehouse",
+          "reviewChineseName": "Receiving warehouse"
+        },
+        {
+          "id": "return_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "Returned quantity",
+          "reviewChineseName": "Returned quantity"
+        },
+        {
+          "id": "return_items.disposition",
+          "name": "disposition",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Disposition",
+          "reviewChineseName": "Disposition",
+          "reviewEnumValues": [
+            {
+              "value": "RESTOCK",
+              "label": "Restock"
+            },
+            {
+              "value": "QUARANTINE",
+              "label": "Quarantine"
+            },
+            {
+              "value": "SCRAP",
+              "label": "Scrap"
+            }
+          ]
+        },
+        {
+          "id": "return_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "Created at",
+          "reviewChineseName": "Created at"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity",
+        "disposition"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "demo-rel-0",
+      "name": "fk_inventory_warehouse_id",
+      "startTableId": "inventory",
+      "startFieldId": "inventory.warehouse_id",
+      "endTableId": "warehouses",
+      "endFieldId": "warehouses.id",
+      "fields": [
+        {
+          "startFieldId": "inventory.warehouse_id",
+          "endFieldId": "warehouses.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-1",
+      "name": "fk_inventory_product_id",
+      "startTableId": "inventory",
+      "startFieldId": "inventory.product_id",
+      "endTableId": "products",
+      "endFieldId": "products.id",
+      "fields": [
+        {
+          "startFieldId": "inventory.product_id",
+          "endFieldId": "products.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-2",
+      "name": "fk_orders_customer_id",
+      "startTableId": "orders",
+      "startFieldId": "orders.customer_id",
+      "endTableId": "customers",
+      "endFieldId": "customers.id",
+      "fields": [
+        {
+          "startFieldId": "orders.customer_id",
+          "endFieldId": "customers.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-3",
+      "name": "fk_order_items_order_id",
+      "startTableId": "order_items",
+      "startFieldId": "order_items.order_id",
+      "endTableId": "orders",
+      "endFieldId": "orders.id",
+      "fields": [
+        {
+          "startFieldId": "order_items.order_id",
+          "endFieldId": "orders.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-4",
+      "name": "fk_order_items_product_id",
+      "startTableId": "order_items",
+      "startFieldId": "order_items.product_id",
+      "endTableId": "products",
+      "endFieldId": "products.id",
+      "fields": [
+        {
+          "startFieldId": "order_items.product_id",
+          "endFieldId": "products.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-5",
+      "name": "fk_stock_reservations_order_item_id",
+      "startTableId": "stock_reservations",
+      "startFieldId": "stock_reservations.order_item_id",
+      "endTableId": "order_items",
+      "endFieldId": "order_items.id",
+      "fields": [
+        {
+          "startFieldId": "stock_reservations.order_item_id",
+          "endFieldId": "order_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-6",
+      "name": "fk_stock_reservations_inventory_id",
+      "startTableId": "stock_reservations",
+      "startFieldId": "stock_reservations.inventory_id",
+      "endTableId": "inventory",
+      "endFieldId": "inventory.id",
+      "fields": [
+        {
+          "startFieldId": "stock_reservations.inventory_id",
+          "endFieldId": "inventory.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-7",
+      "name": "fk_fulfillments_order_id",
+      "startTableId": "fulfillments",
+      "startFieldId": "fulfillments.order_id",
+      "endTableId": "orders",
+      "endFieldId": "orders.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillments.order_id",
+          "endFieldId": "orders.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-8",
+      "name": "fk_fulfillments_warehouse_id",
+      "startTableId": "fulfillments",
+      "startFieldId": "fulfillments.warehouse_id",
+      "endTableId": "warehouses",
+      "endFieldId": "warehouses.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillments.warehouse_id",
+          "endFieldId": "warehouses.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-9",
+      "name": "fk_fulfillment_items_fulfillment_id",
+      "startTableId": "fulfillment_items",
+      "startFieldId": "fulfillment_items.fulfillment_id",
+      "endTableId": "fulfillments",
+      "endFieldId": "fulfillments.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillment_items.fulfillment_id",
+          "endFieldId": "fulfillments.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-10",
+      "name": "fk_fulfillment_items_order_item_id",
+      "startTableId": "fulfillment_items",
+      "startFieldId": "fulfillment_items.order_item_id",
+      "endTableId": "order_items",
+      "endFieldId": "order_items.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillment_items.order_item_id",
+          "endFieldId": "order_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-11",
+      "name": "fk_fulfillment_items_reservation_id",
+      "startTableId": "fulfillment_items",
+      "startFieldId": "fulfillment_items.reservation_id",
+      "endTableId": "stock_reservations",
+      "endFieldId": "stock_reservations.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillment_items.reservation_id",
+          "endFieldId": "stock_reservations.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-12",
+      "name": "fk_shipments_fulfillment_id",
+      "startTableId": "shipments",
+      "startFieldId": "shipments.fulfillment_id",
+      "endTableId": "fulfillments",
+      "endFieldId": "fulfillments.id",
+      "fields": [
+        {
+          "startFieldId": "shipments.fulfillment_id",
+          "endFieldId": "fulfillments.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-13",
+      "name": "fk_shipment_items_shipment_id",
+      "startTableId": "shipment_items",
+      "startFieldId": "shipment_items.shipment_id",
+      "endTableId": "shipments",
+      "endFieldId": "shipments.id",
+      "fields": [
+        {
+          "startFieldId": "shipment_items.shipment_id",
+          "endFieldId": "shipments.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-14",
+      "name": "fk_shipment_items_fulfillment_item_id",
+      "startTableId": "shipment_items",
+      "startFieldId": "shipment_items.fulfillment_item_id",
+      "endTableId": "fulfillment_items",
+      "endFieldId": "fulfillment_items.id",
+      "fields": [
+        {
+          "startFieldId": "shipment_items.fulfillment_item_id",
+          "endFieldId": "fulfillment_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-15",
+      "name": "fk_returns_order_id",
+      "startTableId": "returns",
+      "startFieldId": "returns.order_id",
+      "endTableId": "orders",
+      "endFieldId": "orders.id",
+      "fields": [
+        {
+          "startFieldId": "returns.order_id",
+          "endFieldId": "orders.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-16",
+      "name": "fk_return_items_return_id",
+      "startTableId": "return_items",
+      "startFieldId": "return_items.return_id",
+      "endTableId": "returns",
+      "endFieldId": "returns.id",
+      "fields": [
+        {
+          "startFieldId": "return_items.return_id",
+          "endFieldId": "returns.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-17",
+      "name": "fk_return_items_shipment_item_id",
+      "startTableId": "return_items",
+      "startFieldId": "return_items.shipment_item_id",
+      "endTableId": "shipment_items",
+      "endFieldId": "shipment_items.id",
+      "fields": [
+        {
+          "startFieldId": "return_items.shipment_item_id",
+          "endFieldId": "shipment_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-18",
+      "name": "fk_return_items_warehouse_id",
+      "startTableId": "return_items",
+      "startFieldId": "return_items.warehouse_id",
+      "endTableId": "warehouses",
+      "endFieldId": "warehouses.id",
+      "fields": [
+        {
+          "startFieldId": "return_items.warehouse_id",
+          "endFieldId": "warehouses.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    }
+  ],
+  "reviewGroups": [
+    {
+      "id": "catalog",
+      "name": "Products & inventory",
+      "color": "#3276b9",
+      "tableIds": [
+        "products",
+        "warehouses",
+        "inventory"
+      ]
+    },
+    {
+      "id": "orders",
+      "name": "Orders & reservations",
+      "color": "#0f766e",
+      "tableIds": [
+        "customers",
+        "orders",
+        "order_items",
+        "stock_reservations"
+      ]
+    },
+    {
+      "id": "fulfillment",
+      "name": "Fulfillment & shipping",
+      "color": "#865bb4",
+      "tableIds": [
+        "fulfillments",
+        "fulfillment_items",
+        "shipments",
+        "shipment_items"
+      ]
+    },
+    {
+      "id": "returns",
+      "name": "Returns & disposition",
+      "color": "#bd7a24",
+      "tableIds": [
+        "returns",
+        "return_items"
+      ]
+    }
+  ],
+  "notes": [],
+  "subjectAreas": [],
+  "views": [],
+  "types": [],
+  "enums": [],
+  "transform": {
+    "pan": {
+      "x": 0,
+      "y": 0
+    },
+    "zoom": 0.4
+  },
+  "processModel": {
+    "version": 1,
+    "scenarios": [
+      {
+        "id": "fulfillment",
+        "name": "Order fulfillment",
+        "description": "Fictional flow: cancel if stock is insufficient; otherwise reserve, allocate and ship. Not inferred from DDL or real logs. Partial shipments, payment and delivery confirmation are outside this scenario.",
+        "evidence": "Manually authored commerce example rules, for illustration only.",
+        "steps": [
+          {
+            "id": "submitted",
+            "kind": "event",
+            "name": "Order submitted",
+            "bindings": []
+          },
+          {
+            "id": "create-order",
+            "kind": "action",
+            "name": "Create order",
+            "description": "Read the customer and products; create the order and its lines.",
+            "bindings": [
+              {
+                "tableId": "customers",
+                "access": "read",
+                "fieldIds": [
+                  "customers.id"
+                ]
+              },
+              {
+                "tableId": "products",
+                "access": "read",
+                "fieldIds": [
+                  "products.id",
+                  "products.sku"
+                ]
+              },
+              {
+                "tableId": "orders",
+                "access": "create",
+                "fieldIds": [
+                  "orders.id",
+                  "orders.customer_id",
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "to": "DRAFT"
+                }
+              },
+              {
+                "tableId": "order_items",
+                "access": "create",
+                "fieldIds": [
+                  "order_items.order_id",
+                  "order_items.product_id",
+                  "order_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "check-stock",
+            "kind": "decision",
+            "name": "Sufficient stock?",
+            "description": "Example condition: on_hand - reserved >= ordered quantity.",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "read",
+                "fieldIds": [
+                  "inventory.on_hand",
+                  "inventory.reserved"
+                ]
+              },
+              {
+                "tableId": "order_items",
+                "access": "read",
+                "fieldIds": [
+                  "order_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "reserve",
+            "kind": "action",
+            "name": "Reserve stock",
+            "description": "Record reservations and confirm the order; this is not physical dispatch.",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "update",
+                "fieldIds": [
+                  "inventory.reserved",
+                  "inventory.version"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "create",
+                "fieldIds": [
+                  "stock_reservations.order_item_id",
+                  "stock_reservations.inventory_id",
+                  "stock_reservations.quantity",
+                  "stock_reservations.status"
+                ],
+                "state": {
+                  "fieldId": "stock_reservations.status",
+                  "to": "RESERVED"
+                }
+              },
+              {
+                "tableId": "orders",
+                "access": "update",
+                "fieldIds": [
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "from": "DRAFT",
+                  "to": "CONFIRMED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "allocate",
+            "kind": "action",
+            "name": "Allocate warehouse fulfillments",
+            "bindings": [
+              {
+                "tableId": "warehouses",
+                "access": "read",
+                "fieldIds": [
+                  "warehouses.id"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "read",
+                "fieldIds": [
+                  "stock_reservations.id"
+                ]
+              },
+              {
+                "tableId": "fulfillments",
+                "access": "create",
+                "fieldIds": [
+                  "fulfillments.id",
+                  "fulfillments.order_id",
+                  "fulfillments.warehouse_id",
+                  "fulfillments.status"
+                ],
+                "state": {
+                  "fieldId": "fulfillments.status",
+                  "to": "PLANNED"
+                }
+              },
+              {
+                "tableId": "fulfillment_items",
+                "access": "create",
+                "fieldIds": [
+                  "fulfillment_items.fulfillment_id",
+                  "fulfillment_items.order_item_id",
+                  "fulfillment_items.reservation_id",
+                  "fulfillment_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "ship",
+            "kind": "action",
+            "name": "Record parcels and dispatch",
+            "description": "Simplified example: dispatch this fulfillment in one step; it does not imply delivery.",
+            "bindings": [
+              {
+                "tableId": "fulfillments",
+                "access": "update",
+                "fieldIds": [
+                  "fulfillments.status"
+                ],
+                "state": {
+                  "fieldId": "fulfillments.status",
+                  "from": "PLANNED",
+                  "to": "SHIPPED"
+                }
+              },
+              {
+                "tableId": "shipments",
+                "access": "create",
+                "fieldIds": [
+                  "shipments.id",
+                  "shipments.fulfillment_id",
+                  "shipments.status",
+                  "shipments.shipped_at"
+                ],
+                "state": {
+                  "fieldId": "shipments.status",
+                  "to": "IN_TRANSIT"
+                }
+              },
+              {
+                "tableId": "shipment_items",
+                "access": "create",
+                "fieldIds": [
+                  "shipment_items.shipment_id",
+                  "shipment_items.fulfillment_item_id",
+                  "shipment_items.quantity"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "update",
+                "fieldIds": [
+                  "stock_reservations.status"
+                ],
+                "state": {
+                  "fieldId": "stock_reservations.status",
+                  "from": "RESERVED",
+                  "to": "CONSUMED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "cancel",
+            "kind": "action",
+            "name": "Cancel unreserved order",
+            "bindings": [
+              {
+                "tableId": "orders",
+                "access": "update",
+                "fieldIds": [
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "from": "DRAFT",
+                  "to": "CANCELLED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "dispatched",
+            "kind": "event",
+            "name": "Dispatch recorded",
+            "bindings": []
+          },
+          {
+            "id": "cancelled",
+            "kind": "event",
+            "name": "Order cancelled",
+            "bindings": []
+          }
+        ],
+        "flows": [
+          {
+            "id": "f1",
+            "from": "submitted",
+            "to": "create-order",
+            "kind": "normal"
+          },
+          {
+            "id": "f2",
+            "from": "create-order",
+            "to": "check-stock",
+            "kind": "normal"
+          },
+          {
+            "id": "f3",
+            "from": "check-stock",
+            "to": "reserve",
+            "kind": "condition",
+            "label": "Sufficient stock"
+          },
+          {
+            "id": "f4",
+            "from": "check-stock",
+            "to": "cancel",
+            "kind": "condition",
+            "label": "Insufficient stock"
+          },
+          {
+            "id": "f5",
+            "from": "reserve",
+            "to": "allocate",
+            "kind": "normal"
+          },
+          {
+            "id": "f6",
+            "from": "allocate",
+            "to": "ship",
+            "kind": "normal"
+          },
+          {
+            "id": "f7",
+            "from": "ship",
+            "to": "dispatched",
+            "kind": "normal"
+          },
+          {
+            "id": "f8",
+            "from": "cancel",
+            "to": "cancelled",
+            "kind": "normal"
+          }
+        ]
+      },
+      {
+        "id": "returns",
+        "name": "Return disposition",
+        "description": "Fictional return flow: request, review, receive, then restock or quarantine. Additional information loops back to review; payment refunds are excluded.",
+        "evidence": "Manually authored commerce example rules, not a real event trace.",
+        "steps": [
+          {
+            "id": "request-return",
+            "kind": "action",
+            "name": "Create return request",
+            "bindings": [
+              {
+                "tableId": "orders",
+                "access": "read",
+                "fieldIds": [
+                  "orders.id"
+                ]
+              },
+              {
+                "tableId": "shipment_items",
+                "access": "read",
+                "fieldIds": [
+                  "shipment_items.id",
+                  "shipment_items.quantity"
+                ]
+              },
+              {
+                "tableId": "returns",
+                "access": "create",
+                "fieldIds": [
+                  "returns.order_id",
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "to": "REQUESTED"
+                }
+              },
+              {
+                "tableId": "return_items",
+                "access": "create",
+                "fieldIds": [
+                  "return_items.return_id",
+                  "return_items.shipment_item_id",
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "review-return",
+            "kind": "decision",
+            "name": "Review approved?",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "read",
+                "fieldIds": [
+                  "returns.status"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "read",
+                "fieldIds": [
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "amend-return",
+            "kind": "action",
+            "name": "Provide additional information",
+            "description": "Update the same return request with additional details; do not create another return.",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "read",
+                "fieldIds": [
+                  "returns.id",
+                  "returns.status"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "receive-return",
+            "kind": "action",
+            "name": "Record returned goods",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "update",
+                "fieldIds": [
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "from": "REQUESTED",
+                  "to": "RECEIVED"
+                }
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.warehouse_id",
+                  "return_items.disposition"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "restock-check",
+            "kind": "decision",
+            "name": "Resalable?",
+            "bindings": [
+              {
+                "tableId": "return_items",
+                "access": "read",
+                "fieldIds": [
+                  "return_items.disposition"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "restock",
+            "kind": "action",
+            "name": "Restock inventory",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "update",
+                "fieldIds": [
+                  "inventory.on_hand",
+                  "inventory.version"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.disposition"
+                ],
+                "state": {
+                  "fieldId": "return_items.disposition",
+                  "to": "RESTOCK"
+                }
+              }
+            ]
+          },
+          {
+            "id": "quarantine",
+            "kind": "action",
+            "name": "Quarantine for disposition",
+            "bindings": [
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.disposition"
+                ],
+                "state": {
+                  "fieldId": "return_items.disposition",
+                  "to": "QUARANTINE"
+                }
+              }
+            ]
+          },
+          {
+            "id": "close-return",
+            "kind": "action",
+            "name": "Close return",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "update",
+                "fieldIds": [
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "from": "RECEIVED",
+                  "to": "CLOSED"
+                }
+              }
+            ]
+          }
+        ],
+        "flows": [
+          {
+            "id": "r1",
+            "from": "request-return",
+            "to": "review-return",
+            "kind": "normal"
+          },
+          {
+            "id": "r2",
+            "from": "review-return",
+            "to": "amend-return",
+            "kind": "return",
+            "label": "More information needed"
+          },
+          {
+            "id": "r9",
+            "from": "amend-return",
+            "to": "review-return",
+            "kind": "normal",
+            "label": "Resubmit"
+          },
+          {
+            "id": "r3",
+            "from": "review-return",
+            "to": "receive-return",
+            "kind": "condition",
+            "label": "Approved"
+          },
+          {
+            "id": "r4",
+            "from": "receive-return",
+            "to": "restock-check",
+            "kind": "normal"
+          },
+          {
+            "id": "r5",
+            "from": "restock-check",
+            "to": "restock",
+            "kind": "condition",
+            "label": "Resalable"
+          },
+          {
+            "id": "r6",
+            "from": "restock-check",
+            "to": "quarantine",
+            "kind": "condition",
+            "label": "Not resalable"
+          },
+          {
+            "id": "r7",
+            "from": "restock",
+            "to": "close-return",
+            "kind": "normal"
+          },
+          {
+            "id": "r8",
+            "from": "quarantine",
+            "to": "close-return",
+            "kind": "normal"
+          }
+        ]
+      }
+    ]
+  }
+}

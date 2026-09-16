@@ -51,6 +51,11 @@ Update checks contact GitHub only when requested; the hosted site uses normal
 web requests. Built on drawDB, ELK, libavoid, React and Electron; English/Chinese
 interface switching does not translate model content.
 
+The official demo is the exception: it includes complete
+[English](examples/fulfillment.en.drawdb.json) and
+[Chinese](examples/fulfillment.zh.drawdb.json) example configurations. They share
+the same table/field IDs and relationships; only explanatory text differs.
+
 <details>
 <summary>More reading and editing capabilities</summary>
 

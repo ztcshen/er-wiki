@@ -34,7 +34,8 @@ const messages = {
   返回总图: "Back to overview",
   结构阅读: "Explore schema",
 };
-let language =
+const requestedLanguage=typeof location!=='undefined'?new URLSearchParams(location.search).get('lang'):null;
+let language = requestedLanguage==='en'?'en':requestedLanguage==='zh'?'zh':
   typeof navigator !== "undefined" && /^zh/i.test(navigator.language)
     ? "zh"
     : "en";

@@ -2,8 +2,9 @@
 
 ## Current website assets (0.4.1 candidate)
 
-`routing-preview.png` is an unmodified 1440×900 screenshot of the current
-read-only Web demo, using the canonical fictional fulfillment model (13 tables,
+`routing-preview.png` (English) and `routing-preview-zh.png` (Chinese) are
+unmodified 1440×900 screenshots of the current
+read-only Web demo, using the matching localized fictional fulfillment model (13 tables,
 19 relationships). Unlike the older images below, it is not a desktop screenshot.
 `social-preview.png` is a 1200×630 browser capture of the compact `social.html`
 sharing layout, composed from that actual renderer image and the product headline.

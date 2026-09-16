@@ -6,6 +6,7 @@ import RelationPopup from '../desktop/eda/RelationPopup';
 import EdaMinimap from "../desktop/eda/EdaMinimap";
 import EdaInspector from "../desktop/eda/EdaInspector";
 import { searchModel } from "../desktop/eda/reading-state.mjs";
+import { refreshLayoutContent } from '../desktop/eda/layout-content.mjs';
 import {
   focusNodeView,
   viewScale,
@@ -15,7 +16,6 @@ import {
 import { relationBounds } from "../desktop/eda/cardinality.mjs";
 import "../desktop/eda/eda.css";
 
-const model = catalogue.model;
 const blank = { tableId: null, fieldId: null, netId: null, relationId: null };
 const bounds = (result) => [
   0,
@@ -25,6 +25,7 @@ const bounds = (result) => [
 ];
 export default function Demo() {
   const { language, setLanguage } = useLocale();
+  const model=catalogue.models[language];
   const [theme, setTheme] = useState("light"),
     [scope, setScope] = useState("overview");
   const [selection, setSelection] = useState(blank),
@@ -43,7 +44,7 @@ export default function Demo() {
     pending = useRef(null),
     canvas = useRef(null),
     search = useRef(null);
-  const result = loaded?.key === scope ? loaded.result : null;
+  const result = useMemo(()=>loaded?.key===scope?refreshLayoutContent(loaded.result,model):null,[loaded,scope,model]);
   const view = views[scope] || (result ? bounds(result) : [0, 0, 1000, 700]);
   const setView = (value) =>
     setViews((old) => ({

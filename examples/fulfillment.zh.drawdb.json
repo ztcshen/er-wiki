@@ -1,0 +1,2648 @@
+{
+  "title": "电商履约 · Fictional fulfillment",
+  "database": "mysql",
+  "tables": [
+    {
+      "id": "customers",
+      "name": "customers",
+      "comment": "Fictional demo. 客户标识；仅定义结构，不包含任何个人记录。",
+      "x": 0,
+      "y": 0,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "customers.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "customers.customer_code",
+          "name": "customer_code",
+          "type": "VARCHAR",
+          "size": "32",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "客户编号",
+          "reviewChineseName": "客户编号"
+        },
+        {
+          "id": "customers.display_name",
+          "name": "display_name",
+          "type": "VARCHAR",
+          "size": "80",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "显示名称",
+          "reviewChineseName": "显示名称"
+        },
+        {
+          "id": "customers.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_customers",
+          "fields": [
+            "customer_code"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": []
+    },
+    {
+      "id": "products",
+      "name": "products",
+      "comment": "Fictional demo. 按 SKU 管理的示例商品；不建模复杂商品变体。",
+      "x": 450,
+      "y": 0,
+      "color": "#3276b9",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "products.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "products.sku",
+          "name": "sku",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "SKU",
+          "reviewChineseName": "SKU"
+        },
+        {
+          "id": "products.name",
+          "name": "name",
+          "type": "VARCHAR",
+          "size": "120",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "商品名称",
+          "reviewChineseName": "商品名称"
+        },
+        {
+          "id": "products.active",
+          "name": "active",
+          "type": "BOOLEAN",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "可销售",
+          "reviewChineseName": "可销售"
+        },
+        {
+          "id": "products.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_products",
+          "fields": [
+            "sku"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "sku"
+      ]
+    },
+    {
+      "id": "warehouses",
+      "name": "warehouses",
+      "comment": "Fictional demo. 可用于出库或退货入库的仓库。",
+      "x": 900,
+      "y": 0,
+      "color": "#3276b9",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "warehouses.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "warehouses.warehouse_code",
+          "name": "warehouse_code",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "仓库编码",
+          "reviewChineseName": "仓库编码"
+        },
+        {
+          "id": "warehouses.name",
+          "name": "name",
+          "type": "VARCHAR",
+          "size": "80",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "仓库名称",
+          "reviewChineseName": "仓库名称"
+        },
+        {
+          "id": "warehouses.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_warehouses",
+          "fields": [
+            "warehouse_code"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": []
+    },
+    {
+      "id": "inventory",
+      "name": "inventory",
+      "comment": "Fictional demo. 每个仓库和 SKU 一条库存；可用量=在库量-占用量。",
+      "x": 1350,
+      "y": 0,
+      "color": "#3276b9",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "inventory.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "inventory.warehouse_id",
+          "name": "warehouse_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "仓库",
+          "reviewChineseName": "仓库"
+        },
+        {
+          "id": "inventory.product_id",
+          "name": "product_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "商品",
+          "reviewChineseName": "商品"
+        },
+        {
+          "id": "inventory.on_hand",
+          "name": "on_hand",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "在库数量",
+          "reviewChineseName": "在库数量"
+        },
+        {
+          "id": "inventory.reserved",
+          "name": "reserved",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "占用数量",
+          "reviewChineseName": "占用数量"
+        },
+        {
+          "id": "inventory.version",
+          "name": "version",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "并发版本",
+          "reviewChineseName": "并发版本"
+        },
+        {
+          "id": "inventory.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_inventory",
+          "fields": [
+            "warehouse_id",
+            "product_id"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "on_hand",
+        "reserved"
+      ]
+    },
+    {
+      "id": "orders",
+      "name": "orders",
+      "comment": "Fictional demo. 客户订单可拆为多个仓库履约单，也可部分发货。",
+      "x": 0,
+      "y": 420,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "orders.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "orders.order_no",
+          "name": "order_no",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "订单号",
+          "reviewChineseName": "订单号"
+        },
+        {
+          "id": "orders.customer_id",
+          "name": "customer_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "客户",
+          "reviewChineseName": "客户"
+        },
+        {
+          "id": "orders.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "订单状态",
+          "reviewChineseName": "订单状态",
+          "reviewEnumValues": [
+            {
+              "value": "DRAFT",
+              "label": "草稿"
+            },
+            {
+              "value": "CONFIRMED",
+              "label": "已确认"
+            },
+            {
+              "value": "PARTIAL",
+              "label": "部分完成"
+            },
+            {
+              "value": "FULFILLED",
+              "label": "履约完成"
+            },
+            {
+              "value": "CANCELLED",
+              "label": "已取消"
+            }
+          ]
+        },
+        {
+          "id": "orders.currency",
+          "name": "currency",
+          "type": "CHAR",
+          "size": "3",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "币种",
+          "reviewChineseName": "币种"
+        },
+        {
+          "id": "orders.total_minor",
+          "name": "total_minor",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "金额最小单位",
+          "reviewChineseName": "金额最小单位"
+        },
+        {
+          "id": "orders.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_orders",
+          "fields": [
+            "order_no"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "order_no",
+        "status"
+      ]
+    },
+    {
+      "id": "order_items",
+      "name": "order_items",
+      "comment": "Fictional demo. 订单商品行保留交易时的数量与单价快照。",
+      "x": 450,
+      "y": 420,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "order_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "order_items.order_id",
+          "name": "order_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "订单",
+          "reviewChineseName": "订单"
+        },
+        {
+          "id": "order_items.product_id",
+          "name": "product_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "商品",
+          "reviewChineseName": "商品"
+        },
+        {
+          "id": "order_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "下单数量",
+          "reviewChineseName": "下单数量"
+        },
+        {
+          "id": "order_items.unit_price_minor",
+          "name": "unit_price_minor",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "单价最小单位",
+          "reviewChineseName": "单价最小单位"
+        },
+        {
+          "id": "order_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity"
+      ]
+    },
+    {
+      "id": "stock_reservations",
+      "name": "stock_reservations",
+      "comment": "Fictional demo. 订单行可分配至多个仓库库存；释放占用不等于已经出库。",
+      "x": 900,
+      "y": 420,
+      "color": "#0f766e",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "stock_reservations.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "stock_reservations.order_item_id",
+          "name": "order_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "订单行",
+          "reviewChineseName": "订单行"
+        },
+        {
+          "id": "stock_reservations.inventory_id",
+          "name": "inventory_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "仓库库存",
+          "reviewChineseName": "仓库库存"
+        },
+        {
+          "id": "stock_reservations.reservation_key",
+          "name": "reservation_key",
+          "type": "VARCHAR",
+          "size": "64",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "幂等键",
+          "reviewChineseName": "幂等键"
+        },
+        {
+          "id": "stock_reservations.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "占用数量",
+          "reviewChineseName": "占用数量"
+        },
+        {
+          "id": "stock_reservations.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "占用状态",
+          "reviewChineseName": "占用状态",
+          "reviewEnumValues": [
+            {
+              "value": "RESERVED",
+              "label": "已占用"
+            },
+            {
+              "value": "CONSUMED",
+              "label": "已消耗"
+            },
+            {
+              "value": "RELEASED",
+              "label": "已释放"
+            }
+          ]
+        },
+        {
+          "id": "stock_reservations.expires_at",
+          "name": "expires_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "过期时间",
+          "reviewChineseName": "过期时间"
+        },
+        {
+          "id": "stock_reservations.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_stock_reservations",
+          "fields": [
+            "reservation_key"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity",
+        "status"
+      ]
+    },
+    {
+      "id": "fulfillments",
+      "name": "fulfillments",
+      "comment": "Fictional demo. 一个订单可按仓库、处理批次拆分多个履约单。",
+      "x": 1350,
+      "y": 420,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "fulfillments.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "fulfillments.order_id",
+          "name": "order_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "订单",
+          "reviewChineseName": "订单"
+        },
+        {
+          "id": "fulfillments.warehouse_id",
+          "name": "warehouse_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "出库仓库",
+          "reviewChineseName": "出库仓库"
+        },
+        {
+          "id": "fulfillments.fulfillment_no",
+          "name": "fulfillment_no",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "履约单号",
+          "reviewChineseName": "履约单号"
+        },
+        {
+          "id": "fulfillments.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "履约状态",
+          "reviewChineseName": "履约状态",
+          "reviewEnumValues": [
+            {
+              "value": "PLANNED",
+              "label": "待处理"
+            },
+            {
+              "value": "PICKING",
+              "label": "拣货中"
+            },
+            {
+              "value": "PACKED",
+              "label": "已打包"
+            },
+            {
+              "value": "SHIPPED",
+              "label": "已发货"
+            },
+            {
+              "value": "CANCELLED",
+              "label": "已取消"
+            }
+          ]
+        },
+        {
+          "id": "fulfillments.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_fulfillments",
+          "fields": [
+            "fulfillment_no"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "fulfillment_no",
+        "status"
+      ]
+    },
+    {
+      "id": "fulfillment_items",
+      "name": "fulfillment_items",
+      "comment": "Fictional demo. 分仓拣配明细，明确对应订单行与库存占用。",
+      "x": 0,
+      "y": 840,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "fulfillment_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "fulfillment_items.fulfillment_id",
+          "name": "fulfillment_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "履约单",
+          "reviewChineseName": "履约单"
+        },
+        {
+          "id": "fulfillment_items.order_item_id",
+          "name": "order_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "订单行",
+          "reviewChineseName": "订单行"
+        },
+        {
+          "id": "fulfillment_items.reservation_id",
+          "name": "reservation_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "库存占用",
+          "reviewChineseName": "库存占用"
+        },
+        {
+          "id": "fulfillment_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "履约数量",
+          "reviewChineseName": "履约数量"
+        },
+        {
+          "id": "fulfillment_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity"
+      ]
+    },
+    {
+      "id": "shipments",
+      "name": "shipments",
+      "comment": "Fictional demo. 履约单可分包裹发货；物流交付状态独立于拣配状态。",
+      "x": 450,
+      "y": 840,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "shipments.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "shipments.fulfillment_id",
+          "name": "fulfillment_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "履约单",
+          "reviewChineseName": "履约单"
+        },
+        {
+          "id": "shipments.carrier_code",
+          "name": "carrier_code",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "承运商",
+          "reviewChineseName": "承运商"
+        },
+        {
+          "id": "shipments.tracking_no",
+          "name": "tracking_no",
+          "type": "VARCHAR",
+          "size": "64",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "运单号",
+          "reviewChineseName": "运单号"
+        },
+        {
+          "id": "shipments.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "物流状态",
+          "reviewChineseName": "物流状态",
+          "reviewEnumValues": [
+            {
+              "value": "CREATED",
+              "label": "已创建"
+            },
+            {
+              "value": "IN_TRANSIT",
+              "label": "运输中"
+            },
+            {
+              "value": "DELIVERED",
+              "label": "已签收"
+            },
+            {
+              "value": "EXCEPTION",
+              "label": "异常"
+            }
+          ]
+        },
+        {
+          "id": "shipments.shipped_at",
+          "name": "shipped_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "发货时间",
+          "reviewChineseName": "发货时间"
+        },
+        {
+          "id": "shipments.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "status"
+      ]
+    },
+    {
+      "id": "shipment_items",
+      "name": "shipment_items",
+      "comment": "Fictional demo. 包裹明细支持部分发货，避免只在订单头保存一个运单号。",
+      "x": 900,
+      "y": 840,
+      "color": "#865bb4",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "shipment_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "shipment_items.shipment_id",
+          "name": "shipment_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "包裹",
+          "reviewChineseName": "包裹"
+        },
+        {
+          "id": "shipment_items.fulfillment_item_id",
+          "name": "fulfillment_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "履约明细",
+          "reviewChineseName": "履约明细"
+        },
+        {
+          "id": "shipment_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "发货数量",
+          "reviewChineseName": "发货数量"
+        },
+        {
+          "id": "shipment_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity"
+      ]
+    },
+    {
+      "id": "returns",
+      "name": "returns",
+      "comment": "Fictional demo. 退货申请独立于退款；此示例不包含支付和退款账务。",
+      "x": 1350,
+      "y": 840,
+      "color": "#bd7a24",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "returns.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "returns.order_id",
+          "name": "order_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "原订单",
+          "reviewChineseName": "原订单"
+        },
+        {
+          "id": "returns.return_no",
+          "name": "return_no",
+          "type": "VARCHAR",
+          "size": "40",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "退货单号",
+          "reviewChineseName": "退货单号"
+        },
+        {
+          "id": "returns.status",
+          "name": "status",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "退货状态",
+          "reviewChineseName": "退货状态",
+          "reviewEnumValues": [
+            {
+              "value": "REQUESTED",
+              "label": "已申请"
+            },
+            {
+              "value": "APPROVED",
+              "label": "已批准"
+            },
+            {
+              "value": "RECEIVED",
+              "label": "已收货"
+            },
+            {
+              "value": "CLOSED",
+              "label": "已关闭"
+            },
+            {
+              "value": "REJECTED",
+              "label": "已拒绝"
+            }
+          ]
+        },
+        {
+          "id": "returns.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [
+        {
+          "id": 0,
+          "name": "uq_returns",
+          "fields": [
+            "return_no"
+          ],
+          "unique": true
+        }
+      ],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "return_no",
+        "status"
+      ]
+    },
+    {
+      "id": "return_items",
+      "name": "return_items",
+      "comment": "Fictional demo. 退货行关联已发货明细，区分可售入库、隔离和报废。",
+      "x": 0,
+      "y": 1260,
+      "color": "#bd7a24",
+      "locked": false,
+      "hidden": false,
+      "collapsed": false,
+      "fields": [
+        {
+          "id": "return_items.id",
+          "name": "id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "notNull": true,
+          "increment": true,
+          "unsigned": true,
+          "comment": "标识",
+          "reviewChineseName": "标识"
+        },
+        {
+          "id": "return_items.return_id",
+          "name": "return_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "退货单",
+          "reviewChineseName": "退货单"
+        },
+        {
+          "id": "return_items.shipment_item_id",
+          "name": "shipment_item_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "原发货明细",
+          "reviewChineseName": "原发货明细"
+        },
+        {
+          "id": "return_items.warehouse_id",
+          "name": "warehouse_id",
+          "type": "BIGINT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "退货接收仓库",
+          "reviewChineseName": "退货接收仓库"
+        },
+        {
+          "id": "return_items.quantity",
+          "name": "quantity",
+          "type": "INT",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": true,
+          "comment": "退货数量",
+          "reviewChineseName": "退货数量"
+        },
+        {
+          "id": "return_items.disposition",
+          "name": "disposition",
+          "type": "VARCHAR",
+          "size": "24",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "处置方式",
+          "reviewChineseName": "处置方式",
+          "reviewEnumValues": [
+            {
+              "value": "RESTOCK",
+              "label": "可售入库"
+            },
+            {
+              "value": "QUARANTINE",
+              "label": "隔离"
+            },
+            {
+              "value": "SCRAP",
+              "label": "报废"
+            }
+          ]
+        },
+        {
+          "id": "return_items.created_at",
+          "name": "created_at",
+          "type": "DATETIME",
+          "size": "",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "unsigned": false,
+          "comment": "创建时间",
+          "reviewChineseName": "创建时间"
+        }
+      ],
+      "indices": [],
+      "uniqueConstraints": [],
+      "reviewOverviewFields": [
+        "quantity",
+        "disposition"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "demo-rel-0",
+      "name": "fk_inventory_warehouse_id",
+      "startTableId": "inventory",
+      "startFieldId": "inventory.warehouse_id",
+      "endTableId": "warehouses",
+      "endFieldId": "warehouses.id",
+      "fields": [
+        {
+          "startFieldId": "inventory.warehouse_id",
+          "endFieldId": "warehouses.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-1",
+      "name": "fk_inventory_product_id",
+      "startTableId": "inventory",
+      "startFieldId": "inventory.product_id",
+      "endTableId": "products",
+      "endFieldId": "products.id",
+      "fields": [
+        {
+          "startFieldId": "inventory.product_id",
+          "endFieldId": "products.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-2",
+      "name": "fk_orders_customer_id",
+      "startTableId": "orders",
+      "startFieldId": "orders.customer_id",
+      "endTableId": "customers",
+      "endFieldId": "customers.id",
+      "fields": [
+        {
+          "startFieldId": "orders.customer_id",
+          "endFieldId": "customers.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-3",
+      "name": "fk_order_items_order_id",
+      "startTableId": "order_items",
+      "startFieldId": "order_items.order_id",
+      "endTableId": "orders",
+      "endFieldId": "orders.id",
+      "fields": [
+        {
+          "startFieldId": "order_items.order_id",
+          "endFieldId": "orders.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-4",
+      "name": "fk_order_items_product_id",
+      "startTableId": "order_items",
+      "startFieldId": "order_items.product_id",
+      "endTableId": "products",
+      "endFieldId": "products.id",
+      "fields": [
+        {
+          "startFieldId": "order_items.product_id",
+          "endFieldId": "products.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-5",
+      "name": "fk_stock_reservations_order_item_id",
+      "startTableId": "stock_reservations",
+      "startFieldId": "stock_reservations.order_item_id",
+      "endTableId": "order_items",
+      "endFieldId": "order_items.id",
+      "fields": [
+        {
+          "startFieldId": "stock_reservations.order_item_id",
+          "endFieldId": "order_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-6",
+      "name": "fk_stock_reservations_inventory_id",
+      "startTableId": "stock_reservations",
+      "startFieldId": "stock_reservations.inventory_id",
+      "endTableId": "inventory",
+      "endFieldId": "inventory.id",
+      "fields": [
+        {
+          "startFieldId": "stock_reservations.inventory_id",
+          "endFieldId": "inventory.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-7",
+      "name": "fk_fulfillments_order_id",
+      "startTableId": "fulfillments",
+      "startFieldId": "fulfillments.order_id",
+      "endTableId": "orders",
+      "endFieldId": "orders.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillments.order_id",
+          "endFieldId": "orders.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-8",
+      "name": "fk_fulfillments_warehouse_id",
+      "startTableId": "fulfillments",
+      "startFieldId": "fulfillments.warehouse_id",
+      "endTableId": "warehouses",
+      "endFieldId": "warehouses.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillments.warehouse_id",
+          "endFieldId": "warehouses.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-9",
+      "name": "fk_fulfillment_items_fulfillment_id",
+      "startTableId": "fulfillment_items",
+      "startFieldId": "fulfillment_items.fulfillment_id",
+      "endTableId": "fulfillments",
+      "endFieldId": "fulfillments.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillment_items.fulfillment_id",
+          "endFieldId": "fulfillments.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-10",
+      "name": "fk_fulfillment_items_order_item_id",
+      "startTableId": "fulfillment_items",
+      "startFieldId": "fulfillment_items.order_item_id",
+      "endTableId": "order_items",
+      "endFieldId": "order_items.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillment_items.order_item_id",
+          "endFieldId": "order_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-11",
+      "name": "fk_fulfillment_items_reservation_id",
+      "startTableId": "fulfillment_items",
+      "startFieldId": "fulfillment_items.reservation_id",
+      "endTableId": "stock_reservations",
+      "endFieldId": "stock_reservations.id",
+      "fields": [
+        {
+          "startFieldId": "fulfillment_items.reservation_id",
+          "endFieldId": "stock_reservations.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-12",
+      "name": "fk_shipments_fulfillment_id",
+      "startTableId": "shipments",
+      "startFieldId": "shipments.fulfillment_id",
+      "endTableId": "fulfillments",
+      "endFieldId": "fulfillments.id",
+      "fields": [
+        {
+          "startFieldId": "shipments.fulfillment_id",
+          "endFieldId": "fulfillments.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-13",
+      "name": "fk_shipment_items_shipment_id",
+      "startTableId": "shipment_items",
+      "startFieldId": "shipment_items.shipment_id",
+      "endTableId": "shipments",
+      "endFieldId": "shipments.id",
+      "fields": [
+        {
+          "startFieldId": "shipment_items.shipment_id",
+          "endFieldId": "shipments.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-14",
+      "name": "fk_shipment_items_fulfillment_item_id",
+      "startTableId": "shipment_items",
+      "startFieldId": "shipment_items.fulfillment_item_id",
+      "endTableId": "fulfillment_items",
+      "endFieldId": "fulfillment_items.id",
+      "fields": [
+        {
+          "startFieldId": "shipment_items.fulfillment_item_id",
+          "endFieldId": "fulfillment_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-15",
+      "name": "fk_returns_order_id",
+      "startTableId": "returns",
+      "startFieldId": "returns.order_id",
+      "endTableId": "orders",
+      "endFieldId": "orders.id",
+      "fields": [
+        {
+          "startFieldId": "returns.order_id",
+          "endFieldId": "orders.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-16",
+      "name": "fk_return_items_return_id",
+      "startTableId": "return_items",
+      "startFieldId": "return_items.return_id",
+      "endTableId": "returns",
+      "endFieldId": "returns.id",
+      "fields": [
+        {
+          "startFieldId": "return_items.return_id",
+          "endFieldId": "returns.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-17",
+      "name": "fk_return_items_shipment_item_id",
+      "startTableId": "return_items",
+      "startFieldId": "return_items.shipment_item_id",
+      "endTableId": "shipment_items",
+      "endFieldId": "shipment_items.id",
+      "fields": [
+        {
+          "startFieldId": "return_items.shipment_item_id",
+          "endFieldId": "shipment_items.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    },
+    {
+      "id": "demo-rel-18",
+      "name": "fk_return_items_warehouse_id",
+      "startTableId": "return_items",
+      "startFieldId": "return_items.warehouse_id",
+      "endTableId": "warehouses",
+      "endFieldId": "warehouses.id",
+      "fields": [
+        {
+          "startFieldId": "return_items.warehouse_id",
+          "endFieldId": "warehouses.id"
+        }
+      ],
+      "cardinality": "many_to_one",
+      "updateConstraint": "No action",
+      "deleteConstraint": "No action",
+      "color": "#64748b",
+      "reviewEvidence": {
+        "kind": "physical",
+        "description": "Explicit foreign key in the independently authored example DDL; not a real business database.",
+        "source": "examples/fulfillment.sql"
+      }
+    }
+  ],
+  "reviewGroups": [
+    {
+      "id": "catalog",
+      "name": "商品与库存",
+      "color": "#3276b9",
+      "tableIds": [
+        "products",
+        "warehouses",
+        "inventory"
+      ]
+    },
+    {
+      "id": "orders",
+      "name": "订单与库存占用",
+      "color": "#0f766e",
+      "tableIds": [
+        "customers",
+        "orders",
+        "order_items",
+        "stock_reservations"
+      ]
+    },
+    {
+      "id": "fulfillment",
+      "name": "分仓履约与发货",
+      "color": "#865bb4",
+      "tableIds": [
+        "fulfillments",
+        "fulfillment_items",
+        "shipments",
+        "shipment_items"
+      ]
+    },
+    {
+      "id": "returns",
+      "name": "退货与处置",
+      "color": "#bd7a24",
+      "tableIds": [
+        "returns",
+        "return_items"
+      ]
+    }
+  ],
+  "notes": [],
+  "subjectAreas": [],
+  "views": [],
+  "types": [],
+  "enums": [],
+  "transform": {
+    "pan": {
+      "x": 0,
+      "y": 0
+    },
+    "zoom": 0.4
+  },
+  "processModel": {
+    "version": 1,
+    "scenarios": [
+      {
+        "id": "fulfillment",
+        "name": "订单履约 / Fulfillment",
+        "description": "虚构流程示意：库存不足取消，满足后占用、分仓并发货。不是从 DDL 或真实日志推导的流程；部分发货、支付和物流签收不在本场景中。",
+        "evidence": "人工编写的电商示例规则，仅用于视图对比。",
+        "steps": [
+          {
+            "id": "submitted",
+            "kind": "event",
+            "name": "订单提交",
+            "bindings": []
+          },
+          {
+            "id": "create-order",
+            "kind": "action",
+            "name": "创建订单",
+            "description": "读取客户与商品，创建订单主单及明细。",
+            "bindings": [
+              {
+                "tableId": "customers",
+                "access": "read",
+                "fieldIds": [
+                  "customers.id"
+                ]
+              },
+              {
+                "tableId": "products",
+                "access": "read",
+                "fieldIds": [
+                  "products.id",
+                  "products.sku"
+                ]
+              },
+              {
+                "tableId": "orders",
+                "access": "create",
+                "fieldIds": [
+                  "orders.id",
+                  "orders.customer_id",
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "to": "DRAFT"
+                }
+              },
+              {
+                "tableId": "order_items",
+                "access": "create",
+                "fieldIds": [
+                  "order_items.order_id",
+                  "order_items.product_id",
+                  "order_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "check-stock",
+            "kind": "decision",
+            "name": "库存是否足够？",
+            "description": "示例条件：on_hand - reserved ≥ 订单数量。",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "read",
+                "fieldIds": [
+                  "inventory.on_hand",
+                  "inventory.reserved"
+                ]
+              },
+              {
+                "tableId": "order_items",
+                "access": "read",
+                "fieldIds": [
+                  "order_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "reserve",
+            "kind": "action",
+            "name": "占用库存",
+            "description": "记录库存占用并确认订单，不等同实际出库。",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "update",
+                "fieldIds": [
+                  "inventory.reserved",
+                  "inventory.version"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "create",
+                "fieldIds": [
+                  "stock_reservations.order_item_id",
+                  "stock_reservations.inventory_id",
+                  "stock_reservations.quantity",
+                  "stock_reservations.status"
+                ],
+                "state": {
+                  "fieldId": "stock_reservations.status",
+                  "to": "RESERVED"
+                }
+              },
+              {
+                "tableId": "orders",
+                "access": "update",
+                "fieldIds": [
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "from": "DRAFT",
+                  "to": "CONFIRMED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "allocate",
+            "kind": "action",
+            "name": "分仓生成履约单",
+            "bindings": [
+              {
+                "tableId": "warehouses",
+                "access": "read",
+                "fieldIds": [
+                  "warehouses.id"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "read",
+                "fieldIds": [
+                  "stock_reservations.id"
+                ]
+              },
+              {
+                "tableId": "fulfillments",
+                "access": "create",
+                "fieldIds": [
+                  "fulfillments.id",
+                  "fulfillments.order_id",
+                  "fulfillments.warehouse_id",
+                  "fulfillments.status"
+                ],
+                "state": {
+                  "fieldId": "fulfillments.status",
+                  "to": "PLANNED"
+                }
+              },
+              {
+                "tableId": "fulfillment_items",
+                "access": "create",
+                "fieldIds": [
+                  "fulfillment_items.fulfillment_id",
+                  "fulfillment_items.order_item_id",
+                  "fulfillment_items.reservation_id",
+                  "fulfillment_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "ship",
+            "kind": "action",
+            "name": "登记包裹与发货",
+            "description": "简化演示：一次完成本次履约发货；并非已签收。",
+            "bindings": [
+              {
+                "tableId": "fulfillments",
+                "access": "update",
+                "fieldIds": [
+                  "fulfillments.status"
+                ],
+                "state": {
+                  "fieldId": "fulfillments.status",
+                  "from": "PLANNED",
+                  "to": "SHIPPED"
+                }
+              },
+              {
+                "tableId": "shipments",
+                "access": "create",
+                "fieldIds": [
+                  "shipments.id",
+                  "shipments.fulfillment_id",
+                  "shipments.status",
+                  "shipments.shipped_at"
+                ],
+                "state": {
+                  "fieldId": "shipments.status",
+                  "to": "IN_TRANSIT"
+                }
+              },
+              {
+                "tableId": "shipment_items",
+                "access": "create",
+                "fieldIds": [
+                  "shipment_items.shipment_id",
+                  "shipment_items.fulfillment_item_id",
+                  "shipment_items.quantity"
+                ]
+              },
+              {
+                "tableId": "stock_reservations",
+                "access": "update",
+                "fieldIds": [
+                  "stock_reservations.status"
+                ],
+                "state": {
+                  "fieldId": "stock_reservations.status",
+                  "from": "RESERVED",
+                  "to": "CONSUMED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "cancel",
+            "kind": "action",
+            "name": "取消未占用订单",
+            "bindings": [
+              {
+                "tableId": "orders",
+                "access": "update",
+                "fieldIds": [
+                  "orders.status"
+                ],
+                "state": {
+                  "fieldId": "orders.status",
+                  "from": "DRAFT",
+                  "to": "CANCELLED"
+                }
+              }
+            ]
+          },
+          {
+            "id": "dispatched",
+            "kind": "event",
+            "name": "本次发货已登记",
+            "bindings": []
+          },
+          {
+            "id": "cancelled",
+            "kind": "event",
+            "name": "订单已取消",
+            "bindings": []
+          }
+        ],
+        "flows": [
+          {
+            "id": "f1",
+            "from": "submitted",
+            "to": "create-order",
+            "kind": "normal"
+          },
+          {
+            "id": "f2",
+            "from": "create-order",
+            "to": "check-stock",
+            "kind": "normal"
+          },
+          {
+            "id": "f3",
+            "from": "check-stock",
+            "to": "reserve",
+            "kind": "condition",
+            "label": "库存足够"
+          },
+          {
+            "id": "f4",
+            "from": "check-stock",
+            "to": "cancel",
+            "kind": "condition",
+            "label": "库存不足"
+          },
+          {
+            "id": "f5",
+            "from": "reserve",
+            "to": "allocate",
+            "kind": "normal"
+          },
+          {
+            "id": "f6",
+            "from": "allocate",
+            "to": "ship",
+            "kind": "normal"
+          },
+          {
+            "id": "f7",
+            "from": "ship",
+            "to": "dispatched",
+            "kind": "normal"
+          },
+          {
+            "id": "f8",
+            "from": "cancel",
+            "to": "cancelled",
+            "kind": "normal"
+          }
+        ]
+      },
+      {
+        "id": "returns",
+        "name": "退货处置 / Returns",
+        "description": "虚构售后示意：申请、审核、收货、可售入库或隔离。审核补充资料表现为回流，不涉及支付退款。",
+        "evidence": "人工编写的电商示例规则，非真实事件轨迹。",
+        "steps": [
+          {
+            "id": "request-return",
+            "kind": "action",
+            "name": "创建退货申请",
+            "bindings": [
+              {
+                "tableId": "orders",
+                "access": "read",
+                "fieldIds": [
+                  "orders.id"
+                ]
+              },
+              {
+                "tableId": "shipment_items",
+                "access": "read",
+                "fieldIds": [
+                  "shipment_items.id",
+                  "shipment_items.quantity"
+                ]
+              },
+              {
+                "tableId": "returns",
+                "access": "create",
+                "fieldIds": [
+                  "returns.order_id",
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "to": "REQUESTED"
+                }
+              },
+              {
+                "tableId": "return_items",
+                "access": "create",
+                "fieldIds": [
+                  "return_items.return_id",
+                  "return_items.shipment_item_id",
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "review-return",
+            "kind": "decision",
+            "name": "审核是否通过？",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "read",
+                "fieldIds": [
+                  "returns.status"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "read",
+                "fieldIds": [
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "amend-return",
+            "kind": "action",
+            "name": "补充申请资料",
+            "description": "补充同一退货申请的明细，不重新创建退货单。",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "read",
+                "fieldIds": [
+                  "returns.id",
+                  "returns.status"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.quantity"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "receive-return",
+            "kind": "action",
+            "name": "登记退货收货",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "update",
+                "fieldIds": [
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "from": "REQUESTED",
+                  "to": "RECEIVED"
+                }
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.warehouse_id",
+                  "return_items.disposition"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "restock-check",
+            "kind": "decision",
+            "name": "能否重新销售？",
+            "bindings": [
+              {
+                "tableId": "return_items",
+                "access": "read",
+                "fieldIds": [
+                  "return_items.disposition"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "restock",
+            "kind": "action",
+            "name": "增加可售库存",
+            "bindings": [
+              {
+                "tableId": "inventory",
+                "access": "update",
+                "fieldIds": [
+                  "inventory.on_hand",
+                  "inventory.version"
+                ]
+              },
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.disposition"
+                ],
+                "state": {
+                  "fieldId": "return_items.disposition",
+                  "to": "RESTOCK"
+                }
+              }
+            ]
+          },
+          {
+            "id": "quarantine",
+            "kind": "action",
+            "name": "隔离待处置",
+            "bindings": [
+              {
+                "tableId": "return_items",
+                "access": "update",
+                "fieldIds": [
+                  "return_items.disposition"
+                ],
+                "state": {
+                  "fieldId": "return_items.disposition",
+                  "to": "QUARANTINE"
+                }
+              }
+            ]
+          },
+          {
+            "id": "close-return",
+            "kind": "action",
+            "name": "关闭退货单",
+            "bindings": [
+              {
+                "tableId": "returns",
+                "access": "update",
+                "fieldIds": [
+                  "returns.status"
+                ],
+                "state": {
+                  "fieldId": "returns.status",
+                  "from": "RECEIVED",
+                  "to": "CLOSED"
+                }
+              }
+            ]
+          }
+        ],
+        "flows": [
+          {
+            "id": "r1",
+            "from": "request-return",
+            "to": "review-return",
+            "kind": "normal"
+          },
+          {
+            "id": "r2",
+            "from": "review-return",
+            "to": "amend-return",
+            "kind": "return",
+            "label": "补充资料"
+          },
+          {
+            "id": "r9",
+            "from": "amend-return",
+            "to": "review-return",
+            "kind": "normal",
+            "label": "重新提交"
+          },
+          {
+            "id": "r3",
+            "from": "review-return",
+            "to": "receive-return",
+            "kind": "condition",
+            "label": "通过"
+          },
+          {
+            "id": "r4",
+            "from": "receive-return",
+            "to": "restock-check",
+            "kind": "normal"
+          },
+          {
+            "id": "r5",
+            "from": "restock-check",
+            "to": "restock",
+            "kind": "condition",
+            "label": "可售"
+          },
+          {
+            "id": "r6",
+            "from": "restock-check",
+            "to": "quarantine",
+            "kind": "condition",
+            "label": "不可售"
+          },
+          {
+            "id": "r7",
+            "from": "restock",
+            "to": "close-return",
+            "kind": "normal"
+          },
+          {
+            "id": "r8",
+            "from": "quarantine",
+            "to": "close-return",
+            "kind": "normal"
+          }
+        ]
+      }
+    ]
+  }
+}

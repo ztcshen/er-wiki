@@ -23,3 +23,20 @@ business database. No INSERT statements or personal records are included.
 
 Regenerate the JSON, DDL and static preview after setup with `npm run demo`.
 The default install adds the demo once and never overwrites a user's edited copy.
+# Example language configurations
+
+- `fulfillment.en.drawdb.json`: complete English example content.
+- `fulfillment.zh.drawdb.json`: Chinese example content.
+- `fulfillment.drawdb.json`: existing canonical model, retained for compatibility.
+
+The localized configurations share table/field IDs, names, types, constraints,
+relationships and process bindings. Only explanatory text differs. Either JSON
+can be imported into the desktop app; changing desktop UI language does not
+rewrite an imported model. The official web demo selects the matching example
+configuration when its language changes, retaining the current reading geometry.
+
+After editing the canonical example, run `node scripts/localize-example.mjs`.
+Maintain English text in `fulfillment.en.messages.json`; a missing translation
+fails instead of silently showing Chinese in English mode. `npm run demo` also
+regenerates both configurations. Do not apply this translation dictionary to
+user-authored or private models.

@@ -65,6 +65,14 @@ try {
     ).endsWith("/releases/latest"),
   );
   await capture("desktop-overview.png");
+  assert(!/\p{Script=Han}/u.test(await page.locator('.demo-layout').innerText()),'English model content has no Chinese text');
+  const geometryBefore=await page.locator('[data-eda-scene]').getAttribute('viewBox');
+  await page.getByRole('combobox',{name:'Interface language'}).selectOption('zh');
+  assert((await page.locator('body').innerText()).includes('商品与库存'));
+  await capture('desktop-overview-zh.png');
+  assert.equal(await page.locator('[data-eda-scene]').getAttribute('viewBox'),geometryBefore);
+  await page.getByRole('combobox',{name:'界面语言'}).selectOption('en');
+  assert(!/\p{Script=Han}/u.test(await page.locator('.demo-layout').innerText()));
   const point = await page.locator('[data-eda-wire] path').evaluateAll(es => {
     for(const e of es)for(const ratio of [.5,.3,.7]){
       const p=e.getPointAtLength(e.getTotalLength()*ratio),m=e.getScreenCTM();
@@ -103,6 +111,7 @@ try {
     0,
   );
   await capture("desktop-field.png");
+  assert(!/\p{Script=Han}/u.test(await page.locator('.demo-layout').innerText()),'English field details and enums are translated');
   assert.equal(
     await page.locator(".eda-table-details, .eda-member-list").count(),
     0,
@@ -131,7 +140,7 @@ try {
   await ready();
   await page
     .getByRole("combobox", { name: "Domains" })
-    .selectOption({ label: "分仓履约与发货" });
+    .selectOption({ label: "Fulfillment & shipping" });
   await ready();
   assert.equal(await page.locator('[data-node-kind="table"]').count(), 4);
   await page.getByRole("button", { name: "Overview", exact: true }).click();

@@ -10,6 +10,7 @@ import { createUiLocalizer } from "../scripts/localize-ui.mjs";
 import { rendererAliases } from "../desktop/build/aliases.mjs";
 import { modulePath } from "../desktop/build/paths.mjs";
 import { landingHTML } from './landing.mjs';
+import { writeExampleLocales } from '../scripts/localize-example.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)),
   root = path.dirname(here),
@@ -25,6 +26,7 @@ const { build } = await import(pathToFileURL(require.resolve("vite")));
 const { default: react } = await import(
   pathToFileURL(require.resolve("@vitejs/plugin-react"))
 );
+writeExampleLocales();
 const example = JSON.parse(
   fs.readFileSync(path.join(root, "examples/fulfillment.drawdb.json"), "utf8"),
 );
@@ -63,6 +65,10 @@ for (const [key, options] of locations) {
 }
 const catalogue = {
   model,
+  models:Object.fromEntries(['en','zh'].map(language=>{
+    const value=JSON.parse(fs.readFileSync(path.join(root,`examples/fulfillment.${language}.drawdb.json`),'utf8'));
+    return [language,{tables:value.tables,relationships:value.relationships,groups:value.reviewGroups}];
+  })),
   scopes,
   version: JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"))
     .version,
@@ -123,6 +129,7 @@ for (const [from, to] of [
   ["LICENSE", "LICENSE.txt"],
   ["NOTICE", "NOTICE.txt"],
   ["docs/images/routing-preview.png", "routing-preview.png"],
+  ["docs/images/routing-preview-zh.png", "routing-preview-zh.png"],
   ["docs/images/social-preview.png", "social-preview.png"],
   ["desktop/assets/icon.svg", "icon.svg"],
 ])

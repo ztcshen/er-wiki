@@ -12,10 +12,14 @@
 
 桌面离线优先 · AGPL-3.0 开源 · SQL 本机导入 · 无应用遥测
 
-![当前 Web 渲染器真实效果：虚构电商履约模型的正交关系线与共享连接](docs/images/routing-preview.png)
+![当前 Web 渲染器真实效果：虚构电商履约模型的正交关系线与共享连接](docs/images/routing-preview-zh.png)
 
 13 张虚构表、19 条关系。这是实际渲染器的截图，不是竞品对比或大型 Schema 性能证明。
 打开 demo 可悬停追踪、双击查看字段映射、基数和关联依据。
+
+官方示例提供完整[中文配置](examples/fulfillment.zh.drawdb.json)与
+[英文配置](examples/fulfillment.en.drawdb.json)，切换时分组、字段说明、枚举和备注同步切换，
+表字段 ID 和关系不变。用户自己的桌面模型不会被自动翻译。
 
 源码版本见 [package.json](package.json)；已发布版本与安装包以 Releases 为准。
 
