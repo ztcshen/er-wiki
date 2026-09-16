@@ -30,6 +30,11 @@ test('domain filtering retains boundary labels without silently adding hidden bu
   assert.equal(p.nodes.filter(n => n.kind === 'table').length, 1);
   assert.equal(p.covered.length, 3);
   assert(p.edges.every(e => e.kind === 'label-stub'));
+  // Conditional boundary labels must retain the separate branch pins used by
+  // the full diagram, not collapse unrelated nets onto one geometric port.
+  assert.equal(new Set(p.edges.flatMap(e => e.targets)).size, 3);
+  const inbox = p.nodes.find(n => n.tableId === 'notifications');
+  assert.equal(new Set(inbox.ports.map(p => p.y)).size, 3);
 });
 
 test('ELK places conditional labels and never cuts their full-view paths for length', async () => {

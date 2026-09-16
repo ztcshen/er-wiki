@@ -149,10 +149,10 @@ export function projectModel(model, options={}, longCuts=new Set()) {
       for(const r of wires)connect(branchPort,tablePort(r.startTableId,pairsOf(r).map(p=>p.startFieldId),'WEST',net.condition?r:null),net,[r],net.condition?'conditional':'branch');
     }
     if(labels.length){
-      const ownerPort=tablePort(net.targetTableId,net.targetFields,'EAST');
+      const ownerPort=tablePort(net.targetTableId,net.targetFields,'EAST',net.condition?labels[0]:null);
       if(ownerPort)connect(ownerPort,labelPort(net,'owner','WEST'),net,labels,'label-stub');
       for(const r of labels){
-        const child=tablePort(r.startTableId,pairsOf(r).map(p=>p.startFieldId),'WEST');
+        const child=tablePort(r.startTableId,pairsOf(r).map(p=>p.startFieldId),'WEST',net.condition?r:null);
         if(child)connect(labelPort(net,['child',r.id],'EAST'),child,net,[r],'label-stub');
       }
     }
