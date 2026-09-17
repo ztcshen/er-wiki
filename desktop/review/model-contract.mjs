@@ -17,6 +17,9 @@ schema.properties.relationships.items.properties.fields = {
     properties: { startFieldId: { type: ['string', 'integer'] }, endFieldId: { type: ['string', 'integer'] } } },
 };
 schema.properties.relationships.items.properties.reviewEvidence = { type: 'object' };
+// Optional per-relation presentation hint. Does not change the relationship or
+// its condition; focused views and explicit net expansion still show the wire.
+schema.properties.relationships.items.properties.reviewDisplay = { type: 'string', enum: ['wire', 'reference'] };
 const validator = new Validator();
 const diagnostic = (code, path, message) => ({ code, path, message });
 

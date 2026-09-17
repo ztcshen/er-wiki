@@ -133,7 +133,8 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     for(const r of members){
       const owner=nodes.has(idOf('table',r.endTableId)),child=nodes.has(idOf('table',r.startTableId));
       const cross=domainByTable.get(r.startTableId)?.id!==domainByTable.get(r.endTableId)?.id;
-      const cut=!owner||!child||(!net.condition&&!expanded.has(net.id)&&options.labels!=='off'&&
+      const overviewReference=level==='overview'&&r.reviewDisplay==='reference'&&!expanded.has(net.id);
+      const cut=!owner||!child||overviewReference||(!net.condition&&!expanded.has(net.id)&&options.labels!=='off'&&
         (options.labels==='all'||cross||longCuts.has(r.id)));
       (cut?labels:wires).push(r);covered.add(r.id);
     }
