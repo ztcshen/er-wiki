@@ -21,7 +21,9 @@ const svg = () => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500
 const payloadOf = html => JSON.parse(html.match(/<script type="application\/json" id="erwiki-data">([\s\S]*?)<\/script>/)[1]);
 
 test('single-file reader keeps one complete model and requests all persisted views from the existing render pipeline', async () => {
-  const { exportReadingHtml } = await modulePromise, model = fixture(), before = JSON.stringify(model), result = await resultFor(model);
+  const { exportReadingHtml } = await modulePromise, model = fixture();
+  model.reviewQueries = [{ id: 'missing-docs', name: 'Missing documentation', target: 'fields', filters: { documentation: 'missing' } }];
+  const before = JSON.stringify(model), result = await resultFor(model);
   const calls = [], renders = [], progress = [];
   const html = await exportReadingHtml(model, { title: 'Review', layout: async (value, options) => { assert.equal(value, model); calls.push(options); return result; },
     sceneToSvg: (value, view, props) => { assert.equal(value, result); renders.push({ view, props }); return svg(); }, onProgress: value => progress.push(value) });
@@ -29,7 +31,8 @@ test('single-file reader keeps one complete model and requests all persisted vie
   assert(calls.every(options => options.level === 'overview' && options.showCandidates === false));
   assert(renders.every(render => render.props.showCardinality && render.props.semanticZoom === false));
   const data = payloadOf(html); assert.deepEqual(data.model.tables, model.tables); assert.deepEqual(data.model.relationships, model.relationships);
-  assert.deepEqual(data.model.reviewGroups, model.groups); assert.equal(data.model.format, 'er-wiki'); assert.equal(data.model.schemaVersion, 3);
+  assert.deepEqual(data.model.reviewGroups, model.groups); assert.equal(data.model.format, 'er-wiki'); assert.equal(data.model.schemaVersion, 4);
+  assert.deepEqual(data.model.reviewQueries, model.reviewQueries);
   assert.equal(data.views.length, 2); assert.equal(data.views[1].viewId, 'orders-view');
   assert.equal(data.views[0].snapshot.layout.children.length, model.tables.length);
   assert(!Object.hasOwn(data.views[0], 'projection')); assert(!JSON.stringify(data.views[0].snapshot).includes('customer_id'));
@@ -74,7 +77,7 @@ test('download model uses canonical format, current shared records and complete 
   assert.equal(current.reviewGroups, model.metadata.reviewGroups); assert(!Object.hasOwn(current, 'metadata')); assert(!Object.hasOwn(current, 'groups'));
   const result = await resultFor(model), html = await exportReadingHtml(model, { layout: async () => result, sceneToSvg: svg }), document = payloadOf(html).model;
   assert.deepEqual(document.reviewGroups, model.metadata.reviewGroups); assert.deepEqual(document.notes, model.metadata.notes);
-  assert.equal(document.format, 'er-wiki'); assert.equal(document.schemaVersion, 3); assert(!Object.hasOwn(document, 'metadata'));
+  assert.equal(document.format, 'er-wiki'); assert.equal(document.schemaVersion, 4); assert(!Object.hasOwn(document, 'metadata'));
   assert.throws(() => readingModelDocument({ ...model, metadata: { ...model.metadata, schemaVersion: 999 } }), /newer ER Wiki/);
 });
 
@@ -160,7 +163,7 @@ test('offline reader locates typed table/field/relation identities and downloads
       assert.deepEqual(await page.locator('#reader-diagram .reader-relation-selected').evaluateAll(nodes => nodes.flatMap(n => JSON.parse(n.getAttribute('data-rel-ids')))), ['0']);
       const downloadPromise = page.waitForEvent('download'); await page.locator('#download-model').click(); const download = await downloadPromise;
       const downloaded = JSON.parse(await fs.readFile(await download.path(), 'utf8'));
-      assert.equal(downloaded.format, 'er-wiki'); assert.equal(downloaded.schemaVersion, 3); assert.deepEqual(downloaded.reviewGroups, model.metadata.reviewGroups);
+      assert.equal(downloaded.format, 'er-wiki'); assert.equal(downloaded.schemaVersion, 4); assert.deepEqual(downloaded.reviewGroups, model.metadata.reviewGroups);
       assert.deepEqual(requireValidModelDocument(downloaded, { typeInfo: () => ({ isSized: false, hasPrecision: false, canIncrement: true }) }).model.tables.map(table => table.id), [0, '0']);
       assert.deepEqual(downloaded.relationships.map(r => r.id), [0, '0']); assert(!Object.hasOwn(downloaded, 'metadata'));
       await page.close();

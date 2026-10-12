@@ -17,6 +17,7 @@ export function importModel(json, filename) {
     types: data.types || [], enums: data.enums || [], reviewGroups: modelGroups(data.reviewGroups, data.tables),
     processModel: data.processModel ?? null,
     diagramViews: data.diagramViews,
+    reviewQueries: data.reviewQueries,
     pan: validView ? transform.pan : { x: 1305, y: 961.5 }, zoom: validView ? transform.zoom : 0.4,
     gistId: '', loadedFromGistId: '', lastModified: new Date(),
   };
@@ -30,6 +31,7 @@ export function exportModel(snapshot) {
     views: snapshot.views || [], types: snapshot.types || [], enums: snapshot.enums || [],
     processModel: snapshot.processModel ?? null,
     diagramViews: snapshot.diagramViews ?? [],
+    reviewQueries: snapshot.reviewQueries ?? [],
     transform: { pan: snapshot.pan, zoom: snapshot.zoom },
   }).model, null, 2);
 }

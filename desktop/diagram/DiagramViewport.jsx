@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from "react";
 import { clientPointToWorld, zoomAtPoint } from "../eda/camera.mjs";
 
 // Shared viewport interaction only; ER and process semantics have separate renderers.
-export default function DiagramViewport({ view, onView, children, label }) {
+export default function DiagramViewport({ view, onView, children, label, onViewEnd }) {
   const svg = useRef(null),
     drag = useRef(null),
     update = useRef(onView);
@@ -60,10 +60,10 @@ export default function DiagramViewport({ view, onView, children, label }) {
         ]);
       }}
       onPointerUp={() => {
-        drag.current = null;
+        drag.current = null; onViewEnd?.();
       }}
       onPointerCancel={() => {
-        drag.current = null;
+        drag.current = null; onViewEnd?.();
       }}
     >
       <defs>

@@ -15,7 +15,7 @@ export function integrateReplacement(code) {
       "const applyDiagramState = (diagram) => {",
       "const applyDiagramState = useCallback((diagram) => {",
     );
-  body = body.slice(0, -2) + "}, [setDatabase, setTables, setRelationships, setAreas, setReviewGroups, setGroupView, setNotes, setTransform, setTypes, setEnums, setViews, setSaveState, setDiagramViews]);";
+  body = body.slice(0, -2) + "}, [setDatabase, setTables, setRelationships, setAreas, setReviewGroups, setGroupView, setNotes, setTransform, setTypes, setEnums, setViews, setSaveState, setDiagramViews, setReviewQueries]);";
   code = code.slice(0, start) + code.slice(end);
   code = replaceOnce(code,
     "  const load = useCallback(async () => {",

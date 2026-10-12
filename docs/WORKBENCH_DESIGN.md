@@ -17,6 +17,24 @@ User-supplied names and descriptions are rendered as React text, not raw HTML.
 
 ## UI decisions
 
+- Reading workspaces store a small split/leaf tree, active context tab, selected
+  object and camera under a per-model local key. Persistence is gated by current
+  index and layout readiness, debounced during navigation and flushed on close.
+  Restoring a named workspace prunes missing objects instead of cloning definitions.
+- The object index builds searchable table/field records and resolves relationships
+  in two stages. A workspace owns one reusable worker; replacement, timeout and
+  disposal reject obsolete jobs. Content records cache text and IDs, while query
+  and reference results resolve current shared model objects. Frame mailboxes
+  coalesce camera and drag previews and discard callbacks from old scopes.
+- Review queries persist a constrained filter definition in model format v4,
+  separately from the currently selected query and local workspace. Built-in
+  candidate, missing-documentation and unresolved-reference queries remain available
+  without modifying the model. No query expression is executed as JavaScript or SQL.
+- Layout cache schema v2 separates scope identity records from immutable geometry
+  blobs addressed by version and content checksum. Identical blobs share storage;
+  pruning identities garbage-collects unreferenced content. Existing v1 cache
+  records are read lazily; the editable model database is not migrated.
+
 - Completed layouts are cached by model and reading scope in a separate disposable
   IndexedDB database (`erwiki-layout-cache`), with a small in-memory front cache.
   Only geometry and routing diagnostics are stored: current table/field text,

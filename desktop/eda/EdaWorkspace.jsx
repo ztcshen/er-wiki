@@ -12,7 +12,20 @@ import { checkModel } from "../review/model-checks.mjs";
 import StructureChecks from "../review/StructureChecks";
 import { useReadingSession } from "./useReadingSession";
 import { useSchematicLayout } from "./useSchematicLayout";
-import { searchModel } from "./reading-state.mjs";
+import { scopeKey } from "./reading-state.mjs";
+import { useModelIndex } from './useModelIndex';
+import { searchModelIndex } from './model-index.mjs';
+import { useFrameValue } from './useFrameValue';
+import { useReadingPersistence } from './useReadingPersistence';
+import { useReadingWorkspaces } from './useReadingWorkspaces';
+import { contextLayout } from './reading-layout.mjs';
+import ReadingWorkbenchBar from './ReadingWorkbenchBar';
+import ReadingContextPane from './ReadingContextPane';
+import ObjectReferences from './ObjectReferences';
+import ReviewQueries from './ReviewQueries';
+import ReviewQueryEditor from './ReviewQueryEditor';
+import { validateReviewQueries, cleanReviewQuery } from './review-queries.mjs';
+import { assertReadableDraft } from '../renderer/model-content.mjs';
 import {
   actualSizeView,
   focusNodeView,
@@ -44,8 +57,9 @@ import ProcessConfig from "../process/ProcessConfig";
 import "../process/process.css";
 import "./eda.css";
 import './diagram-views.css';
+import './reading-workbench.css';
 
-export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagramViews = [], setDiagramViews, modelMetadata = {} }) {
+export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagramViews = [], setDiagramViews, reviewQueries = [], setReviewQueries, modelMetadata = {} }) {
   const {
     tables,
     relationships,
@@ -67,6 +81,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
   const [checksOpen, setChecksOpen] = useState(false);
   const [viewEditor, setViewEditor] = useState(false), [readingExport, setReadingExport] = useState(false);
   const [candidatesOpen, setCandidatesOpen] = useState(false), [dragPreview, setDragPreview] = useState(null), [viewError, setViewError] = useState('');
+  const [queryEditor, setQueryEditor] = useState(false);
   const pendingRelation = useRef(null);
   const [relationPopup,setRelationPopup]=useState(null);
   useEffect(()=>setRelationPopup(null),[modelId,reader.mode]);
@@ -103,12 +118,13 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
       tables,
       relationships,
       groups: modelGroups(reviewGroups, tables),
-      database, title, diagramViews,
+      database, title, diagramViews, reviewQueries,
       metadata: modelMetadata,
     }),
-    [tables, relationships, reviewGroups, database, title, diagramViews, modelMetadata],
+    [tables, relationships, reviewGroups, database, title, diagramViews, reviewQueries, modelMetadata],
   );
-  const reading = useReadingSession(modelId, model, ready);
+  const indexed = useModelIndex(model, ready);
+  const reading = useReadingSession(modelId, model, ready && indexed.ready);
   const activeView = diagramViews.find(v => v.id === reading.location.diagramViewId);
   const editableView = activeView && reading.location.level === 'overview' && !layout.readOnly;
   useEffect(() => {
@@ -121,9 +137,43 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
       checkModel(model, { typeInfo: (type) => resolveType(database, type) }),
     [model, database],
   );
-  const schematic = useSchematicLayout(modelId, model, reading, ready);
+  const schematic = useSchematicLayout(modelId, model, reading, ready && indexed.ready);
   const { result, current: currentResult, busy, error } = schematic;
-  const { view, setView } = reading;
+  const { view } = reading;
+  const camera = useFrameValue(view, reading.setView, schematic.key);
+  const dragFrames = useFrameValue(dragPreview, setDragPreview, schematic.key);
+  const setView = camera.set;
+  const settled = ready && indexed.ready && (!tables.length || result && currentResult && !busy || Boolean(error));
+  useReadingPersistence(modelId, reading, settled, camera);
+  const workspaces = useReadingWorkspaces(modelId, settled);
+  const context = reading.layout.children.find(item => item.id === 'context');
+  const openContext = active => {
+    setChecksOpen(false); setCandidatesOpen(false);
+    reading.setReadingLayout(value => contextLayout(value, { active, visible: true }));
+  };
+  useEffect(() => {
+    if (reading.location.selectedTable != null || reading.location.selectedNet != null)
+      reading.setReadingLayout(value => contextLayout(value, { visible: true }));
+  }, [reading.location.selectedTable, reading.location.selectedField, reading.location.selectedNet]);
+  const saveWorkspace = name => {
+    if (!settled) return false;
+    camera.flush();
+    const state = reading.getState(), k = scopeKey(state.location);
+    return workspaces.save(name, { location: state.location, view: state.views[k] || camera.latest,
+      collapsedDomains: state.collapsedDomains, layout: { ...state.layout, directoryVisible: showDirectory }, queryId: state.queryId });
+  };
+  const loadWorkspace = id => {
+    const saved = workspaces.workspaces.find(w => w.id === id); if (!saved || !settled) return false;
+    try { assertReadableDraft(document); } catch { setViewError(tr('请完成或取消当前编辑后切换工作区')); return false; }
+    camera.clear(); dragFrames.clear(); setDragPreview(null); setSearch(''); setFieldNets([]); setChecksOpen(false); setCandidatesOpen(false);
+    reading.restoreWorkspace(saved.snapshot); setViewError(''); switchMode('er'); return true;
+  };
+  const saveQuery = query => {
+    if (layout.readOnly || !setReviewQueries) return false;
+    validateReviewQueries([query]); const next = cleanReviewQuery(query);
+    setReviewQueries(values => values.some(q => q.id === next.id) ? values.map(q => q.id === next.id ? next : q) : [...values, next]);
+    reading.setQueryId(next.id); setQueryEditor(false); openContext('queries'); return true;
+  };
   const { selectedNet, selectedTable, selectedField } = reading.location;
   const selectedRelationshipIds = useMemo(() => selectedField == null ? null : fieldRelationshipIds(relationships, selectedTable, selectedField), [relationships, selectedTable, selectedField]);
   const switchMode = (mode) => {
@@ -162,7 +212,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
   const setTable = reading.setPart("selectedTable"),
     setField = reading.setPart("selectedField");
   const domains = useMemo(() => domainsOf(model), [model]);
-  const matches = useMemo(() => searchModel(model, search), [model, search]);
+  const matches = useMemo(() => indexed.ready ? searchModelIndex(indexed.index, model, search) : [], [model, search, indexed.index, indexed.ready]);
   const net = currentResult
     ? result?.projection.nets.find((n) => n.id === selectedNet)
     : null;
@@ -178,8 +228,8 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
   const visibleTableCount = currentResult
     ? result?.projection.nodes.filter((n) => n.kind === "table").length
     : null;
-  const showDirectory = settings.edaDirectory !== false,
-    showInspector = checksOpen || candidatesOpen || !!(net || infoTable);
+  const showDirectory = reading.layout.directoryVisible ?? (settings.edaDirectory !== false),
+    showInspector = checksOpen || candidatesOpen || context.visible;
   useEffect(() => {
     document.body.classList.add("eda-reading");
     setSelectedElement((s) => ({
@@ -193,6 +243,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
     return () => document.body.classList.remove("eda-reading");
   }, [setSelectedElement, setBulkSelectedElements]);
   const navigate = (...args) => {
+    camera.clear(); dragFrames.clear();
     setSearch("");
     setFieldNets([]);
     if (!Object.hasOwn(args[3] || {}, 'diagramViewId')) args[3] = { ...args[3], diagramViewId: '' };
@@ -212,7 +263,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
     setDiagramViews(views => views.map(v => v.id === activeView.id ? captureViewGeometry(v, result) : v));
   };
   const moveTable = (tableId, x, y) => {
-    setDragPreview(null);
+    dragFrames.clear(); setDragPreview(null);
     if (!editableView || !currentResult) return;
     const node = tableNode(tableId);
     if (!node) return;
@@ -233,7 +284,19 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
     navigate('overview', '', null, { diagramViewId: '', showCandidates: true, selectedNet: value?.id, selectedRelation: relation.id });
     pendingRelation.current = relation.id; setFocusRequest(n => n + 1);
   };
+  const locateReference = relation => {
+    const value = deriveNets(model, { showCandidates: true }).find(n => n.members.some(r => r.id === relation.id));
+    navigate('overview', '', null, { diagramViewId: '', showCandidates: isCandidateRelation(relation), selectedNet: value?.id || null, selectedRelation: relation.id,
+      selectedTable: value ? null : tables.some(t => t.id === relation.startTableId) ? relation.startTableId : null });
+    pendingRelation.current = relation.id; setFocusRequest(n => n + 1);
+  };
+  const locateQueryResult = row => {
+    if (row.type === 'relationship') { const relation = relationships.find(r => r.id === row.relationshipId); if (relation) locateReference(relation); return; }
+    if (row.type === 'field') selectField(row.tableId, row.fieldId, true);
+    else { navigate('column', domains.find(d => d.tableIds.includes(row.tableId))?.id || '', row.tableId, { selectedTable: row.tableId }); pendingFocus.current = row.tableId; setFocusRequest(n => n + 1); }
+  };
   const clearSelection = () => {
+    reading.setReadingLayout(value => contextLayout(value, { visible: false }));
     pendingFocus.current = null;
     pendingRelation.current = null;
     setNet(null);
@@ -336,6 +399,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
     const handle = ({ detail }) => {
       const action = typeof detail === "string" ? detail : detail?.action;
       if (action === "model-replaced") {
+        setQueryEditor(false);
         switchMode("er");
         setChecksOpen(false);
         setTools(null);
@@ -348,11 +412,20 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
       }
       if (action === "check-model") {
         switchMode("er");
+        reading.setReadingLayout(value => contextLayout(value, { active: 'details', visible: true }));
         setChecksOpen(true);
         return;
       }
       if (action === 'new-reading-view' && !layout.readOnly) { switchMode('er'); setViewEditor(true); return; }
-      if (action === 'export-reader') { setReadingExport(true); return; }
+      if (action === 'export-reader') { if (settled) setReadingExport(true); return; }
+      if (action === 'show-object-references') { openContext('references'); return; }
+      if (action === 'show-review-queries') { openContext('queries'); return; }
+      if (action === 'new-review-query' && !layout.readOnly) { openContext('queries'); setQueryEditor(true); return; }
+      if (action === 'save-reading-workspace') { detail?.resolve?.(saveWorkspace(detail.name || '阅读工作区')); return; }
+      if (action === 'load-reading-workspace') { detail?.resolve?.(loadWorkspace(detail.id)); return; }
+      if (action === 'set-reading-layout') { reading.setReadingLayout(value => ({ ...contextLayout(value, { active: detail.context || context.active, visible: detail.visible !== false }), direction: detail.direction || value.direction, directoryVisible: detail.directoryVisible ?? value.directoryVisible })); return; }
+      if (action === 'select-reading-query') { reading.setQueryId(detail.id); openContext('queries'); return; }
+      if (action === 'save-review-query' && !layout.readOnly) { try { detail.resolve?.(saveQuery(detail.query)); } catch (e) { detail.resolve?.({ error: e.message }); } return; }
       if (
         reader.mode !== "er" &&
         ["fit", "zoom-in", "zoom-out", "arrange"].includes(action)
@@ -382,7 +455,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
       else if (action === "arrange") arrangeCurrent();
       else if (action === "focus-selection") focusTable(selectedTable, selectedField);
       else if (action === "toggle-directory")
-        setSettings((s) => ({ ...s, edaDirectory: s.edaDirectory === false }));
+        reading.setReadingLayout(value => ({ ...value, directoryVisible: !showDirectory }));
       else if (action === "zoom-in" || action === "zoom-out")
         zoomView(action === "zoom-in" ? 1 / 1.2 : 1.2);
       else if (
@@ -521,6 +594,9 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
       aria-label="EDA 分析工作台"
       data-eda-model={modelId}
       data-eda-view={reading.location.diagramViewId}
+      data-index-ready={indexed.ready ? "true" : undefined}
+      data-index-phase={indexed.phase?.phase}
+      data-reading-settled={settled ? "true" : undefined}
     >
       {reader.mode === "flow" && (
         <div className="process-switchbar">
@@ -567,11 +643,14 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
       <div
         className={`process-original-er ${reader.mode !== "er" ? "is-hidden" : ""}`}
       >
-        <DiagramViewsBar views={diagramViews} active={activeView} onSelect={selectView} onCreate={() => setViewEditor(true)} onEdit={() => setViewEditor(activeView)} onCapture={capturePositions} onExport={() => setReadingExport(true)} onCandidates={() => { setChecksOpen(false); setCandidatesOpen(v => !v); }} candidateCount={relationships.filter(isCandidateRelation).length} showCandidates={reading.location.showCandidates} onShowCandidates={reading.setPart('showCandidates')} busy={busy || !currentResult} readOnly={layout.readOnly}/>
+        <DiagramViewsBar views={diagramViews} active={activeView} onSelect={selectView} onCreate={() => setViewEditor(true)} onEdit={() => setViewEditor(activeView)} onCapture={capturePositions} onExport={() => { if (settled) setReadingExport(true); }} onCandidates={() => { setChecksOpen(false); reading.setReadingLayout(value => contextLayout(value, { active: 'details', visible: true })); setCandidatesOpen(v => !v); }} candidateCount={relationships.filter(isCandidateRelation).length} showCandidates={reading.location.showCandidates} onShowCandidates={reading.setPart('showCandidates')} busy={!settled} readOnly={layout.readOnly}/>
+        <ReadingWorkbenchBar reading={reading} workspaces={workspaces.workspaces} ready={settled} onSave={saveWorkspace} onLoad={loadWorkspace} onRemove={workspaces.remove}
+          onContext={openContext} onDirection={direction => reading.setReadingLayout(value => ({ ...value, direction }))}
+          status={!indexed.ready ? '正在更新对象索引…' : busy ? '正在整理布局…' : '阅读已就绪'} error={workspaces.error || indexed.error}/>
         <EdaToolbar
           issues={structureIssues}
           checksOpen={checksOpen}
-          onCheck={() => setChecksOpen((value) => !value)}
+          onCheck={() => { reading.setReadingLayout(value => contextLayout(value, { active: 'details', visible: true })); setCandidatesOpen(false); setChecksOpen(value => !value); }}
           leading={reader.mode === "er" ? viewSwitcher : null}
           model={model}
           domains={domains}
@@ -587,6 +666,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
           arrange={arrangeCurrent}
         />
         {viewError && <p role="alert" className="eda-warning">{viewError}</p>}
+        {indexed.error && <p role="alert" className="eda-warning">{tr(indexed.error)} <button onClick={indexed.retry}>{tr('重建索引')}</button></p>}
         {reading.error && (
           <p role="alert" className="eda-warning">
             {tr(reading.error)}
@@ -598,6 +678,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
         {currentResult && error && <p role="status" className="eda-warning">{tr(error)}</p>}
         <div
           className="eda-body"
+          data-split-direction={reading.layout.direction}
           data-directory={showDirectory}
           data-inspector={showInspector}
         >
@@ -642,13 +723,14 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
                 scale={viewScale(view, viewport)}
                 semanticZoom={settings.edaSemanticZoom !== false}
                 dragPreview={dragPreview}
-                onDragPreview={editableView && currentResult && !busy ? setDragPreview : undefined}
+                onDragPreview={editableView && currentResult && !busy ? dragFrames.set : undefined}
                 onNodeMove={editableView && currentResult && !busy ? moveTable : undefined}
                 selectedNet={selectedNet}
                 selectedRelation={selectedRelation}
                 showCardinality={settings.edaCardinality !== false}
                 view={view}
                 onView={setView}
+                onViewEnd={() => camera.flush()}
                 onEdit={editTable}
                 onExplain={setRelationPopup}
                 onNode={(node) => {
@@ -719,6 +801,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
                     view={view}
                     viewport={viewport}
                     onView={setView}
+                onViewEnd={() => camera.flush()}
                     onFit={fitView}
                   />
                 )}
@@ -772,31 +855,14 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
               </>
             )}
           </div>
-          {checksOpen ? (
-            <StructureChecks
-              onClose={() => setChecksOpen(false)}
-              issues={structureIssues}
-              onLocate={locateIssue}
-              onEdit={editIssue}
-              readOnly={layout.readOnly}
-            />
-          ) : candidatesOpen ? <CandidateRelationships model={model} onClose={() => setCandidatesOpen(false)} onLocate={locateCandidate}/> : (
-            showInspector && (
-              <EdaInspector
-                selection={{
-                  net,
-                  table: infoTable,
-                  field: fieldInfo,
-                  alternatives: fieldNets,
-                  selectedRelation,
-                }}
-                tables={tables}
-                relationships={relationships}
-                actions={inspectorActions}
-                readOnly={layout.readOnly}
-              />
-            )
-          )}
+          {showInspector && <ReadingContextPane active={context.active} onSelect={openContext} onClose={() => { setChecksOpen(false); setCandidatesOpen(false); reading.setReadingLayout(value => contextLayout(value, { visible: false })); }}>
+            {context.active === 'references' ? <ObjectReferences model={model} index={indexed.ready ? indexed.index : null} tableId={selectedTable} fieldId={selectedField} onLocate={locateReference}/>
+              : context.active === 'queries' ? <ReviewQueries model={model} index={indexed.ready ? indexed.index : null} queryId={reading.queryId} onSelect={reading.setQueryId} onNew={() => setQueryEditor(true)} onEdit={setQueryEditor} onLocate={locateQueryResult} readOnly={layout.readOnly}/>
+              : checksOpen ? <StructureChecks onClose={() => setChecksOpen(false)} issues={structureIssues} onLocate={locateIssue} onEdit={editIssue} readOnly={layout.readOnly}/>
+              : candidatesOpen ? <CandidateRelationships model={model} onClose={() => setCandidatesOpen(false)} onLocate={locateCandidate}/>
+              : net || infoTable ? <EdaInspector selection={{ net, table: infoTable, field: fieldInfo, alternatives: fieldNets, selectedRelation }} tables={tables} relationships={relationships} actions={inspectorActions} readOnly={layout.readOnly}/>
+              : <div className="reading-context-empty">{tr('选择表、字段或关系查看说明')}</div>}
+          </ReadingContextPane>}
         </div>
       </div>
       {reader.mode !== "er" && (
@@ -842,6 +908,8 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
       />
       <EdaEditors tools={tools} setTools={setTools} />
       {viewEditor !== false && <DiagramViewEditor key={viewEditor?.id || 'new'} view={viewEditor === true ? null : viewEditor} model={model} onSave={saveView} onDelete={id => { setDiagramViews(views => views.filter(v => v.id !== id)); setViewEditor(false); selectView(''); }} onClose={() => setViewEditor(false)} readOnly={layout.readOnly}/>}
+      {queryEditor !== false && <ReviewQueryEditor key={queryEditor?.id || 'new'} query={queryEditor === true ? null : queryEditor} groups={model.groups} onSave={saveQuery}
+        onDelete={id => { if (layout.readOnly) return; setReviewQueries(values => values.filter(q => q.id !== id)); reading.setQueryId(''); setQueryEditor(false); }} onClose={() => setQueryEditor(false)} readOnly={layout.readOnly}/>}
       {readingExport && <ReadingExport model={model} title={title} diagramViews={diagramViews} onClose={() => setReadingExport(false)}/>}
       {relationPopup&&<RelationPopup request={relationPopup} tables={tables} relationships={relationships} onClose={()=>setRelationPopup(null)}/>}
       {reader.mode === "er" && (

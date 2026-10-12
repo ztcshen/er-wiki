@@ -20,6 +20,7 @@ export function useSchematicLayout(modelId, model, reading, ready) {
   const [completed, setCompleted] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [failedKey, setFailedKey] = useState(null);
   const [improvement, setImprovement] = useState(null);
   const latest = useRef(null);
   const userIntent = useRef(0);
@@ -32,17 +33,18 @@ export function useSchematicLayout(modelId, model, reading, ready) {
   const job = useRef(null),
     sequence = useRef(0), forceNext = useRef(null);
   const key = JSON.stringify([modelId, shape, viewKey, revision]);
+  const currentError = failedKey === key ? error : '';
   const result = useMemo(() => refreshLayoutContent(raw, model), [raw, model]);
   useEffect(() => {
     let obsolete = false;
     modelGeometryIdentity(model).then(layoutIdentity => {
       if (obsolete) return;
       layoutObserver.report({ modelId, layoutIdentity,
-        layoutStatus: location.level !== 'overview' ? 'pending' : error ? 'failed' : completed === key && raw ? (raw.status === 'degraded' ? 'degraded' : 'ready') : 'pending',
-        layoutMessage: error || raw?.validity?.reasons?.join(', ') || null });
+        layoutStatus: location.level !== 'overview' ? 'pending' : currentError ? 'failed' : completed === key && raw ? (raw.status === 'degraded' ? 'degraded' : 'ready') : 'pending',
+        layoutMessage: currentError || raw?.validity?.reasons?.join(', ') || null });
     }).catch(() => {});
     return () => { obsolete = true; };
-  }, [modelId, model, raw, completed, key, error]);
+  }, [modelId, model, raw, completed, key, currentError]);
   useEffect(() => {
     if (!ready || !input.model.tables.length) {
       setRaw(null);
@@ -62,6 +64,7 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     forceNext.current = null;
     setBusy(false);
     setError("");
+    setFailedKey(null);
     const task = createCachedLayoutTask({
       modelId, scope: viewKey, ...input, cache: desktopLayoutCache(), force,
       onCompute: () => { if (sequence.current === id) setBusy(true); },
@@ -97,7 +100,7 @@ export function useSchematicLayout(modelId, model, reading, ready) {
         })
         .catch((failure) => {
           if (sequence.current !== id) return;
-          if (failure.code !== "LAYOUT_CANCELLED") setError(failure.message);
+          if (failure.code !== "LAYOUT_CANCELLED") { setError(failure.message); setFailedKey(key); }
           setBusy(false);
         });
     return () => {
@@ -113,12 +116,13 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     setBusy(false);
     setImprovement(null);
     setError("已取消布局，原模型未改变。");
+    setFailedKey(key);
   };
   return {
-    result,
-    current: ready && completed === key,
+    result, key,
+    current: ready && completed === key && Boolean(raw),
     busy,
-    error,
+    error: currentError,
     cancel,
     hasImprovement: improvement?.key === key && improvement?.id === sequence.current,
     applyImprovement: () => {

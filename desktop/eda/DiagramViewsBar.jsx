@@ -9,6 +9,6 @@ export default function DiagramViewsBar({ views, active, onSelect, onCreate, onE
     <span className="diagram-view-spacer"/>
     {candidateCount > 0 && <label className="diagram-candidate-toggle"><input type="checkbox" checked={showCandidates} onChange={e => onShowCandidates(e.target.checked)}/>{tr('显示候选')}</label>}
     <button onClick={onCandidates} aria-label={tr('候选关联')}>{tr('候选')} <span>{candidateCount}</span></button>
-    <button className="diagram-reading-export" onClick={onExport} aria-label={tr('导出阅读器')}><i className="bi bi-file-earmark-richtext" aria-hidden="true"/> {tr('导出阅读器')}</button>
+    <button className="diagram-reading-export" disabled={busy} onClick={onExport} aria-label={tr('导出阅读器')}><i className="bi bi-file-earmark-richtext" aria-hidden="true"/> {tr('导出阅读器')}</button>
   </div>;
 }

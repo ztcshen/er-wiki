@@ -33,7 +33,7 @@ is saved with the model; camera movement and reading bookmarks remain local.
 “阅读视图”在完整模型与命名视图之间切换。新建或编辑视图时选择表，在“当前视图显示设置”
 中配置颜色与字段。不同视图共享表定义，拖动表头只修改当前视图的位置；“保存当前布局”
 记录当前排列，“整理”重新自动摆放。视图随模型保存、备份和 JSON 导出，平移缩放仍只记忆在本机。
-新文档格式为版本 3，兼容读取既有版本 0–2；原模型在用户保存前不会被格式化重写。
+新文档格式为版本 4，兼容读取既有版本 0–3；旧文件导入后补空的审查查询列表，表与关系不被改写。
 
 Relationships can be explicitly marked as candidates. The candidate panel retains
 their evidence and can confirm them as logical relationships. Candidates are
@@ -43,6 +43,36 @@ an explicit model assertion rather than database verification.
 
 关系编辑里的“确认状态”可设置候选。候选保留依据，正常图与 SQL 外键导出默认排除；
 “显示候选”用于预览，“确认为逻辑关联”才进入正式图。确认状态和物理／逻辑性质是不同维度。
+
+## Reading workspaces and queries / 阅读工作区与审查查询
+
+The workbench bar saves named reading workspaces for the current model. A workspace
+records the selected view and object, camera, folded directory groups, split
+orientation and active context tab. Choose its name to restore it. Workspaces stay
+on this computer and do not mark the model dirty; saving the same name updates it.
+Restoration waits for the current model index and layout, and deleted objects are
+pruned. Up to 30 workspaces are kept per model.
+
+“阅读工作区”栏输入名称后保存，之后从列表恢复同一阅读场景。左右／上下分屏、上下文标签、
+目录状态、字段选择和视角都会记忆；同名保存更新原工作区。每个模型最多 30 个，保存在本机，
+不随模型 JSON 导出，也不改变模型保存时间。重载时先完成模型索引与当前布局，再写入阅读状态。
+
+Select a table or field and choose Object references to inspect incoming and
+outgoing relationships. Candidate and unresolved references retain their status
+and recorded evidence. They are not silently promoted to confirmed links.
+
+选中表或字段后打开“对象引用”，查看入向、出向关联及已有依据。待确认关系与端点异常会单独标注，
+可定位原关系。表、字段与查询结果都引用同一份模型定义。
+
+Review queries include candidates, undocumented fields and unresolved references.
+New query chooses tables, fields or relationships and filters by group, text,
+documentation and relationship state/nature. Results are computed from current
+definitions; only the declarative query is saved with the model, backup and JSON
+export. Read-only mode permits reading but not changing query definitions.
+
+“审查查询”内置待确认关系、未补字段说明和异常关联。新建查询选择对象类型、分组、说明完整性、
+包含文字等条件；关系还可筛选确认状态与性质。保存的是规则，结果随当前模型更新；保存模型后
+查询会进入备份与 JSON 导出。查询不执行代码或 SQL，每个模型最多 100 条自定义规则。
 
 ## Offline reading export / 离线阅读器
 
@@ -153,7 +183,8 @@ snapshots per model, with an overall limit of 200. A successful new backup may
 remove older backups above those limits. These are not off-device backups;
 export JSON to your own backup location for disaster recovery.
 
-新格式含 `format: "er-wiki"` 和 `schemaVersion: 2`，保留流程定义。旧 drawDB JSON 与 v1 文件仍可导入。
+新格式含 `format: "er-wiki"` 和 `schemaVersion: 4`，保留流程定义、阅读视图和审查查询。
+旧 drawDB JSON 与版本 1–3 文件仍可导入；本机工作区、书签与可重建缓存不属于共享模型文件。
 遇到高于当前支持版本的文件会拒绝导入并提示升级，不会尝试破坏性降级。
 
 ## Export / 导出

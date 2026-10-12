@@ -153,6 +153,9 @@ export const commandCatalogue = [
     keywords: "copy image png clipboard",
   },
   { id: 'view.new', label: '新建阅读视图', group: '阅读', icon: 'collection', target: 'eda', action: 'new-reading-view', mutating: true, tables: true, keywords: 'new diagram view reading scene' },
+  { id: 'reading.references', label: '对象引用', group: '阅读', icon: 'link-45deg', target: 'eda', action: 'show-object-references', tables: true, keywords: 'incoming outgoing references backlinks fields' },
+  { id: 'reading.queries', label: '审查查询', group: '阅读', icon: 'filter', target: 'eda', action: 'show-review-queries', tables: true, keywords: 'review query candidates undocumented unresolved' },
+  { id: 'reading.query.new', label: '新建审查查询', group: '阅读', icon: 'plus-square', target: 'eda', action: 'new-review-query', mutating: true, tables: true, keywords: 'save new review query filters' },
   { id: 'export.reader', label: '导出离线阅读器', group: '导入与导出', icon: 'file-earmark-richtext', target: 'eda', action: 'export-reader', tables: true, keywords: 'export offline html reader documentation' },
   {
     id: "view.overview",

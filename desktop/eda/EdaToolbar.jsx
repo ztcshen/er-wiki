@@ -23,7 +23,7 @@ export default function EdaToolbar({
   const candidateCount = relationships.filter(isCandidateRelation).length;
   const { level, tableId } = reading.location;
   const scopeTable = tables.find((table) => table.id === tableId);
-  const showDirectory = settings.edaDirectory !== false;
+  const showDirectory = reading.layout.directoryVisible ?? (settings.edaDirectory !== false);
   const scopeName =
     level === "system"
       ? tr("领域概览")
@@ -50,12 +50,7 @@ export default function EdaToolbar({
           aria-label={showDirectory ? "收起目录" : "展开目录"}
           aria-pressed={showDirectory}
           title="显示或收起目录"
-          onClick={() =>
-            setSettings((s) => ({
-              ...s,
-              edaDirectory: s.edaDirectory === false,
-            }))
-          }
+          onClick={() => reading.setReadingLayout(value => ({ ...value, directoryVisible: !showDirectory }))}
         >
           <i className="bi bi-layout-sidebar" aria-hidden="true" />
         </button>

@@ -1,3 +1,4 @@
+import { cleanReadingLayout } from './reading-layout.mjs';
 export const LEVELS = ['overview', 'system', 'domain', 'table', 'column'];
 const isId = value => typeof value === 'string' && value.length < 1000 || typeof value === 'number' && Number.isFinite(value);
 export const validView = v => Array.isArray(v) && v.length === 4 && v.every(Number.isFinite) &&
@@ -36,7 +37,8 @@ export function normalizeReadingState(value) {
     .slice(-50).map(b => ({ id: b.id.slice(0, 100), name: b.name.slice(0, 120), location: cleanLocation(b.location),
       view: validView(b.view) ? b.view : null }));
   const collapsedDomains = Array.isArray(v.collapsedDomains) ? [...new Set(v.collapsedDomains.filter(isId))].slice(0, 2000) : [];
-  return { version: 1, location: cleanLocation(v.location), views, bookmarks, collapsedDomains };
+  return { version: 1, location: cleanLocation(v.location), views, bookmarks, collapsedDomains,
+    layout: cleanReadingLayout(v.layout), queryId: typeof v.queryId === 'string' ? v.queryId.slice(0, 120) : '' };
 }
 
 export function restoreLocation(value, model) {

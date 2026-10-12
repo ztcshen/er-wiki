@@ -116,7 +116,7 @@ test("process model survives current-format roundtrips and view positions remain
   );
   const d = document(),
     saved = versionModelDocument(d);
-  assert.equal(saved.schemaVersion, 3);
+  assert.equal(saved.schemaVersion, 4);
   assert.deepEqual(
     migrateModelDocument(JSON.parse(JSON.stringify(saved))).processModel,
     d.processModel,

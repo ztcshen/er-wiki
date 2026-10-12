@@ -1,6 +1,7 @@
 import { validateProcessModel } from '../process/definition.mjs';
 import { validateDiagramViews } from '../eda/diagram-views.mjs';
-export const MODEL_VERSION = 3;
+import { validateReviewQueries } from '../eda/review-queries.mjs';
+export const MODEL_VERSION = 4;
 
 // Version 0 is the original drawDB JSON. Migration never rewrites field content.
 export function migrateModelDocument(value) {
@@ -11,8 +12,9 @@ export function migrateModelDocument(value) {
   if (value.format && value.format !== 'er-wiki') throw new Error('Unsupported model format');
   validateProcessModel(value.processModel);
   validateDiagramViews(value.diagramViews, value.tables);
+  validateReviewQueries(value.reviewQueries);
   return { ...value, format: 'er-wiki', schemaVersion: MODEL_VERSION,
-    diagramViews: value.diagramViews ?? [],
+    diagramViews: value.diagramViews ?? [], reviewQueries: value.reviewQueries ?? [],
     notes: value.notes ?? [], subjectAreas: value.subjectAreas ?? [] };
 }
 

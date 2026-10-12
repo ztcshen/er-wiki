@@ -39,10 +39,10 @@ test('cache checksums reject corrupted data and retention bounds discard old ent
   await cache.put('a', 'x', { n: 1 }); await cache.put('b', 'x', { n: 2 }); await cache.put('c', 'x', { n: 3 });
   assert.equal(await cache.put('large', 'x', 'x'.repeat(600)), false);
   await cache.close();
-  const db = await new Promise((resolve, reject) => { const r = factory.open('bounded', 1); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
+  const db = await new Promise((resolve, reject) => { const r = factory.open('bounded', 2); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
   await new Promise((resolve, reject) => {
-    const tx = db.transaction('layouts', 'readwrite'), store = tx.objectStore('layouts');
-    const r = store.getAll(); r.onsuccess = () => { assert.equal(r.result.length, 2); const c = r.result.find(v => v.key === 'c'); c.data = '{"n":99}'; store.put(c); };
+    const tx = db.transaction(['layouts','contents'], 'readwrite'), store = tx.objectStore('layouts');
+    const r = store.getAll(); r.onsuccess = () => { assert.equal(r.result.length, 2); const c = r.result.find(v => v.key === 'c'); const body = tx.objectStore('contents').get(c.contentKey); body.onsuccess = () => { body.result.data = '{"n":99}'; tx.objectStore('contents').put(body.result); }; };
     tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
   }); db.close();
   const reopened = createLayoutCache(config);

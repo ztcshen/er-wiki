@@ -35,6 +35,7 @@ export default function EdaScene({
   dragPreview = null,
   onDragPreview,
   onNodeMove,
+  onViewEnd,
 }) {
   const [hover, setHover] = useState(null);
   const clickTimer=useRef(null);
@@ -123,7 +124,7 @@ export default function EdaScene({
     ),
   );
   return (
-    <DiagramViewport view={view} onView={onView} label="EDA 正交原理图">
+    <DiagramViewport view={view} onView={onView} onViewEnd={onViewEnd} label="EDA 正交原理图">
       {(result.layout.edges || []).map((edge) => {
         const m = edgeMeta.get(edge.id),
           highlight = matchesRelation(m, active, activeRelation, activeIds),

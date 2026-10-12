@@ -17,8 +17,8 @@ test('legacy models migrate while saved views survive JSON roundtrips without co
   const migrated = migrateModelDocument(JSON.parse(JSON.stringify(m)));
   assert.deepEqual(migrated.diagramViews, m.diagramViews);
   assert.deepEqual(migrated.tables, JSON.parse(before).tables);
-  assert.equal(migrated.schemaVersion, 3);
-  assert.throws(() => migrateModelDocument({ ...m, schemaVersion: 4 }), /newer/);
+  assert.equal(migrated.schemaVersion, 4);
+  assert.throws(() => migrateModelDocument({ ...m, schemaVersion: 5 }), /newer/);
 });
 
 test('invalid table references, duplicates and malformed coordinates cannot enter a saved view', async () => {
