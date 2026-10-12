@@ -6,7 +6,7 @@ import { tr } from '../i18n/renderer';
 
 function draftOf(data) {
   const evidence = data.reviewEvidence;
-  return { kind: typeof evidence?.kind === 'string' ? evidence.kind : evidence?.kind === undefined ? 'unspecified' : '__invalid__',
+  return { status: evidence?.status ?? 'confirmed', kind: typeof evidence?.kind === 'string' ? evidence.kind : evidence?.kind === undefined ? 'unspecified' : '__invalid__',
     enabled: !!evidence && Object.hasOwn(evidence, 'condition'),
     field: typeof evidence?.condition?.field === 'string' ? evidence.condition.field : '',
     value: typeof evidence?.condition?.value === 'string' || Number.isSafeInteger(evidence?.condition?.value) ? String(evidence.condition.value) : '' };
@@ -19,7 +19,7 @@ export default function RelationshipSemantics({ data }) {
   const original = JSON.stringify(data.reviewEvidence);
   useEffect(() => { setDraft(draftOf(data)); setAttempted(false); }, [data.id, original]);
   const prior = data.reviewEvidence && typeof data.reviewEvidence === 'object' && !Array.isArray(data.reviewEvidence) ? data.reviewEvidence : {};
-  const evidence = { ...prior, kind: draft.kind };
+  const evidence = { ...prior, kind: draft.kind, ...(draft.status !== 'confirmed' || prior.status !== undefined ? { status: draft.status } : {}) };
   if (draft.enabled) evidence.condition = { field: draft.field, value: draft.value };
   else delete evidence.condition;
   const validation = validateRelationshipDraft({ ...relationshipDraft(data), reviewEvidence: evidence }, tables, relationships, data.id);
@@ -32,6 +32,7 @@ export default function RelationshipSemantics({ data }) {
     setRedoStack([]); updateRelationship(data.id, redo);
   };
   return <section className="relationship-endpoint-editor">
+    <label>{tr('确认状态')}<select aria-label={tr('确认状态')} value={draft.status} disabled={layout.readOnly} onChange={e => update({ status: e.target.value })}><option value="confirmed">{tr('已确认')}</option><option value="candidate">{tr('待确认候选')}</option></select></label>
     <label>{tr('关系性质')} <select aria-label={tr('关系性质')} value={draft.kind} disabled={layout.readOnly} onChange={e => update({ kind: e.target.value })}>
       {!['unspecified', 'physical', 'logical', 'inferred'].includes(draft.kind) && <option value={draft.kind}>{tr('关系定义无效')}</option>}
       <option value="unspecified">{tr('性质未声明')}</option><option value="physical">{tr('已声明物理外键')}</option>

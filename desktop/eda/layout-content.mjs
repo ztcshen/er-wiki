@@ -11,7 +11,8 @@ export function geometryKey(model, options) {
   return JSON.stringify({ nodes: p.nodes.map(n => [n.id, n.width, n.height, n.ports, n.placement, n.domainId, n.fields?.map(f=>f.id), n.tableIds, n.internal, n.fanout]),
     edges: p.edges.map(e => [e.id, e.sources, e.targets, e.netIds, e.refs, e.labels]),
     badges: badges.map(b => [b.id, b.width, b.height]),
-    covered: p.covered, level: options.level, labels: options.labels, bundle: options.bundle, expanded: options.expanded });
+    covered: p.covered, level: options.level, labels: options.labels, bundle: options.bundle, expanded: options.expanded,
+    depicts: options.diagramView?.depicts.map(d => [d.tableId, d.x, d.y, d.hiddenFieldIds]) });
 }
 
 // Refresh presentation data without moving any node or changing a routed path.
@@ -27,9 +28,10 @@ export function refreshLayoutContent(result, model) {
   const nodes = result.projection.nodes.map(n => {
     if (n.kind === 'table') {
       const table = tables.get(n.tableId); if (!table) return n;
+      const depict = model.diagramViews?.find(v => v.id === n.viewId)?.depicts.find(d => d.tableId === n.tableId);
       return { ...n, title: table.name, businessName: tableBusinessName(table), comment: table.comment, totalFields: table.fields.length,
         fields: n.fields.map(f => table.fields.find(next => next.id === f.id) || f),
-        color: groups.get(n.tableId)?.color || table.color || '#64748b',
+        color: depict?.color || groups.get(n.tableId)?.color || table.color || '#64748b',
         domainName: groups.get(n.tableId)?.name || '未分组 / 公共结构', domainUnassigned: !groups.has(n.tableId) };
     }
     if (n.kind === 'domain') {

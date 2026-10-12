@@ -1,13 +1,15 @@
 import { relationCondition, conditionLabel, conditionText } from './relation-condition.mjs';
 import { tableBusinessName } from '../review/table-review.mjs';
+import { isCandidateRelation } from '../review/relation-semantics.mjs';
 const idOf = (kind, value) => `${kind}:${JSON.stringify(value)}`;
 const pairsOf = r => r.fields?.length ? r.fields : [{ startFieldId:r.startFieldId,endFieldId:r.endFieldId }];
 export const ALL_DOMAIN = '__unassigned__';
 
-export function deriveNets(model) {
+export function deriveNets(model, options = {}) {
   const known = new Map(model.tables.map(t=>[t.id,t]));
   const nets = new Map();
   for(const r of model.relationships){
+    if (isCandidateRelation(r) && !options.showCandidates) continue;
     const source=known.get(r.startTableId),target=known.get(r.endTableId),pairs=pairsOf(r);
     if(!source||!target||!pairs.every(p=>source.fields.some(f=>f.id===p.startFieldId)&&target.fields.some(f=>f.id===p.endFieldId)))continue;
     // Equal names are NOT equal nets. Composite target order is intentional.
@@ -15,7 +17,7 @@ export function deriveNets(model) {
     // Alternative business-type branches are NOT one electrical net with all
     // unconditional references to this PK. Keep each review relation traceable.
     const selfReference = source.id === target.id;
-    const key=idOf('net',[target.id,pairs.map(p=>p.endFieldId),...(selfReference?['self',r.id]:[]),...(condition?[r.id,condition]:[])]);
+    const key=idOf('net',[target.id,pairs.map(p=>p.endFieldId),...(isCandidateRelation(r)?['candidate']:[]),...(selfReference?['self',r.id]:[]),...(condition?[r.id,condition]:[])]);
     if(!nets.has(key))nets.set(key,{id:key,targetTableId:target.id,targetFields:pairs.map(p=>p.endFieldId),
       name:`${target.name}.${pairs.map(p=>target.fields.find(f=>f.id===p.endFieldId).name).join('+')}${condition?' · '+conditionText(r,source):''}`,
       condition,selfReference,members:[]});
@@ -37,7 +39,8 @@ export function domainsOf(model) {
 }
 
 export function projectModel(model, options={}, longCuts=new Set()) {
-  const level=options.level||'overview',nets=deriveNets(model),domains=domainsOf(model);
+  const level=options.level||'overview',nets=deriveNets(model, options),domains=domainsOf(model);
+  const depicts = new Map((options.diagramView?.depicts || []).map(d => [d.tableId, d]));
   const domainByTable=new Map(domains.flatMap(d=>d.tableIds.map(id=>[id,d])));
   const nodes=new Map(),edges=[],covered=new Set(),expanded=new Set(options.expanded||[]);
   const addNode=n=>{if(!nodes.has(n.id))nodes.set(n.id,{ports:[],...n});return nodes.get(n.id);};
@@ -55,7 +58,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
   };
   if(level==='system'){
     for(const d of domains)addNode({id:idOf('domain',d.id),kind:'domain',domainId:d.id,title:d.name,color:d.color,width:300,height:112,
-      tableIds:d.tableIds,internal:model.relationships.filter(r=>d.tableIds.includes(r.startTableId)&&d.tableIds.includes(r.endTableId)).map(r=>r.id)});
+      tableIds:d.tableIds,internal:model.relationships.filter(r=>(options.showCandidates||!isCandidateRelation(r))&&d.tableIds.includes(r.startTableId)&&d.tableIds.includes(r.endTableId)).map(r=>r.id)});
     const links=new Map();
     for(const n of nets)for(const r of n.members){
       covered.add(r.id);const a=domainByTable.get(r.endTableId),b=domainByTable.get(r.startTableId);
@@ -72,6 +75,7 @@ export function projectModel(model, options={}, longCuts=new Set()) {
   // The complete ER overview is independent of drill-down and editor filters.
   // Including an editor-hidden table here never changes its saved hidden flag.
   let visible=new Set((level!=='overview'&&options.domainId?domains.find(d=>d.id===options.domainId)?.tableIds||[]:model.tables.map(t=>t.id)));
+  if (options.diagramView && level === 'overview') visible = new Set(depicts.keys());
   if(['table','column'].includes(level)&&options.tableId!==undefined&&options.tableId!==null){
     visible=new Set([options.tableId]);
     for(const r of model.relationships)if(r.startTableId===options.tableId||r.endTableId===options.tableId){visible.add(r.startTableId);visible.add(r.endTableId);}
@@ -85,10 +89,12 @@ export function projectModel(model, options={}, longCuts=new Set()) {
     }
   }
   for(const t of model.tables.filter(t=>visible.has(t.id)&&(level==='overview'||!t.hidden))){
-    const fields=level==='domain'?[]:t.fields.filter(f=>level==='column'&&t.id===options.tableId||f.primary||referenced.get(t.id)?.has(f.id)||(Array.isArray(t.reviewOverviewFields)&&t.reviewOverviewFields.includes(f.name)));
+    const depict = level === 'overview' ? depicts.get(t.id) : null;
+    const fields=level==='domain'?[]:t.fields.filter(f=>depict?.hiddenFieldIds ? !depict.hiddenFieldIds.includes(f.id) : level==='column'&&t.id===options.tableId||f.primary||referenced.get(t.id)?.has(f.id)||(Array.isArray(t.reviewOverviewFields)&&t.reviewOverviewFields.includes(f.name)));
     addNode({id:idOf('table',t.id),kind:'table',tableId:t.id,title:t.name,businessName:tableBusinessName(t),comment:t.comment||'',color:domainByTable.get(t.id)?.color||t.color||'#64748b',
       domainId:domainByTable.get(t.id)?.id,domainName:domainByTable.get(t.id)?.name||'',domainUnassigned:domainByTable.get(t.id)?.id===ALL_DOMAIN,width:360,height:fields.length?78+fields.length*30:110,fields,totalFields:t.fields.length,
-      ...(level==='overview'&&t.reviewPlacement?{placement:t.reviewPlacement}:{})});
+      ...(level==='overview'&&t.reviewPlacement?{placement:t.reviewPlacement}:{}),
+      ...(depict ? { viewId: options.diagramView.id, color: depict.color || domainByTable.get(t.id)?.color || t.color || '#64748b' } : {})});
   }
   const conditionPorts=new Map();
   for(const net of touching)if(net.condition)for(const r of net.members){

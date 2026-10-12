@@ -110,13 +110,13 @@ test("ELK routes both process scenarios, including a return loop, without changi
   }
   assert.equal(JSON.stringify(m), before);
 });
-test("process model survives v2 roundtrips and view positions remain per model and per scenario", async () => {
+test("process model survives current-format roundtrips and view positions remain per model and per scenario", async () => {
   const { versionModelDocument, migrateModelDocument } = await import(
     "../renderer/model-format.mjs"
   );
   const d = document(),
     saved = versionModelDocument(d);
-  assert.equal(saved.schemaVersion, 2);
+  assert.equal(saved.schemaVersion, 3);
   assert.deepEqual(
     migrateModelDocument(JSON.parse(JSON.stringify(saved))).processModel,
     d.processModel,

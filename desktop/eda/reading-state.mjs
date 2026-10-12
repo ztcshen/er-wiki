@@ -14,7 +14,9 @@ export function cleanLocation(value = {}) {
     expanded: Array.isArray(value.expanded) ? value.expanded.filter(x => typeof x === 'string').slice(0, 100) : [],
     labels: ['off', 'auto', 'all'].includes(value.labels) ? value.labels : 'off',
     bundle: value.bundle !== false,
-    direction: ['RIGHT', 'DOWN'].includes(value.direction) ? value.direction : 'AUTO' };
+    direction: ['RIGHT', 'DOWN'].includes(value.direction) ? value.direction : 'AUTO',
+    diagramViewId: typeof value.diagramViewId === 'string' ? value.diagramViewId.slice(0, 120) : '',
+    showCandidates: value.showCandidates === true };
 }
 
 export const scopeKey = value => {
@@ -22,6 +24,8 @@ export const scopeKey = value => {
   const key = [v.level, v.domainId, v.tableId, v.labels, v.bundle, v.expanded];
   // Keep existing AUTO keys so upgrades retain saved reading positions.
   if (v.direction !== 'AUTO') key.push(v.direction);
+  if (v.diagramViewId) key.push({ diagramViewId: v.diagramViewId });
+  if (v.showCandidates) key.push({ showCandidates: true });
   return JSON.stringify(key);
 };
 
@@ -37,6 +41,7 @@ export function normalizeReadingState(value) {
 
 export function restoreLocation(value, model) {
   const location = cleanLocation(value);
+  if (location.diagramViewId && !model.diagramViews?.some(view => view.id === location.diagramViewId)) location.diagramViewId = '';
   const ids = new Set(model.tables.map(t => t.id));
   if (location.tableId !== null && !ids.has(location.tableId)) return cleanLocation({ labels: location.labels, bundle: location.bundle, direction: location.direction });
   if (location.level === 'domain' && location.domainId !== '__unassigned__' && !model.groups.some(g => g.id === location.domainId))

@@ -21,6 +21,41 @@ are user-authored model content and are deliberately not translated.
 “更多 → 设置”中切换语言、深浅色、自动保存和自动备份。语言立即生效并在重启后保留。
 示例中的中文分组及字段解释属于模型内容，英文界面仍保留原文。可在字段详情中编辑“显示名称”。
 
+## Saved reading views / 保存阅读视图
+
+The Reading view selector switches between the complete model and named table
+subsets. New view and Edit view choose members from the shared model; a table is
+referenced once per view, with its own position, color and visible-field settings.
+Drag a table header inside a saved view to move it, or choose Save current layout.
+Arrange clears that view's saved positions and computes a new layout. View content
+is saved with the model; camera movement and reading bookmarks remain local.
+
+“阅读视图”在完整模型与命名视图之间切换。新建或编辑视图时选择表，在“当前视图显示设置”
+中配置颜色与字段。不同视图共享表定义，拖动表头只修改当前视图的位置；“保存当前布局”
+记录当前排列，“整理”重新自动摆放。视图随模型保存、备份和 JSON 导出，平移缩放仍只记忆在本机。
+新文档格式为版本 3，兼容读取既有版本 0–2；原模型在用户保存前不会被格式化重写。
+
+Relationships can be explicitly marked as candidates. The candidate panel retains
+their evidence and can confirm them as logical relationships. Candidates are
+omitted from the normal diagram and SQL foreign-key export until confirmation;
+Show candidates provides a distinct preview. A physical key declaration remains
+an explicit model assertion rather than database verification.
+
+关系编辑里的“确认状态”可设置候选。候选保留依据，正常图与 SQL 外键导出默认排除；
+“显示候选”用于预览，“确认为逻辑关联”才进入正式图。确认状态和物理／逻辑性质是不同维度。
+
+## Offline reading export / 离线阅读器
+
+Export reader writes a single HTML file with the complete diagram and all saved
+views, table/field documentation, relationship evidence, search, zoom and diagram
+navigation. It opens locally without a server or account. Download model JSON
+retains the shared structure, saved views and metadata. Candidate documentation is
+clearly labelled and does not turn candidates into confirmed diagram edges.
+
+点击“导出阅读器”，或从“更多 → 导入与导出”导出离线阅读器。一个 HTML 文件包含完整图、
+全部保存视图、字段说明与关联依据，支持搜索、缩放和图文定位。双击文件即可本机阅读，
+也可下载随文件保存的模型 JSON。导出与阅读都不会改变原模型。
+
 ## Read / 阅读
 
 Press **⌘/Ctrl + K** or choose Quick search in the header. Search an action, table,

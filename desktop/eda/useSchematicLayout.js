@@ -5,15 +5,18 @@ import { scopeKey } from "./reading-state.mjs";
 import { desktopLayoutCache } from "./layout-cache.mjs";
 import { createCachedLayoutTask } from "./cached-layout-task.mjs";
 import { readingToken, deferImprovement } from './layout-presentation.mjs';
+import { layoutViewBox } from './camera.mjs';
 import { layoutObserver, modelGeometryIdentity } from './layout-observation.mjs';
 
 export function useSchematicLayout(modelId, model, reading, ready) {
   const { location, rememberedView, setView } = reading;
+  const diagramView = location.level === 'overview' ? model.diagramViews?.find(v => v.id === location.diagramViewId) : null;
+  const options = useMemo(() => ({ ...location, ...(diagramView ? { diagramView } : {}) }), [location, diagramView]);
   const viewKey = scopeKey(location);
-  const shape = useMemo(() => geometryKey(model, location), [model, viewKey]);
+  const shape = useMemo(() => geometryKey(model, options), [model, viewKey, options]);
   const [revision, setRevision] = useState(0),
     [raw, setRaw] = useState(null);
-  const input = useMemo(() => ({ model, options: location, shape }), [modelId, shape, viewKey, revision]);
+  const input = useMemo(() => ({ model, options, shape }), [modelId, shape, viewKey, revision]);
   const [completed, setCompleted] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -51,7 +54,7 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     setImprovement(null);
     const firstView = value => {
       if (!rememberedView) {
-        const view = [0, 0, Math.max(300, value.layout.width || 800), Math.max(250, value.layout.height || 500)];
+        const view = layoutViewBox(value.layout);
         latest.current = { ...latest.current, view }; setView(view);
       }
     };

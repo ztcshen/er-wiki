@@ -1,6 +1,7 @@
 import { Popover } from "@douyinfe/semi-ui";
 import EdaDisplaySettings from "./EdaDisplaySettings";
 import { tr } from "../i18n/renderer";
+import { isCandidateRelation } from '../review/relation-semantics.mjs';
 
 export default function EdaToolbar({
   model,
@@ -19,6 +20,7 @@ export default function EdaToolbar({
   checksOpen,
 }) {
   const { tables, relationships } = model;
+  const candidateCount = relationships.filter(isCandidateRelation).length;
   const { level, tableId } = reading.location;
   const scopeTable = tables.find((table) => table.id === tableId);
   const showDirectory = settings.edaDirectory !== false;
@@ -78,7 +80,7 @@ export default function EdaToolbar({
           {level === "system"
             ? `${domains.length} 个领域`
             : `${visibleTableCount ?? "…"} / ${tables.length} 表`}
-          <span> · {relationships.length} 条关系</span>
+          <span> · {relationships.length - candidateCount} 条关系{candidateCount > 0 && <> · {candidateCount} {tr('候选')}</>}</span>
         </span>
         <div className="eda-view-actions">
           <button

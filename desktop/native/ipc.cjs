@@ -188,7 +188,7 @@ function registerDesktopIpc({
     trusted(event);
     if (
       !payload ||
-      !["svg", "png", "sql"].includes(payload.extension) ||
+      !["svg", "png", "sql", "html"].includes(payload.extension) ||
       typeof payload.name !== "string" ||
       payload.name.length > 500 ||
       typeof payload.content !== "string" ||
@@ -201,13 +201,14 @@ function registerDesktopIpc({
         : Buffer.from(payload.content);
     if (
       bytes.length > MAX_FILE_BYTES * 3 ||
+      (payload.extension === "html" && !/^\s*<!doctype html>/i.test(payload.content)) ||
       (payload.extension === "png" &&
         !bytes.subarray(0, 8).equals(Buffer.from("89504e470d0a1a0a", "hex")))
     )
       throw new Error("Invalid export content");
     return nativeDialog(async () => {
       const result = await dialog.showSaveDialog(getWindow(), {
-        title: tr("导出图形或 SQL"),
+        title: tr(payload.extension === "html" ? "导出离线阅读器" : "导出图形或 SQL"),
         defaultPath: safeFilename(payload.name).replace(
           /\.drawdb\.json$/,
           `.${payload.extension}`,

@@ -2644,5 +2644,79 @@
         ]
       }
     ]
-  }
+  },
+  "diagramViews": [
+    {
+      "id": "order-fulfillment",
+      "name": "Order to shipment",
+      "depicts": [
+        {
+          "tableId": "orders"
+        },
+        {
+          "tableId": "order_items"
+        },
+        {
+          "tableId": "stock_reservations"
+        },
+        {
+          "tableId": "fulfillments"
+        },
+        {
+          "tableId": "fulfillment_items"
+        },
+        {
+          "tableId": "shipments"
+        },
+        {
+          "tableId": "shipment_items"
+        }
+      ]
+    },
+    {
+      "id": "inventory-returns",
+      "name": "Inventory and returns",
+      "depicts": [
+        {
+          "tableId": "products"
+        },
+        {
+          "tableId": "warehouses"
+        },
+        {
+          "tableId": "inventory"
+        },
+        {
+          "tableId": "stock_reservations"
+        },
+        {
+          "tableId": "returns"
+        },
+        {
+          "tableId": "return_items"
+        }
+      ]
+    },
+    {
+      "id": "order-returns",
+      "name": "Order and return trace",
+      "depicts": [
+        {
+          "tableId": "orders"
+        },
+        {
+          "tableId": "order_items"
+        },
+        {
+          "tableId": "shipments"
+        },
+        {
+          "tableId": "returns"
+        },
+        {
+          "tableId": "return_items"
+        }
+      ]
+    }
+  ]
 }

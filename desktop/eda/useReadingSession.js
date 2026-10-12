@@ -43,8 +43,12 @@ export function useReadingSession(modelId, model, ready) {
       catch { setError('阅读状态无法写入本机存储；模型内容未受影响。'); } }, 180);
     return () => clearTimeout(timer);
   }, [state, modelId, ready]);
-  useEffect(() => () => {
-    if (ready) try { saveReadingState(localStorage, modelId, latest.current); } catch { /* In-session error is shown above. */ }
+  useEffect(() => {
+    const flush = () => {
+      if (ready) try { saveReadingState(localStorage, modelId, latest.current); } catch { /* In-session error is shown above. */ }
+    };
+    window.addEventListener('pagehide', flush);
+    return () => { window.removeEventListener('pagehide', flush); flush(); };
   }, [modelId, ready]);
   return { location, setPart, view, setView, rememberedView, navigate, back, canBack: !!history.length,
     bookmarks: state.bookmarks, addBookmark, openBookmark, removeBookmark, error,

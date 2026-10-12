@@ -41,6 +41,14 @@ degraded. See [implementation and trade-offs](docs/WORKBENCH_DESIGN.md).
 
 ## Work on the model, locally
 
+Current source supports multiple reading views over one shared model, with
+per-view members, positions, colors and visible fields. Domain-level layout and
+relationship routing are separate stages; relationship candidates have explicit
+confirmation state. Export the model and its saved views as a standalone offline
+HTML reader with field documentation, search and diagram navigation. These
+capabilities are verified in the local 0.5.0 build; published downloads remain
+listed on Releases.
+
 The Electron desktop app imports SQL locally, edits table/relationship definitions,
 round-trips JSON and exports SVG/PNG. The hosted demo is read-only and uses
 precomputed layouts. Neither is a database migration engine or an automatic

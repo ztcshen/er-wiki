@@ -152,6 +152,8 @@ export const commandCatalogue = [
     tables: true,
     keywords: "copy image png clipboard",
   },
+  { id: 'view.new', label: '新建阅读视图', group: '阅读', icon: 'collection', target: 'eda', action: 'new-reading-view', mutating: true, tables: true, keywords: 'new diagram view reading scene' },
+  { id: 'export.reader', label: '导出离线阅读器', group: '导入与导出', icon: 'file-earmark-richtext', target: 'eda', action: 'export-reader', tables: true, keywords: 'export offline html reader documentation' },
   {
     id: "view.overview",
     label: "返回全部表总图",
@@ -298,7 +300,7 @@ export const menuSections = [
   { label: "模型", ids: ["model.new", "model.clone", "model.rename"] },
   {
     label: "导入与导出",
-    ids: ["model.replace", "import.json", "import.sql", "export.json", "export.diagram"],
+    ids: ["model.replace", "import.json", "import.sql", "export.json", "export.diagram", "export.reader"],
   },
   { label: "工作区", ids: ["app.backups", "app.settings", "app.help"] },
 ];

@@ -3,6 +3,14 @@ const assert = require('node:assert/strict');
 const camera = import('../eda/camera.mjs');
 const close = (a, b) => assert(Math.abs(a - b) < 1e-8, `${a} != ${b}`);
 
+test('fitting a saved view uses its content bounds without changing stored positions', async () => {
+  const { layoutViewBox } = await camera;
+  const layout = { width: 1700, height: 2300, children: [{ x: 1200, y: 1900, width: 360, height: 200 }], edges: [{ sections: [{ startPoint: { x: 1560, y: 2000 }, endPoint: { x: 1600, y: 2100 } }] }] };
+  const before = JSON.stringify(layout), box = layoutViewBox(layout);
+  assert.deepEqual(box, [1160, 1860, 480, 280]);
+  assert.equal(JSON.stringify(layout), before);
+});
+
 test('cursor zoom preserves the pointed world location including SVG letterboxing', async () => {
   const { clientPointToWorld, zoomAtPoint } = await camera;
   for (const view of [[100, 200, 2000, 500], [100, 200, 500, 2000]]) {

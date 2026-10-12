@@ -19,6 +19,7 @@ import {
   focusFieldView,
   viewScale,
   zoomAtPoint,
+  layoutViewBox,
 } from "./camera.mjs";
 import { tr } from "../i18n/renderer";
 import EdaScene from "./EdaScene";
@@ -28,6 +29,12 @@ import EdaEditors from "./EdaEditors";
 import EdaToolbar from "./EdaToolbar";
 import EdaDirectory from "./EdaDirectory";
 import EdaInspector from "./EdaInspector";
+import DiagramViewEditor from './DiagramViewEditor';
+import DiagramViewsBar from './DiagramViewsBar';
+import CandidateRelationships from './CandidateRelationships';
+import ReadingExport from './ReadingExport';
+import { captureViewGeometry, reconcileDiagramViews, moveViewDepict, resetViewGeometry } from './diagram-views.mjs';
+import { isCandidateRelation } from '../review/relation-semantics.mjs';
 import DiagramExport from "./DiagramExport";
 import { useProcessModel } from "../process/context";
 import { useProcessReader } from "../process/useProcessReader";
@@ -36,8 +43,9 @@ import ProcessWorkspace from "../process/ProcessWorkspace";
 import ProcessConfig from "../process/ProcessConfig";
 import "../process/process.css";
 import "./eda.css";
+import './diagram-views.css';
 
-export default function EdaWorkspace({ modelId, ready }) {
+export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagramViews = [], setDiagramViews, modelMetadata = {} }) {
   const {
     tables,
     relationships,
@@ -57,6 +65,8 @@ export default function EdaWorkspace({ modelId, ready }) {
   } = useProcessReader(modelId, ready);
   const [processConfigOpen, setProcessConfigOpen] = useState(false);
   const [checksOpen, setChecksOpen] = useState(false);
+  const [viewEditor, setViewEditor] = useState(false), [readingExport, setReadingExport] = useState(false);
+  const [candidatesOpen, setCandidatesOpen] = useState(false), [dragPreview, setDragPreview] = useState(null), [viewError, setViewError] = useState('');
   const pendingRelation = useRef(null);
   const [relationPopup,setRelationPopup]=useState(null);
   useEffect(()=>setRelationPopup(null),[modelId,reader.mode]);
@@ -93,10 +103,19 @@ export default function EdaWorkspace({ modelId, ready }) {
       tables,
       relationships,
       groups: modelGroups(reviewGroups, tables),
+      database, title, diagramViews,
+      metadata: modelMetadata,
     }),
-    [tables, relationships, reviewGroups],
+    [tables, relationships, reviewGroups, database, title, diagramViews, modelMetadata],
   );
   const reading = useReadingSession(modelId, model, ready);
+  const activeView = diagramViews.find(v => v.id === reading.location.diagramViewId);
+  const editableView = activeView && reading.location.level === 'overview' && !layout.readOnly;
+  useEffect(() => {
+    if (!ready || !setDiagramViews) return;
+    const next = reconcileDiagramViews(diagramViews, tables);
+    if (JSON.stringify(next) !== JSON.stringify(diagramViews)) setDiagramViews(next);
+  }, [ready, tables, diagramViews, setDiagramViews]);
   const structureIssues = useMemo(
     () =>
       checkModel(model, { typeInfo: (type) => resolveType(database, type) }),
@@ -160,7 +179,7 @@ export default function EdaWorkspace({ modelId, ready }) {
     ? result?.projection.nodes.filter((n) => n.kind === "table").length
     : null;
   const showDirectory = settings.edaDirectory !== false,
-    showInspector = checksOpen || !!(net || infoTable);
+    showInspector = checksOpen || candidatesOpen || !!(net || infoTable);
   useEffect(() => {
     document.body.classList.add("eda-reading");
     setSelectedElement((s) => ({
@@ -176,7 +195,43 @@ export default function EdaWorkspace({ modelId, ready }) {
   const navigate = (...args) => {
     setSearch("");
     setFieldNets([]);
+    if (!Object.hasOwn(args[3] || {}, 'diagramViewId')) args[3] = { ...args[3], diagramViewId: '' };
     reading.navigate(...args);
+  };
+  const selectView = id => {
+    setViewError(''); setDragPreview(null);
+    navigate('overview', '', null, { diagramViewId: id });
+  };
+  const saveView = next => {
+    if (layout.readOnly || !setDiagramViews) return;
+    setDiagramViews(views => views.some(v => v.id === next.id) ? views.map(v => v.id === next.id ? next : v) : [...views, next]);
+    setViewEditor(false); selectView(next.id);
+  };
+  const capturePositions = () => {
+    if (!editableView || !currentResult) return;
+    setDiagramViews(views => views.map(v => v.id === activeView.id ? captureViewGeometry(v, result) : v));
+  };
+  const moveTable = (tableId, x, y) => {
+    setDragPreview(null);
+    if (!editableView || !currentResult) return;
+    const node = tableNode(tableId);
+    if (!node) return;
+    const nx = Math.max(40, x), ny = Math.max(40, y);
+    const meta = new Map(result.projection.nodes.map(n => [n.id, n]));
+    const collision = result.layout.children.some(other => other.id !== node.id && meta.get(other.id)?.kind === 'table' && nx < other.x + other.width + 12 && nx + node.width + 12 > other.x && ny < other.y + other.height + 12 && ny + node.height + 12 > other.y);
+    if (collision) { setViewError(tr('该位置会与其它表重叠，请留出连线空间')); return; }
+    setViewError('');
+    setDiagramViews(views => views.map(v => v.id === activeView.id ? moveViewDepict(v, result, tableId, nx, ny) : v));
+  };
+  const arrangeCurrent = () => {
+    setViewError('');
+    if (editableView && activeView.depicts.some(d => d.x !== undefined)) setDiagramViews(views => views.map(v => v.id === activeView.id ? resetViewGeometry(v) : v));
+    else schematic.arrange();
+  };
+  const locateCandidate = relation => {
+    const value = deriveNets(model, { showCandidates: true }).find(n => n.members.some(r => r.id === relation.id));
+    navigate('overview', '', null, { diagramViewId: '', showCandidates: true, selectedNet: value?.id, selectedRelation: relation.id });
+    pendingRelation.current = relation.id; setFocusRequest(n => n + 1);
   };
   const clearSelection = () => {
     pendingFocus.current = null;
@@ -189,7 +244,7 @@ export default function EdaWorkspace({ modelId, ready }) {
   };
   const fitView = () => {
     if (result && currentResult)
-      setView([0, 0, result.layout.width || 800, result.layout.height || 500]);
+      setView(layoutViewBox(result.layout));
   };
   const zoomView = (factor) => setView((v) => zoomAtPoint(v, factor));
   useEffect(() => {
@@ -296,6 +351,8 @@ export default function EdaWorkspace({ modelId, ready }) {
         setChecksOpen(true);
         return;
       }
+      if (action === 'new-reading-view' && !layout.readOnly) { switchMode('er'); setViewEditor(true); return; }
+      if (action === 'export-reader') { setReadingExport(true); return; }
       if (
         reader.mode !== "er" &&
         ["fit", "zoom-in", "zoom-out", "arrange"].includes(action)
@@ -322,7 +379,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       else if (action === "fit") fitView();
       else if (action === "overview") navigate("overview");
       else if (action === "back") reading.back();
-      else if (action === "arrange") schematic.arrange();
+      else if (action === "arrange") arrangeCurrent();
       else if (action === "focus-selection") focusTable(selectedTable, selectedField);
       else if (action === "toggle-directory")
         setSettings((s) => ({ ...s, edaDirectory: s.edaDirectory === false }));
@@ -463,6 +520,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       className="eda-workspace"
       aria-label="EDA 分析工作台"
       data-eda-model={modelId}
+      data-eda-view={reading.location.diagramViewId}
     >
       {reader.mode === "flow" && (
         <div className="process-switchbar">
@@ -509,6 +567,7 @@ export default function EdaWorkspace({ modelId, ready }) {
       <div
         className={`process-original-er ${reader.mode !== "er" ? "is-hidden" : ""}`}
       >
+        <DiagramViewsBar views={diagramViews} active={activeView} onSelect={selectView} onCreate={() => setViewEditor(true)} onEdit={() => setViewEditor(activeView)} onCapture={capturePositions} onExport={() => setReadingExport(true)} onCandidates={() => { setChecksOpen(false); setCandidatesOpen(v => !v); }} candidateCount={relationships.filter(isCandidateRelation).length} showCandidates={reading.location.showCandidates} onShowCandidates={reading.setPart('showCandidates')} busy={busy || !currentResult} readOnly={layout.readOnly}/>
         <EdaToolbar
           issues={structureIssues}
           checksOpen={checksOpen}
@@ -525,8 +584,9 @@ export default function EdaWorkspace({ modelId, ready }) {
           visibleTableCount={visibleTableCount}
           busy={busy}
           navigate={navigate}
-          arrange={schematic.arrange}
+          arrange={arrangeCurrent}
         />
+        {viewError && <p role="alert" className="eda-warning">{viewError}</p>}
         {reading.error && (
           <p role="alert" className="eda-warning">
             {tr(reading.error)}
@@ -581,6 +641,9 @@ export default function EdaWorkspace({ modelId, ready }) {
                 selectedRelationshipIds={selectedRelationshipIds}
                 scale={viewScale(view, viewport)}
                 semanticZoom={settings.edaSemanticZoom !== false}
+                dragPreview={dragPreview}
+                onDragPreview={editableView && currentResult && !busy ? setDragPreview : undefined}
+                onNodeMove={editableView && currentResult && !busy ? moveTable : undefined}
                 selectedNet={selectedNet}
                 selectedRelation={selectedRelation}
                 showCardinality={settings.edaCardinality !== false}
@@ -717,7 +780,7 @@ export default function EdaWorkspace({ modelId, ready }) {
               onEdit={editIssue}
               readOnly={layout.readOnly}
             />
-          ) : (
+          ) : candidatesOpen ? <CandidateRelationships model={model} onClose={() => setCandidatesOpen(false)} onLocate={locateCandidate}/> : (
             showInspector && (
               <EdaInspector
                 selection={{
@@ -778,6 +841,8 @@ export default function EdaWorkspace({ modelId, ready }) {
         readOnly={layout.readOnly}
       />
       <EdaEditors tools={tools} setTools={setTools} />
+      {viewEditor !== false && <DiagramViewEditor key={viewEditor?.id || 'new'} view={viewEditor === true ? null : viewEditor} model={model} onSave={saveView} onDelete={id => { setDiagramViews(views => views.filter(v => v.id !== id)); setViewEditor(false); selectView(''); }} onClose={() => setViewEditor(false)} readOnly={layout.readOnly}/>}
+      {readingExport && <ReadingExport model={model} title={title} diagramViews={diagramViews} onClose={() => setReadingExport(false)}/>}
       {relationPopup&&<RelationPopup request={relationPopup} tables={tables} relationships={relationships} onClose={()=>setRelationPopup(null)}/>}
       {reader.mode === "er" && (
         <DiagramExport

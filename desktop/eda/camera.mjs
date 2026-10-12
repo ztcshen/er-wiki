@@ -58,6 +58,20 @@ export function visibleWorldView(view, viewport) {
     : view;
 }
 
+// Fit actual content even when a saved view has positions far from world origin.
+export function layoutViewBox(layout, padding = 40) {
+  const points = (layout?.children || []).flatMap(n => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
+  for (const edge of layout?.edges || []) {
+    for (const section of edge.sections || []) points.push(section.startPoint, ...(section.bendPoints || []), section.endPoint);
+    for (const label of edge.labels || []) points.push({ x: label.x, y: label.y }, { x: label.x + label.width, y: label.y + label.height });
+  }
+  const valid = points.filter(p => p && [p.x, p.y].every(Number.isFinite));
+  if (!valid.length) return [0, 0, Math.max(300, layout?.width || 800), Math.max(250, layout?.height || 500)];
+  let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+  for (const point of valid) { left = Math.min(left, point.x); top = Math.min(top, point.y); right = Math.max(right, point.x); bottom = Math.max(bottom, point.y); }
+  return [left - padding, top - padding, Math.max(300, right - left + padding * 2), Math.max(250, bottom - top + padding * 2)];
+}
+
 export function focusNodeView(node, viewport, padding = 56) {
   if (
     !node ||

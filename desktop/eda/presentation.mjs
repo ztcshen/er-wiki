@@ -1,6 +1,7 @@
 // Presentation only: never changes nodes, ports, relationships or saved geometry.
 export const isCompact = (scale) =>
   Number.isFinite(scale) && scale > 0 && scale < 0.55;
+export const drawsRelationLines = scale => !Number.isFinite(scale) || scale >= 0.12;
 export function fitText(value, width, size = 11) {
   let units = 0,
     out = "";

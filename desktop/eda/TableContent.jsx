@@ -82,8 +82,9 @@ export default function TableContent({
           </text>
           {m.fields.map((field, index) => (
             <g
-              key={field.id}
+              key={JSON.stringify(field.id)}
               data-eda-field={String(field.id)}
+              data-field-key={JSON.stringify(field.id)}
               data-eda-endpoint={
                 endpoint(m.tableId, field.id) ? "true" : "false"
               }

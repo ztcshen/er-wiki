@@ -63,6 +63,7 @@ const relationships=refs.map(([child,column,parent],i)=>({id:'demo-rel-'+i,name:
   reviewEvidence:{kind:'physical',description:'Explicit foreign key in the independently authored example DDL; not a real business database.',source:'examples/fulfillment.sql'}}));
 const model={title:'电商履约 · Fictional fulfillment',database:'mysql',tables,relationships,reviewGroups:groups,notes:[],subjectAreas:[],views:[],types:[],enums:[],transform:{pan:{x:0,y:0},zoom:0.4},processModel:JSON.parse(fs.readFileSync(path.join(root,'examples/fulfillment.process.json'),'utf8'))};
 fs.mkdirSync(path.join(root,'examples'),{recursive:true});
+model.diagramViews = [['order-fulfillment', '订单到发货', ['orders', 'order_items', 'stock_reservations', 'fulfillments', 'fulfillment_items', 'shipments', 'shipment_items']], ['inventory-returns', '库存与退货', ['products', 'warehouses', 'inventory', 'stock_reservations', 'returns', 'return_items']], ['order-returns', '订单与退货追踪', ['orders', 'order_items', 'shipments', 'returns', 'return_items']]].map(([id, name, tableIds]) => ({ id, name, depicts: tableIds.map(tableId => ({ tableId })) }));
 fs.writeFileSync(path.join(root,'examples/fulfillment.drawdb.json'),JSON.stringify(model,null,2)+'\n');
 const quote=s=>'\x60'+s+'\x60';
 const sql=tables.map(table=>{

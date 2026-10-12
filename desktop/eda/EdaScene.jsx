@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import DiagramViewport from "../diagram/DiagramViewport";
 import { sectionsOf } from "./metrics.mjs";
 import TableContent from "./TableContent";
-import { fitText, isCompact, relationColor } from "./presentation.mjs";
+import { fitText, isCompact, drawsRelationLines, relationColor } from "./presentation.mjs";
 import { tr } from "../i18n/renderer";
 import {
   matchesRelation,
@@ -11,6 +11,7 @@ import {
 } from "./cardinality.mjs";
 import CardinalityLayer from "./CardinalityLayer";
 import { resolveRelationSemantics } from '../review/relation-semantics.mjs';
+import { clientPointToWorld } from './camera.mjs';
 
 const pathText = (points) =>
   points.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" ");
@@ -31,9 +32,37 @@ export default function EdaScene({
   selectedRelationshipIds = null,
   scale = 1,
   semanticZoom = true,
+  dragPreview = null,
+  onDragPreview,
+  onNodeMove,
 }) {
   const [hover, setHover] = useState(null);
   const clickTimer=useRef(null);
+  const drag = useRef(null), suppressClick = useRef(false);
+  const startMove = (event, node, meta) => {
+    if (!onNodeMove || meta.kind !== 'table' || event.button !== 0 || !event.target.closest('[data-eda-drag-handle]')) return;
+    const rect = event.currentTarget.ownerSVGElement.getBoundingClientRect();
+    drag.current = { tableId: meta.tableId, x: node.x, y: node.y, start: clientPointToWorld(view, rect, event.clientX, event.clientY), moved: false };
+    event.stopPropagation(); event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const move = event => {
+    if (!drag.current) return;
+    const point = clientPointToWorld(view, event.currentTarget.ownerSVGElement.getBoundingClientRect(), event.clientX, event.clientY), initial = drag.current;
+    const x = Math.max(40, initial.x + point.x - initial.start.x), y = Math.max(40, initial.y + point.y - initial.start.y);
+    initial.moved ||= Math.abs(x - initial.x) + Math.abs(y - initial.y) > 3;
+    initial.next = { tableId: initial.tableId, x, y }; onDragPreview?.(initial.next);
+  };
+  const endMove = (event, cancel = false) => {
+    const initial = drag.current;
+    if (!initial) return;
+    drag.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    onDragPreview?.(null);
+    if (!cancel && initial.moved) {
+      suppressClick.current = true; setTimeout(() => { suppressClick.current = false; }, 0);
+      onNodeMove?.(initial.tableId, initial.next.x, initial.next.y);
+    }
+  };
   useEffect(()=>()=>clearTimeout(clickTimer.current),[result]);
   const nodeMeta = new Map(result.projection.nodes.map((n) => [n.id, n])),
     edgeMeta = new Map(result.projection.edges.map((e) => [e.id, e]));
@@ -105,6 +134,7 @@ export default function EdaScene({
           conditionColor = m.kind === "conditional"
             ? domainByTable.get(relationMeta.get(m.refs[0])?.startTableId)?.color
             : null;
+        if (semanticZoom && !drawsRelationLines(scale) && !highlight) return null;
         return (
           <g
             key={edge.id}
@@ -114,7 +144,7 @@ export default function EdaScene({
             data-rel-ids={JSON.stringify(m.refs)}
             data-kind={m.kind}
             data-highlight={highlight ? "true" : "false"}
-            opacity={dim ? 0.15 : 1}
+            opacity={dragPreview && m.refs.some(id => { const r = relationMeta.get(id); return r?.startTableId === dragPreview.tableId || r?.endTableId === dragPreview.tableId; }) ? 0 : dim ? 0.15 : 1}
             role="button"
             tabIndex={0}
             aria-label={describe(m.refs)}
@@ -193,11 +223,12 @@ export default function EdaScene({
         return (
           <g
             key={node.id}
-            transform={`translate(${node.x},${node.y})`}
+            transform={`translate(${dragPreview && dragPreview.tableId === m.tableId ? dragPreview.x : node.x},${dragPreview && dragPreview.tableId === m.tableId ? dragPreview.y : node.y})`}
             data-diagram-interactive
             data-eda-node={node.id}
             data-node-kind={m.kind}
             data-table-id={m.tableId === undefined ? "" : String(m.tableId)}
+            data-table-key={m.tableId === undefined ? undefined : JSON.stringify(m.tableId)}
             data-net-id={m.netId || ""}
             data-highlight={lit ? "true" : "false"}
             className="eda-node"
@@ -213,7 +244,11 @@ export default function EdaScene({
             role="button"
             tabIndex={0}
             aria-label={`${m.kind} ${m.title}`}
-            onClick={select}
+            onClick={event => { if (suppressClick.current) { event.stopPropagation(); return; } select(); }}
+            onPointerDown={event => startMove(event, node, m)}
+            onPointerMove={move}
+            onPointerUp={event => endMove(event)}
+            onPointerCancel={event => endMove(event, true)}
             onDoubleClick={(event) => {
               if (m.kind === "table") {
                 event.stopPropagation();
@@ -333,6 +368,7 @@ export default function EdaScene({
                 )}
               </>
             )}
+            {onNodeMove && m.kind === 'table' && <rect className="eda-table-drag-handle" data-eda-drag-handle fill="transparent" x="0" y="4" width={node.width} height={nodeCompact ? Math.max(20, node.height - 4) : 66}><title>{tr('拖动表头调整当前视图')}</title></rect>}
             {(node.ports || []).map((p) => (
               <circle
                 key={p.id}
@@ -349,7 +385,7 @@ export default function EdaScene({
           </g>
         );
       })}
-      {showCardinality && (
+      {showCardinality && !dragPreview && (!semanticZoom || drawsRelationLines(scale)) && (
         <CardinalityLayer
           result={result}
           activeNet={active}

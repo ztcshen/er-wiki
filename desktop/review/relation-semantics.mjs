@@ -1,9 +1,11 @@
 export const RELATION_KINDS = ['physical', 'logical', 'inferred', 'unspecified'];
 export const CARDINALITIES = ['one_to_one', 'one_to_many', 'many_to_one', 'many_to_many'];
+export const isCandidateRelation = relation => relation?.reviewEvidence?.status === 'candidate';
 export const relationMessages = {
   RELATION_KIND_INVALID: '关系性质无效',
   RELATION_CARDINALITY_INVALID: '关系基数无效',
   RELATION_EVIDENCE_INVALID: '关系依据格式无效',
+  RELATION_STATUS_INVALID: '关系确认状态无效',
   PHYSICAL_CONDITION_CONFLICT: '物理外键不能带业务条件',
   CONDITION_INVALID: '条件格式无效',
   CONDITION_FIELD_MISSING: '条件引用了不存在的源表字段',
@@ -21,6 +23,8 @@ export function resolveRelationSemantics(relation, sourceTable) {
   const report = (code, path, warning = false) => (warning ? warnings : errors).push({ code, path, message: relationMessages[code] });
   if (present(relation, 'reviewEvidence') && !object(evidence)) report('RELATION_EVIDENCE_INVALID', 'reviewEvidence');
   const kind = evidence?.kind === undefined ? 'unspecified' : evidence.kind;
+  const status = evidence?.status ?? 'confirmed';
+  if (!['confirmed', 'candidate'].includes(status)) report('RELATION_STATUS_INVALID', 'reviewEvidence.status');
   if (!RELATION_KINDS.includes(kind)) report('RELATION_KIND_INVALID', 'reviewEvidence.kind');
   if (relation?.cardinality != null && !CARDINALITIES.includes(relation.cardinality)) report('RELATION_CARDINALITY_INVALID', 'cardinality');
   if (Object.hasOwn(relation || {}, 'fields') && (!Array.isArray(relation.fields) || !relation.fields.length || relation.fields.some(p => !object(p))))
@@ -54,13 +58,14 @@ export function resolveRelationSemantics(relation, sourceTable) {
   if (hasCondition && errors.length) conditionState = 'invalid';
   const type = !RELATION_KINDS.includes(kind) || errors.some(e => e.code === 'RELATION_EVIDENCE_INVALID') ? 'invalid'
     : kind === 'physical' ? 'physical' : ['logical', 'inferred'].includes(kind) ? 'logical' : 'unspecified';
-  return { kind, type, certainty: kind === 'inferred' ? 'inferred' : type === 'unspecified' ? 'unknown' : type === 'invalid' ? 'invalid' : 'declared',
-    conditionState, condition, errors, warnings, canExportForeignKey: type === 'physical' && !hasCondition && !errors.length };
+  return { kind, type, status, certainty: status === 'candidate' || kind === 'inferred' ? 'inferred' : type === 'unspecified' ? 'unknown' : type === 'invalid' ? 'invalid' : 'declared',
+    conditionState, condition, errors, warnings, canExportForeignKey: status === 'confirmed' && type === 'physical' && !hasCondition && !errors.length };
 }
 
 export function relationNatureLabel(relation, sourceTable) {
   const semantic = resolveRelationSemantics(relation, sourceTable);
   if (semantic.errors.length) return '关系定义无效';
+  if (semantic.status === 'candidate') return '待确认候选关联';
   return { physical: '已声明物理外键', logical: '逻辑关联', inferred: '推断关联', unspecified: '性质未声明' }[semantic.kind];
 }
 

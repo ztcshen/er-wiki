@@ -1,4 +1,4 @@
-const keys = ['format', 'schemaVersion', 'title', 'database', 'tables', 'relationships', 'reviewGroups', 'notes', 'subjectAreas', 'views', 'types', 'enums', 'processModel'];
+const keys = ['format', 'schemaVersion', 'title', 'database', 'tables', 'relationships', 'reviewGroups', 'notes', 'subjectAreas', 'views', 'types', 'enums', 'processModel', 'diagramViews'];
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().filter(key => value[key] !== undefined).map(key => [key, canonical(value[key])]));

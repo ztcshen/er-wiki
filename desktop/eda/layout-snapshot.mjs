@@ -2,6 +2,7 @@ import { projectModel } from './model.mjs';
 import { validateLayout, scoreLayout } from './metrics.mjs';
 import { layoutQuality } from './layout-quality.mjs';
 import { PORT_SIDES } from './ports.mjs';
+import { diagramViewPositions, projectionForDiagramPositions, diagramPositionsMatch } from './diagram-geometry.mjs';
 
 const coordinates = ['x', 'y', 'rowY', 'rowBadgeY', 'badgeX', 'badgeY'];
 const pickCoordinates = port => Object.fromEntries(coordinates.filter(k => port[k] !== undefined).map(k => [k, port[k]]));
@@ -25,11 +26,14 @@ export function restoreLayoutSnapshot(snapshot, model, options) {
   requireValue(Array.isArray(snapshot?.longCuts), 'Invalid layout cache cuts');
   const relations = new Set(model.relationships.map(r => r.id));
   requireValue(snapshot.longCuts.every(id => relations.has(id)), 'Unknown cached relationship');
-  const projection = projectModel(model, options, new Set(snapshot.longCuts));
+  const projected = projectModel(model, options, new Set(snapshot.longCuts));
+  const positions = diagramViewPositions(projected, options.diagramView);
+  const projection = projectionForDiagramPositions(projected, positions);
   const layout = structuredClone(snapshot.layout);
   requireValue(layout && [layout.width, layout.height].every(v => Number.isFinite(v) && v > 0 && v <= 1e8), 'Invalid cached layout size');
   const nodes = new Map(layout.children.map(n => [n.id, n]));
   requireValue(nodes.size === projection.nodes.length && nodes.size === layout.children.length, 'Cached nodes differ from model');
+  requireValue(diagramPositionsMatch(layout, positions), 'Cached diagram positions differ from saved view');
   for (const n of projection.nodes) {
     const saved = nodes.get(n.id);
     requireValue(saved && saved.width === n.width && saved.height === n.height, 'Cached node size differs');

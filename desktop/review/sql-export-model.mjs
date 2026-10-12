@@ -16,7 +16,7 @@ export function sqlExportModel(snapshot) {
     if (semantic.canExportForeignKey && validEndpoints) return true;
     skippedRelationships.push({ id: relation.id, name: relation.name,
       reason: !validEndpoints ? 'INVALID_ENDPOINTS' : semantic.errors[0]?.code ??
-        (semantic.conditionState !== 'absent' ? 'CONDITIONAL_RELATIONSHIP' : 'NOT_DECLARED_PHYSICAL') });
+        (semantic.status === 'candidate' ? 'UNCONFIRMED_CANDIDATE' : semantic.conditionState !== 'absent' ? 'CONDITIONAL_RELATIONSHIP' : 'NOT_DECLARED_PHYSICAL') });
     return false;
   });
   // The pinned SQL writers consume references, while model files use relationships.
