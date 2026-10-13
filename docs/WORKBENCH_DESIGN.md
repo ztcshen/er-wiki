@@ -174,6 +174,28 @@ Generated-source adaptation remains confined to `desktop/integrate.mjs` and
 Build paths and package-source exclusions normalize Windows separators, but this
 does not constitute Windows runtime or installer validation.
 
+## Independent annotation placement
+
+`annotation-layout.mjs` runs after each routing candidate and before readability
+acceptance. Field maxima, per-edge caption groups and bus counts have separate
+candidate rules. A cardinality badge may move at most 48 SVG units outward along
+its owning field's normal; captions and counts stay beside their own route.
+Captions never rotate, and labels on one edge retain their relative positions.
+
+The original group is always available. Candidates must not increase any of
+label overlaps, badge overlaps or foreign-wire intrusions. Fewer obstructions win;
+equal-conflict candidates may reduce displacement using a small SVG-unit tolerance.
+Each group commits atomically. Three passes, a default 60ms stage budget, a 12,000
+evaluation cap and the request deadline bound this optional stage. A uniform grid
+narrows collision queries, with a capped fallback for very large rectangles.
+Bounds use rendered box dimensions rather than PCB text weights or font guesses.
+
+Only derived `id/x/y` badge geometry enters layout snapshots. Restore checks
+current identities and anchor constraints, regenerates text and recomputes quality.
+Rendering, focus/fit and SVG/HTML exports consume the same badge getters. Rerouting
+invalidates old positions; content-only changes keep geometry while refreshing
+semantics. This stage never edits the shared schema or saved table coordinates.
+
 ## Verification boundary
 
 Node checks cover the command catalogue, frame validation across every preload

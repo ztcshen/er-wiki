@@ -12,6 +12,7 @@ import {placeIsolatedTables} from './isolated-placement.mjs';
 import { arrangeDomainGroups, domainLayoutEligibility } from './group-layout.mjs';
 import { diagramViewPositions, projectionForDiagramPositions, diagramPositionsMatch,
   applyDiagramPositions, routeDiagramGeometry } from './diagram-geometry.mjs';
+import { optimizeAnnotations } from './annotation-layout.mjs';
 
 export async function arrangeSchematic(model, options={}, elk){
   options = { ...options, budget: options.budget || layoutBudget(options) };
@@ -30,12 +31,22 @@ export async function arrangeSchematic(model, options={}, elk){
   projection=projectionForDiagramPositions(projection,diagramViewPositions(projection,options.diagramView));
   if(!projection.nodes.length)return {projection,layout:{children:[],edges:[],width:800,height:500},metrics:{crossings:0,overlaps:0,length:0,bends:0},candidates:[]};
   let published = null;
+  const annotations = new WeakMap();
+  const annotate = (p, layout) => {
+    const saved = annotations.get(layout);
+    if (saved?.projection === p) return saved.layout;
+    const next = optimizeAnnotations(layout, p, options), entry = { projection: p, layout: next };
+    annotations.set(layout, entry); annotations.set(next, entry);
+    return next;
+  };
   const settle = candidate => {
     // A named diagram's saved geometry takes precedence over optional isolated
     // table placement. Its free nodes were already settled before rerouting.
     if (diagramViewPositions(candidate.projection,options.diagramView).size) return candidate;
-    const layout=placeIsolatedTables(candidate.projection,candidate.layout);
-    if(layout===candidate.layout)return candidate;
+    const placed=placeIsolatedTables(candidate.projection,candidate.layout);
+    if(placed===candidate.layout)return candidate;
+    delete placed.annotationPositions; delete placed.annotationPlacement;
+    const layout=annotate(candidate.projection,placed);
     const metrics=scoreLayout(layout,candidate.projection);
     return {...candidate,layout,metrics,quality:layoutQuality(layout,candidate.projection,metrics,options.targetAspectRatio)};
   };
@@ -56,6 +67,7 @@ export async function arrangeSchematic(model, options={}, elk){
     const evaluate=(p,layout,metadata)=>{
       validateLayout(layout,p);
       if (!diagramPositionsMatch(layout,fixedPositions)) throw Object.assign(new Error('布局改变了命名视图的固定位置'),{code:'DIAGRAM_VIEW_POSITION_INVALID'});
+      layout=annotate(p,layout);
       const metrics=scoreLayout(layout,p);
       const result={projection:p,layout,metrics,quality:layoutQuality(layout,p,metrics,options.targetAspectRatio),...metadata};
       results.push(result);publish(result,cuts);
@@ -96,7 +108,7 @@ export async function arrangeSchematic(model, options={}, elk){
       const base=await measure('elk',()=>elk.layout(graph));validateLayout(base,p);
       for(const {layout:placed,placement}of await measure('placement',()=>arrangePlaced(p,base,elk,{...options,onPlacementError:(error,strategy)=>candidateErrors.push({stage:'placement',direction,seed,strategy,message:error.message})}))){
         if(fixedPositions.size){await fixedCandidates(p,placed,{direction,seed,...(placement?{placement}:{})});continue;}
-        const layout=placeIsolatedTables(p,placed);
+        const layout=annotate(p,placeIsolatedTables(p,placed));
         validateLayout(layout,p);
         const metrics=scoreLayout(layout,p);
         if(placement&&metrics.overlaps)continue;
@@ -107,7 +119,7 @@ export async function arrangeSchematic(model, options={}, elk){
         // Keep its placement and let the obstacle router separate the wires.
         if (!candidateValidity(results.at(-1)).valid && !options.budget.expired()) {
           try {
-            const repaired = await measure('baseline-routing', async () => routeObstacles(await loadObstacleRouter(),p,layout));
+            const repaired = annotate(p,await measure('baseline-routing', async () => routeObstacles(await loadObstacleRouter(),p,layout)));
             validateLayout(repaired,p);
             const repairedMetrics=scoreLayout(repaired,p);
             results.push({projection:p,layout:repaired,metrics:repairedMetrics,
@@ -133,7 +145,7 @@ export async function arrangeSchematic(model, options={}, elk){
           const metadata={direction:options.direction==='DOWN'?'DOWN':'RIGHT',seed:'domains',optimization:'domain groups / two-stage',groupLayout:seed.groupLayout};
           if(fixedPositions.size)await fixedCandidates(original,seed,metadata);
           else{
-            const layout=await measure('domain-routing',()=>routeDiagramGeometry(original,seed));
+            const layout=annotate(original,await measure('domain-routing',()=>routeDiagramGeometry(original,seed)));
             const metrics=scoreLayout(layout,original),quality=layoutQuality(layout,original,metrics,options.targetAspectRatio);
             const validity=candidateValidity({projection:original,layout,metrics,quality});
             if(validity.valid)evaluate(original,layout,{...metadata,...(original.nodes.some(n=>n.placement)?{placement:'domain-groups'}:{})});

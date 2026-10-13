@@ -87,6 +87,7 @@ export default function CardinalityLayer({
             key={badge.id}
             transform={`translate(${badge.x},${badge.y})`}
             data-bundle-count={badge.count}
+            data-rel-ids={JSON.stringify(badge.refs)}
             pointerEvents="none"
             opacity={(activeNet || activeRelation != null || activeIds?.length) && !active ? 0.2 : 1}
           >

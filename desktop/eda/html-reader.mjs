@@ -49,7 +49,7 @@ export async function exportReadingHtml(model, {
       throw new Error('阅读器布局无效');
     if (result.projection.edges.some(edge => edge.refs.some(id => candidateIds.has(id))))
       throw new Error('正式阅读图不能包含未确认的候选关联');
-    const viewport = layoutViewBox(result.layout);
+    const viewport = layoutViewBox(result);
     const svg = await sceneToSvg(result, viewport, { showCardinality: true, semanticZoom: false, scale: 1 });
     if (typeof svg !== 'string' || !/^\s*(?:<\?xml[^>]*>\s*)?<svg[\s>]/.test(svg)) throw new Error('阅读器 SVG 无效');
     views.push({ viewId: diagramView?.id ?? null, svg, viewport, snapshot: layoutSnapshot(result), status: result.status || 'ready' });
@@ -245,6 +245,19 @@ function readerBootstrap(identity) {
       wires = findWires();
       const edgeIds = new Set(wires.map(node => node.getAttribute('data-eda-wire'))), current = data.views[viewIndex].snapshot.layout;
       const points = current.edges.filter(edge => edgeIds.has(edge.id)).flatMap(edge => (edge.sections || []).flatMap(section => [section.startPoint, ...(section.bendPoints || []), section.endPoint]));
+      // Use the same rendered labels and badges as the desktop view. Their
+      // transforms may extend beyond the original route or endpoint table.
+      const rootMatrix = svg.getCTM();
+      if (rootMatrix) for (const node of svg.querySelectorAll('[data-rel-ids]')) {
+        if (!parseIds(node.getAttribute('data-rel-ids')).some(id => ids.some(active => same(id, active)))) continue;
+        const matrix = node.getCTM();
+        if (!matrix) continue;
+        const box = node.getBBox(), toWorld = rootMatrix.inverse().multiply(matrix);
+        for (const [x, y] of [[box.x, box.y], [box.x + box.width, box.y + box.height]]) {
+          const point = svg.createSVGPoint(); point.x = x; point.y = y;
+          points.push(point.matrixTransform(toWorld));
+        }
+      }
       const tableIds = relations.filter(r => ids.some(id => same(id, r.id))).flatMap(r => [r.startTableId, r.endTableId]);
       for (const tableId of tableIds) {
         const node = tableNode(tableId), box = current.children.find(n => n.id === node?.getAttribute('data-eda-node'));

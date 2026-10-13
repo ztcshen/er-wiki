@@ -34,6 +34,7 @@ where the tables sit.
 - **Paths:** ELK orthogonal layouts and libavoid obstacle routing.
 - **Connections:** shared relation buses, high-fanout junctions and traceable Net Labels.
 - **Ports:** connections on all four sides, preserving field mappings and 1/N cardinality.
+- **Annotations:** a separate bounded pass clears captions and badges while preserving table positions and routed paths.
 - **Navigation:** full overview → domain → table → column, with search and a minimap.
 
 Layout is heuristic, not globally optimal. Dense graphs may still be marked
@@ -46,7 +47,7 @@ per-view members, positions, colors and visible fields. Domain-level layout and
 relationship routing are separate stages; relationship candidates have explicit
 confirmation state. Export the model and its saved views as a standalone offline
 HTML reader with field documentation, search and diagram navigation. These
-capabilities are available in the local 0.6.0 build; published downloads remain
+capabilities are available in the local 0.7.0 build; published downloads remain
 listed on Releases.
 
 The reading workbench adds incoming/outgoing object references, saved declarative

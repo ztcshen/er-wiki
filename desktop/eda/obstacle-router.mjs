@@ -37,8 +37,15 @@ function placeLabels(edges, nodes, badges) {
         });
       }
     }
-    const position = candidates.find(p => !occupied.some(n => rectanglesOverlap({ ...label, ...p }, n, 4)));
-    if (!position) throw new Error('No clear corridor for relationship label');
+    const longest = points.slice(1).map((b, i) => ({ a: points[i], b }))
+      .sort((a, b) => Math.abs(b.b.x - b.a.x) + Math.abs(b.b.y - b.a.y) - Math.abs(a.b.x - a.a.x) - Math.abs(a.b.y - a.a.y))[0];
+    // Keep a finite seed even when greedy placement cannot clear every obstacle.
+    // The independent annotation stage can repair it; validity still rejects any
+    // remaining overlap rather than discarding the whole routed candidate early.
+    const position = candidates.find(p => !occupied.some(n => rectanglesOverlap({ ...label, ...p }, n, 4))) || candidates[0] || {
+      x: (longest.a.x + longest.b.x) / 2 - label.width / 2,
+      y: (longest.a.y + longest.b.y) / 2 - label.height - 6,
+    };
     Object.assign(label, position); occupied.push(label);
   }
 }
@@ -46,6 +53,7 @@ function placeLabels(edges, nodes, badges) {
 export function routeObstacles(Avoid, projection, seed) {
   const router = new Avoid.Router(Avoid.RouterFlag.OrthogonalRouting.value), endpoints = new Map();
   const layout = structuredClone(seed), meta = new Map(projection.nodes.map(n => [n.id, n]));
+  delete layout.annotationPositions; delete layout.annotationPlacement;
   router.setRoutingParameter(Avoid.RoutingParameter.shapeBufferDistance, 8);
   router.setRoutingParameter(Avoid.RoutingParameter.idealNudgingDistance, 6);
   router.setRoutingParameter(Avoid.RoutingParameter.crossingPenalty, 2000);

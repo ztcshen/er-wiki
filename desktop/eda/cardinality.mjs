@@ -77,6 +77,10 @@ export function relationBounds(result, relationId) {
         { x: node.x, y: node.y },
         { x: node.x + node.width, y: node.y + node.height },
       );
+  const annotations = (result.layout.edges || []).filter(edge => edgeIds.has(edge.id)).flatMap(edge => edge.labels || []);
+  annotations.push(...cardinalityBadges(result).filter(b => b.refs.includes(relationId)).map(b => ({x:b.x-b.width/2,y:b.y-b.height/2,width:b.width,height:b.height})),
+    ...bundleBadges(result).filter(b => b.refs.includes(relationId)).map(b => ({x:b.x-32,y:b.y-8,width:64,height:16})));
+  for (const box of annotations) points.push(box, {x:box.x+box.width,y:box.y+box.height});
   if (!points.length) return null;
   const x = Math.min(...points.map((point) => point.x)),
     y = Math.min(...points.map((point) => point.y));
@@ -88,10 +92,12 @@ export function relationBounds(result, relationId) {
   };
 }
 
-// Annotation geometry follows the existing fixed ports, not a second layout.
+// Canonical badge anchors follow fixed field ports. The independent annotation
+// pass may provide derived coordinates without changing these port semantics.
 // Projection wires run from original END (referenced table) to original START
 // (referencing table), even if ELK is arranged DOWN or a relationship is a self-FK.
 export function cardinalityBadges(result, selectedRelation = null) {
+  const placed = new Map((result.layout.annotationPositions?.cardinality || []).map(p => [p.id, p]));
   const relations = new Map(
     result.projection.nets.flatMap((net) =>
       net.members.map((relation) => [relation.id, relation]),
@@ -155,12 +161,14 @@ export function cardinalityBadges(result, selectedRelation = null) {
     // Reserve the largest label for this port, even while a member is hovered.
     const width = new Set(entries.map(entry => entry.value)).size > 1 ? 46 : 22;
     const height = 18, gap = 8;
+    const saved = placed.get(group.id);
     return {
       id: group.id,
       tableId: group.tableId,
       side: group.side,
       x: group.x + group.normal.dx * (width / 2 + gap),
       y: group.y + group.normal.dy * (height / 2 + gap),
+      ...(saved && [saved.x, saved.y].every(Number.isFinite) ? { x: saved.x, y: saved.y } : {}),
       width,
       height,
       refs: entries.map((entry) => entry.id),
@@ -171,6 +179,7 @@ export function cardinalityBadges(result, selectedRelation = null) {
 }
 
 export function bundleBadges(result) {
+  const placed = new Map((result.layout.annotationPositions?.bundles || []).map(p => [p.id, p]));
   const meta = new Map(result.projection.edges.map((edge) => [edge.id, edge]));
   const occupied = [...(result.layout.children || []),
     ...(result.layout.edges || []).flatMap(e => e.labels || []),
@@ -197,7 +206,8 @@ export function bundleBadges(result) {
       x:s.a.x+(s.b.x-s.a.x)*r+(s.a.x===s.b.x?offset+Math.sign(offset)*24:0),
       y:s.a.y+(s.b.y-s.a.y)*r+(s.a.y===s.b.y?offset:0),
     }))));
-    const position = candidates.find(p => !occupied.some(b=>overlaps({x:p.x-32,y:p.y-8,width:64,height:16},b))) ||
+    const saved = placed.get(edge.id);
+    const position = (saved && [saved.x,saved.y].every(Number.isFinite) ? {x:saved.x,y:saved.y} : null) || candidates.find(p => !occupied.some(b=>overlaps({x:p.x-32,y:p.y-8,width:64,height:16},b))) ||
       {x:(segment.a.x+segment.b.x)/2,y:(segment.a.y+segment.b.y)/2-12};
     occupied.push({x:position.x-32,y:position.y-8,width:64,height:16});
     return segment

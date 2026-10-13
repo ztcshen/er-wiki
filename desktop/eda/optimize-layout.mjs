@@ -3,6 +3,7 @@ import { placementHints, placementPositions } from './placement.mjs';
 import { scoreLayout, validateLayout } from './metrics.mjs';
 import { cohesiveGroups, layoutQuality, compareCandidates, candidateValidity } from './layout-quality.mjs';
 import { movePorts } from './ports.mjs';
+import { optimizeAnnotations } from './annotation-layout.mjs';
 export { movePorts } from './ports.mjs';
 
 export function portSuggestions(projection, layout, limit = 4) {
@@ -63,7 +64,7 @@ export async function optimizeLayouts(baselines, elk, options) {
         'elk.spacing.nodeNode': '48', 'elk.layered.spacing.nodeNodeBetweenLayers': '70',
         'elk.spacing.edgeNode': '16', 'elk.spacing.edgeEdge': '10',
       }, positions);
-      const layout = await elk.layout(graph);
+      const layout = optimizeAnnotations(await elk.layout(graph), projection, options);
       validateLayout(layout, projection);
       const metrics = scoreLayout(layout, projection), quality = layoutQuality(layout, projection, metrics, options.targetAspectRatio);
       if (!candidateValidity({ projection, layout, metrics, quality }).valid) return;

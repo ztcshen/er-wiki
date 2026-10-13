@@ -56,7 +56,7 @@ export function useSchematicLayout(modelId, model, reading, ready) {
     setImprovement(null);
     const firstView = value => {
       if (!rememberedView) {
-        const view = layoutViewBox(value.layout);
+        const view = layoutViewBox(value);
         latest.current = { ...latest.current, view }; setView(view);
       }
     };

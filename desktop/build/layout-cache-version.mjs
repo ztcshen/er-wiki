@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 export function layoutCacheVersion(desktop, readFile = fs.readFileSync) {
   const hash = createHash('sha256');
   for (const name of ['model', 'layout', 'layout-budget', 'layout-content', 'layout-snapshot', 'metrics', 'wire-conflicts', 'ports', 'cardinality', 'relation-condition',
-    'elk-graph', 'placement', 'isolated-placement', 'optimize-layout', 'refine-positions', 'position-candidates', 'compact-layout', 'obstacle-router', 'layout-quality', 'group-layout', 'diagram-geometry', 'diagram-views']) {
+    'elk-graph', 'placement', 'isolated-placement', 'optimize-layout', 'refine-positions', 'position-candidates', 'compact-layout', 'obstacle-router', 'layout-quality', 'group-layout', 'diagram-geometry', 'diagram-views', 'annotation-layout', 'annotation-geometry']) {
     hash.update(name).update(readFile(path.join(desktop, 'eda', name + '.mjs')));
   }
   for (const [file, key] of [[path.join(desktop, 'package.json'), 'elkjs'], [path.join(desktop, '../package.json'), 'libavoid-js']]) {

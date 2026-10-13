@@ -1,4 +1,5 @@
 import { validView } from "./reading-state.mjs";
+import { cardinalityBadges, bundleBadges } from './cardinality.mjs';
 
 // SVG uses xMidYMid meet: account for the unused margins on either axis.
 export function viewScale(view, viewport) {
@@ -59,11 +60,20 @@ export function visibleWorldView(view, viewport) {
 }
 
 // Fit actual content even when a saved view has positions far from world origin.
-export function layoutViewBox(layout, padding = 40) {
+export function layoutViewBox(resultOrLayout, padding = 40) {
+  const result = resultOrLayout?.projection ? resultOrLayout : null;
+  const layout = result ? result.layout : resultOrLayout;
   const points = (layout?.children || []).flatMap(n => [{ x: n.x, y: n.y }, { x: n.x + n.width, y: n.y + n.height }]);
   for (const edge of layout?.edges || []) {
     for (const section of edge.sections || []) points.push(section.startPoint, ...(section.bendPoints || []), section.endPoint);
     for (const label of edge.labels || []) points.push({ x: label.x, y: label.y }, { x: label.x + label.width, y: label.y + label.height });
+  }
+  if (result) {
+    for (const badge of cardinalityBadges(result)) points.push(
+      { x: badge.x - badge.width / 2, y: badge.y - badge.height / 2 },
+      { x: badge.x + badge.width / 2, y: badge.y + badge.height / 2 });
+    for (const badge of bundleBadges(result)) points.push(
+      { x: badge.x - 32, y: badge.y - 8 }, { x: badge.x + 32, y: badge.y + 8 });
   }
   const valid = points.filter(p => p && [p.x, p.y].every(Number.isFinite));
   if (!valid.length) return [0, 0, Math.max(300, layout?.width || 800), Math.max(250, layout?.height || 500)];

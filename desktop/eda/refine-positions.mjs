@@ -5,6 +5,7 @@ import { scoreLayout, validateLayout } from './metrics.mjs';
 import { layoutQuality, compareCandidates, candidateValidity } from './layout-quality.mjs';
 import { fourSideSuggestions } from './ports.mjs';
 import { compactLayoutSeeds } from './compact-layout.mjs';
+import { optimizeAnnotations } from './annotation-layout.mjs';
 
 export async function refinePositions(candidates, options = {}, elk) {
   let best = [...candidates].sort(compareCandidates)[0];
@@ -20,7 +21,7 @@ export async function refinePositions(candidates, options = {}, elk) {
     if (aborted || now() - started >= budget || options.budget?.expired()) return;
     try {
       const projection = movePorts(base.projection, changes);
-      const layout = routeObstacles(Avoid, projection, seed);
+      const layout = optimizeAnnotations(routeObstacles(Avoid, projection, seed), projection, options);
       validateLayout(layout, projection);
       const metrics = scoreLayout(layout, projection), quality = layoutQuality(layout, projection, metrics, options.targetAspectRatio);
       if (!candidateValidity({ projection, layout, metrics, quality }).valid) return;

@@ -109,7 +109,9 @@ test('export fits saved geometry far from the origin without relocating nodes or
   const before = JSON.stringify(result), modelBefore = JSON.stringify(model), rendered = [];
   const html = await exportReadingHtml(model, { layout: async () => result, sceneToSvg: (_result, view) => { rendered.push(view); return svg(); } });
   const data = payloadOf(html), viewport = data.views[0].viewport;
-  assert(viewport[0] >= 10000 && viewport[1] >= 8000); assert(viewport[2] < 2000 && viewport[3] < 1000);
+  // Endpoint badges can extend beyond the saved table boxes. They still belong
+  // to this distant content region, rather than forcing the camera to origin.
+  assert(viewport[0] >= 9900 && viewport[1] >= 7900); assert(viewport[2] < 2000 && viewport[3] < 1000);
   assert.deepEqual(rendered[0], viewport); assert.deepEqual(data.views[0].snapshot.layout.children.map(node => [node.x, node.y]), result.layout.children.map(node => [node.x, node.y]));
   assert.equal(JSON.stringify(result), before); assert.equal(JSON.stringify(model), modelBefore);
 });

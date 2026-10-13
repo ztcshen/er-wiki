@@ -1,3 +1,12 @@
+# v0.7.0 — Independent annotation placement (local build)
+
+- Optimize field cardinality badges, related captions and bus counts after routing, before candidate acceptance. Captions on the same relationship move together; 1/N badges stay on their field's outward normal.
+- Compare complete candidate groups by obstruction first, then displacement. Retain original geometry when no improvement fits the shared deadline; never change table positions, field mappings or routed paths during this stage.
+- Share final annotation geometry across rendering, quality checks, focus/fit, persistent caches and offline exports. Cached geometry is validated against current semantic identities and placement bounds.
+- Use spatial obstacle queries, three bounded repair rounds and a candidate limit. Dense graphs can still remain degraded; this is a heuristic, not a global optimality guarantee.
+
+This is a local source/build update. Published downloads remain on the Releases page.
+
 # v0.4.1 — Relationship explanations and reliable boundary routing
 
 - New bilingual, static product introduction centered on EDA-style routing, with a real renderer screenshot, explicit limits and a separate interactive demo. README first screens and sharing metadata follow the same message.

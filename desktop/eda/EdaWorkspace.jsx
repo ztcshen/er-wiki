@@ -307,7 +307,7 @@ export default function EdaWorkspace({ modelId, ready, title = 'ER Wiki', diagra
   };
   const fitView = () => {
     if (result && currentResult)
-      setView(layoutViewBox(result.layout));
+      setView(layoutViewBox(result));
   };
   const zoomView = (factor) => setView((v) => zoomAtPoint(v, factor));
   useEffect(() => {
