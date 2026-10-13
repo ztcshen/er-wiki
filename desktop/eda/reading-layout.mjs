@@ -1,4 +1,4 @@
-export const CONTEXT_VIEWS = ['details', 'references', 'queries'];
+export const CONTEXT_VIEWS = ['details', 'references', 'queries', 'display'];
 export function cleanReadingLayout(value = {}) {
   value = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const context = Array.isArray(value.children) ? value.children.find(item => item?.id === 'context') : null;

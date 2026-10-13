@@ -1,5 +1,3 @@
-import { Popover } from "@douyinfe/semi-ui";
-import EdaDisplaySettings from "./EdaDisplaySettings";
 import { tr } from "../i18n/renderer";
 import { isCandidateRelation } from '../review/relation-semantics.mjs';
 
@@ -18,6 +16,9 @@ export default function EdaToolbar({
   issues = [],
   onCheck,
   checksOpen,
+  onDisplay,
+  displayOpen,
+  workspaceControl,
 }) {
   const { tables, relationships } = model;
   const candidateCount = relationships.filter(isCandidateRelation).length;
@@ -78,6 +79,7 @@ export default function EdaToolbar({
           <span> · {relationships.length - candidateCount} 条关系{candidateCount > 0 && <> · {candidateCount} {tr('候选')}</>}</span>
         </span>
         <div className="eda-view-actions">
+          {workspaceControl}
           <button
             className="eda-check-button"
             data-errors={issues.some((issue) => issue.severity === "error")}
@@ -96,24 +98,10 @@ export default function EdaToolbar({
             <i className="bi bi-diagram-3" aria-hidden="true" />
             整理
           </button>
-          <Popover
-            trigger="click"
-            position="bottomRight"
-            content={
-              <EdaDisplaySettings
-                model={model}
-                reading={reading}
-                settings={settings}
-                setSettings={setSettings}
-                navigate={navigate}
-              />
-            }
-          >
-            <button aria-label="图形显示设置">
+            <button aria-label="图形显示设置" onClick={onDisplay} aria-pressed={displayOpen}>
               <i className="bi bi-sliders" aria-hidden="true" />
               显示
             </button>
-          </Popover>
         </div>
       </div>
     </div>

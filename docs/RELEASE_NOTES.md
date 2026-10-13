@@ -1,3 +1,14 @@
+# v0.8.0 — Compact engineering workbench (local build)
+
+- Compact File/Edit/View menus, real document tabs and a project tree replace the tall stacked controls. Workspace save/load and panel arrangement move into a compact menu.
+- A docked Properties/View panel shows document information when nothing is selected and object details when selecting a table, field or relationship. Existing references, saved queries and checks remain available.
+- Cross-probing an already visible table preserves its named diagram and routes. Table/field focus emphasizes relevant relationships; explicit net selection retains its narrower member set.
+- Grid, connection-point and relationship-caption visibility and unrelated-object dimming are local preferences. They do not edit model records or reroute the scene.
+- A unified status bar provides selection, zoom and panel controls. Light/dark palettes, narrow windows and saved horizontal/vertical panel arrangements are supported.
+
+The interaction references are Altium's public environment/panel documentation;
+this release does not claim to reproduce its private implementation.
+
 # v0.7.0 — Independent annotation placement (local build)
 
 - Optimize field cardinality badges, related captions and bus counts after routing, before candidate acceptance. Captions on the same relationship move together; 1/N badges stay on their field's outward normal.

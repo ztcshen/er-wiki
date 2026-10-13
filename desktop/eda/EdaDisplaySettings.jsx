@@ -1,4 +1,20 @@
 import ReadingBookmarks from "./ReadingBookmarks";
+import { tr } from '../i18n/renderer';
+import { normalizeDisplayOptions, displayOptionsPatch } from './display-options.mjs';
+
+const displayGroups = [
+  { title: '显示内容', options: [
+    ['edaGrid', '显示网格'],
+    ['edaCardinality', '显示关系基数（1 / N）'],
+    ['edaRelationLabels', '显示关系说明'],
+    ['edaPortMarkers', '显示连接端点'],
+    ['edaMinimap', '显示导航小地图'],
+  ] },
+  { title: '聚焦阅读', options: [
+    ['edaDimOthers', '淡化无关对象'],
+    ['edaSemanticZoom', '缩小时突出表名'],
+  ] },
+];
 
 export default function EdaDisplaySettings({
   model,
@@ -6,34 +22,23 @@ export default function EdaDisplaySettings({
   settings,
   setSettings,
   navigate,
+  embedded = false,
 }) {
+  const display = normalizeDisplayOptions(settings);
   const { level, selectedTable, tableId, domainId, labels, bundle, direction } =
     reading.location;
   return (
-    <div className="eda-display-panel">
-      <strong>图形显示</strong>
-      <label className="eda-display-check">
-        <input
-          type="checkbox"
-          checked={settings.edaCardinality !== false}
-          onChange={(e) => {
-            const checked = e.target.checked;
-            setSettings((s) => ({ ...s, edaCardinality: checked }));
-          }}
-        />
-        显示关系基数（1 / N）
-      </label>
-      <label className="eda-display-check">
-        <input
-          type="checkbox"
-          checked={settings.edaSemanticZoom !== false}
-          onChange={(e) => {
-            const checked = e.target.checked;
-            setSettings((s) => ({ ...s, edaSemanticZoom: checked }));
-          }}
-        />
-        缩小时突出表名
-      </label>
+    <div className={`eda-display-panel${embedded ? ' is-docked' : ''}`}>
+      {!embedded && <strong>图形显示</strong>}
+      {displayGroups.map(group => <fieldset className="eda-display-group" key={group.title}>
+        <legend>{tr(group.title)}</legend>
+        {group.options.map(([key, label]) => <label className="eda-display-check" key={key}>
+          <input type="checkbox" data-display-setting={key} checked={display[key]}
+            onChange={event => { const checked = event.target.checked; setSettings(value => ({ ...value, ...displayOptionsPatch({ [key]: checked }) })); }}/>
+          {tr(label)}
+        </label>)}
+      </fieldset>)}
+      <small>{tr('关系说明开关保留 Net Label 与关系连线。')}</small>
       <details>
         <summary>高级显示</summary>
         <label>
@@ -72,24 +77,14 @@ export default function EdaDisplaySettings({
         <label className="eda-display-check">
           <input
             type="checkbox"
-            checked={settings.edaMetrics === true}
+            data-display-setting="edaMetrics"
+            checked={display.edaMetrics}
             onChange={(e) => {
               const checked = e.target.checked;
-              setSettings((s) => ({ ...s, edaMetrics: checked }));
+              setSettings((s) => ({ ...s, ...displayOptionsPatch({ edaMetrics: checked }) }));
             }}
           />
           显示布局指标
-        </label>
-        <label className="eda-display-check">
-          <input
-            type="checkbox"
-            checked={settings.edaMinimap !== false}
-            onChange={(e) => {
-              const checked = e.target.checked;
-              setSettings((s) => ({ ...s, edaMinimap: checked }));
-            }}
-          />
-          显示导航小地图
         </label>
       </details>
       <small>显示设置自动记忆，不修改模型保存时间。</small>

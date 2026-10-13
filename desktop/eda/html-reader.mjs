@@ -34,7 +34,7 @@ export async function exportReadingHtml(model, {
   if (!layout) { const { arrangeSchematic } = await import('./layout.mjs'); layout = arrangeSchematic; }
   if (!sceneToSvg) {
     const { diagramSvg } = await import('./export-diagram.jsx');
-    const style = getComputedStyle(document.querySelector('.eda-workspace') || document.documentElement);
+    const style = getComputedStyle(document.querySelector('.eda-canvas') || document.querySelector('.eda-workspace') || document.documentElement);
     sceneToSvg = (result, view, props) => diagramSvg(result, view, style, props);
   }
   const candidateIds = new Set(model.relationships.filter(r => r.reviewEvidence?.status === 'candidate').map(r => r.id));

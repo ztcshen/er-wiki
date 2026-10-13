@@ -196,6 +196,31 @@ Rendering, focus/fit and SVG/HTML exports consume the same badge getters. Rerout
 invalidates old positions; content-only changes keep geometry while refreshing
 semantics. This stage never edits the shared schema or saved table coordinates.
 
+## Compact editor shell and contextual tools
+
+The 0.8 shell takes interaction references from Altium's maintained public
+[environment](https://www.altium.com/documentation/altium-designer/design-environment-elements),
+[panels](https://www.altium.com/documentation/altium-designer/working-with-panels)
+and [view configuration](https://www.altium.com/documentation/altium-designer/pcb/your-view-of-the-board)
+documentation, inspected on 2026-10-13. These are product behavior references,
+not evidence of its private algorithms. The implementation and ER terminology
+remain specific to ER Wiki.
+
+Document tabs use persisted diagram identities. Tree cross-probing keeps the
+active document when its table is already present; navigating to an absent table
+uses the existing table scope. The Properties dock shows document information
+without selection, then table/field/relationship details. Display configuration
+is another tab in the existing local reading layout, so workspace restore retains
+the chosen panel. Opening reference/query results preserves that source panel;
+selecting directly on the canvas returns to Properties.
+
+`display-options.mjs` accepts only known boolean presentation preferences. Grid,
+caption and port-marker visibility do not change projection or wire geometry.
+Net Labels remain visible because they represent connectivity. Focus precedence
+is field, explicit net, then incident relationships of the selected table. A
+clear-focus action removes selection without changing model records. Canvas
+palette values are shared with SVG and offline-reader generation.
+
 ## Verification boundary
 
 Node checks cover the command catalogue, frame validation across every preload

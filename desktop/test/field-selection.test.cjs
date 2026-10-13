@@ -24,3 +24,18 @@ test('composite and conditional alternatives all belong to their selected field;
   assert.equal(matchesRelation(edge, 'A-net', 'A', ids), false);
   assert.equal(matchesRelation(edge, null, null, ids), true);
 });
+
+test('table focus respects field specificity, typed identities and explicit net selection', async () => {
+  const { focusRelationshipIds } = await import('../eda/field-selection.mjs');
+  const relationships = [
+    { id: 'incoming', startTableId: 'orders', startFieldId: 'account_id', endTableId: 0, endFieldId: 'id' },
+    { id: 'outgoing', startTableId: 0, startFieldId: 'owner_id', endTableId: 'users', endFieldId: 'id' },
+    { id: 'different-type', startTableId: '0', startFieldId: 'id', endTableId: 'other', endFieldId: 'id' },
+  ];
+  assert.deepEqual(focusRelationshipIds(relationships, { selectedTable: 0 }), ['incoming', 'outgoing']);
+  assert.deepEqual(focusRelationshipIds(relationships, { selectedTable: 0, selectedField: 'id', selectedNet: 'group' }), ['incoming']);
+  assert.equal(focusRelationshipIds(relationships, { selectedTable: 0, selectedNet: 'group' }), null,
+    'Opening a net from table properties must retain the net member highlight');
+  assert.deepEqual(focusRelationshipIds(relationships, { selectedTable: 'isolated' }), []);
+  assert.equal(focusRelationshipIds(relationships, {}), null);
+});

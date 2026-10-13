@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from "react";
 import { clientPointToWorld, zoomAtPoint } from "../eda/camera.mjs";
 
 // Shared viewport interaction only; ER and process semantics have separate renderers.
-export default function DiagramViewport({ view, onView, children, label, onViewEnd }) {
+export default function DiagramViewport({ view, onView, children, label, onViewEnd, grid = true }) {
   const svg = useRef(null),
     drag = useRef(null),
     update = useRef(onView);
@@ -33,6 +33,7 @@ export default function DiagramViewport({ view, onView, children, label, onViewE
       ref={svg}
       className="eda-scene"
       data-eda-scene
+      data-grid-visible={grid ? 'true' : 'false'}
       viewBox={view.join(" ")}
       aria-label={label}
       onPointerDown={(event) => {
@@ -76,13 +77,14 @@ export default function DiagramViewport({ view, onView, children, label, onViewE
           <circle cx="1" cy="1" r=".8" fill="var(--wiki-grid)" />
         </pattern>
       </defs>
-      <rect
+      {grid && <rect
+        data-diagram-grid
         x={view[0]}
         y={view[1]}
         width={view[2]}
         height={view[3]}
         fill={"url(#" + gridId + ")"}
-      />
+      />}
       {children}
     </svg>
   );

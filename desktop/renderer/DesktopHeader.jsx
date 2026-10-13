@@ -18,6 +18,7 @@ import {
 } from "./commands";
 import { dateText, tr } from "../i18n/renderer";
 import "./workbench.css";
+import './engineering-workbench.css';
 
 export { edaCommand } from "./commands";
 // Keep the mature model/file tools; remove commands for the retired canvas.
@@ -131,9 +132,14 @@ export default function DesktopHeader({
           ? "自动保存"
           : "手动保存";
   const shortcut = navigator.platform.includes("Mac") ? "⌘" : "Ctrl+";
+  const editorMenus = [
+    { title: '文件', ids: ['model.new', 'model.save', 'model.rename', 'import.json', 'import.sql', 'export.json', 'export.sql', 'export.diagram', 'export.reader', 'app.backups'] },
+    { title: '编辑', ids: ['edit.undo', 'edit.redo', 'table.add', 'relation.add', 'editor.model', 'editor.code'] },
+    { title: '视图', ids: ['reading.properties', 'reading.display', 'reading.references', 'reading.queries', 'view.directory', 'view.fit', 'view.clear-focus', 'view.fullscreen', 'app.settings'] },
+  ];
   return (
     <>
-      <header className="desktop-header" aria-label="模型操作">
+      <header className="desktop-header" data-shell="engineering" aria-label="模型操作">
         <div className="desktop-header-identity">
           <span className="desktop-brand" title="ER Wiki · 本机工作区">
             <i className="bi bi-diagram-3" aria-hidden="true" />
@@ -143,6 +149,12 @@ export default function DesktopHeader({
             <DesktopModelSwitcher />
           </div>
         </div>
+        <nav className="desktop-menubar" aria-label={tr('主菜单')}>
+          {editorMenus.map(section => <Dropdown key={section.title} trigger="click" position="bottomLeft"
+            render={<Dropdown.Menu className="desktop-grouped-menu">{section.ids.map(id => <Dropdown.Item key={id} disabled={find(id).disabled} onClick={() => invoke(id)}>
+              <i className={`bi bi-${find(id).icon}`} aria-hidden="true"/><span className="desktop-menu-label">{tr(find(id).label)}</span>
+            </Dropdown.Item>)}</Dropdown.Menu>}><button>{tr(section.title)}</button></Dropdown>)}
+        </nav>
         <button
           className="desktop-quick-search"
           aria-label="快速查找"

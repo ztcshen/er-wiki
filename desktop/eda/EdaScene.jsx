@@ -12,6 +12,7 @@ import {
 import CardinalityLayer from "./CardinalityLayer";
 import { resolveRelationSemantics } from '../review/relation-semantics.mjs';
 import { clientPointToWorld } from './camera.mjs';
+import { normalizeDisplayOptions, displayOpacity } from './display-options.mjs';
 
 const pathText = (points) =>
   points.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" ");
@@ -36,7 +37,9 @@ export default function EdaScene({
   onDragPreview,
   onNodeMove,
   onViewEnd,
+  displayOptions,
 }) {
+  const display = normalizeDisplayOptions(displayOptions);
   const [hover, setHover] = useState(null);
   const clickTimer=useRef(null);
   const drag = useRef(null), suppressClick = useRef(false);
@@ -73,7 +76,7 @@ export default function EdaScene({
   const active = hover ? hover.netId : selectedNet;
   const activeRelation = hover ? hover.relationId : selectedRelation;
   const activeIds = hover ? hover.refs : selectedRelationshipIds;
-  const hasActive = activeRelation != null || (activeIds !== null ? activeIds.length > 0 : !!active);
+  const hasActive = activeRelation != null || (activeIds !== null ? activeIds.length > 0 : !!active) || (!hover && selectedTable != null);
   const activeNet = result.projection.nets.find((n) => n.id === active);
   const activeMembers =
     activeRelation != null
@@ -83,6 +86,7 @@ export default function EdaScene({
   const activeTables = new Set(
     activeMembers.flatMap((r) => [r.startTableId, r.endTableId]),
   );
+  if (!hover && selectedTable != null) activeTables.add(selectedTable);
   const endpoint = (tid, fid) =>
     (selectedTable === tid && selectedField === fid) ||
     activeMembers.some((r) =>
@@ -124,11 +128,10 @@ export default function EdaScene({
     ),
   );
   return (
-    <DiagramViewport view={view} onView={onView} onViewEnd={onViewEnd} label="EDA 正交原理图">
+    <DiagramViewport view={view} onView={onView} onViewEnd={onViewEnd} grid={display.edaGrid} label="EDA 正交原理图">
       {(result.layout.edges || []).map((edge) => {
         const m = edgeMeta.get(edge.id),
           highlight = matchesRelation(m, active, activeRelation, activeIds),
-          dim = hasActive && !highlight,
           uncertain = m.refs.some(
             (id) => ['inferred', 'unknown', 'invalid'].includes(resolveRelationSemantics(relationMeta.get(id)).certainty) || resolveRelationSemantics(relationMeta.get(id)).conditionState === 'invalid',
           ),
@@ -145,7 +148,7 @@ export default function EdaScene({
             data-rel-ids={JSON.stringify(m.refs)}
             data-kind={m.kind}
             data-highlight={highlight ? "true" : "false"}
-            opacity={dragPreview && m.refs.some(id => { const r = relationMeta.get(id); return r?.startTableId === dragPreview.tableId || r?.endTableId === dragPreview.tableId; }) ? 0 : dim ? 0.15 : 1}
+            opacity={dragPreview && m.refs.some(id => { const r = relationMeta.get(id); return r?.startTableId === dragPreview.tableId || r?.endTableId === dragPreview.tableId; }) ? 0 : displayOpacity(hasActive, highlight, display.edaDimOthers, 0.15)}
             role="button"
             tabIndex={0}
             aria-label={describe(m.refs)}
@@ -191,12 +194,12 @@ export default function EdaScene({
                 />
               </g>
             ))}
-            {['conditional', 'self'].includes(m.kind) && (edge.labels || []).map((label) => (
+            {display.edaRelationLabels && ['conditional', 'self'].includes(m.kind) && (edge.labels || []).map((label) => (
               <g key={label.id} transform={`translate(${label.x},${label.y})`}
                 data-eda-condition={label.text} pointerEvents="none">
                 <rect width={label.width} height={label.height} rx="5"
                   fill="var(--wiki-card)" stroke={highlight ? "var(--eda-active)" : conditionColor || "var(--wiki-line)"} />
-                <text x="10" y="16" fontSize="12" fill={conditionColor || "var(--wiki-ink)"}>
+                <text x="10" y="16" fontSize="12" fill={conditionColor ? `color-mix(in srgb, ${conditionColor}, var(--wiki-ink) var(--eda-label-tint, 0%))` : "var(--wiki-ink)"}>
                   {fitText(tr(label.text), label.width - 20, 12)}
                 </text>
               </g>
@@ -235,13 +238,7 @@ export default function EdaScene({
             className="eda-node"
             data-selected={selectedTable === m.tableId}
             data-detail={m.kind === "table" && nodeCompact ? "summary" : "fields"}
-            opacity={
-              m.kind === "table" &&
-              hasActive &&
-              !activeTables.has(m.tableId)
-                ? 0.3
-                : 1
-            }
+            opacity={displayOpacity(m.kind === 'table' && hasActive, activeTables.has(m.tableId), display.edaDimOthers, 0.3)}
             role="button"
             tabIndex={0}
             aria-label={`${m.kind} ${m.title}`}
@@ -326,13 +323,13 @@ export default function EdaScene({
                 <rect
                   width={node.width}
                   height={node.height}
-                  rx="8"
+                  rx={m.kind === 'table' ? 2 : 8}
                   vectorEffect="non-scaling-stroke"
-                  fill="var(--wiki-card)"
+                  fill={m.kind === 'table' ? 'var(--eda-table-fill,var(--wiki-card))' : 'var(--wiki-card)'}
                   stroke={
                     selectedTable === m.tableId || activeTables.has(m.tableId)
                       ? "var(--eda-active)"
-                      : "var(--wiki-line)"
+                      : m.kind === 'table' ? 'var(--eda-table-outline,var(--wiki-line))' : 'var(--wiki-line)'
                   }
                   strokeWidth={
                     selectedTable === m.tableId || activeTables.has(m.tableId)
@@ -370,7 +367,7 @@ export default function EdaScene({
               </>
             )}
             {onNodeMove && m.kind === 'table' && <rect className="eda-table-drag-handle" data-eda-drag-handle fill="transparent" x="0" y="4" width={node.width} height={nodeCompact ? Math.max(20, node.height - 4) : 66}><title>{tr('拖动表头调整当前视图')}</title></rect>}
-            {(node.ports || []).map((p) => (
+            {display.edaPortMarkers && (node.ports || []).map((p) => (
               <circle
                 key={p.id}
                 data-eda-port={p.id}
@@ -392,6 +389,8 @@ export default function EdaScene({
           activeNet={active}
           activeRelation={activeRelation}
           activeIds={activeIds}
+          hasSelection={hasActive}
+          dimOthers={display.edaDimOthers}
           onSelect={onNet}
           onHover={hoverRelations}
           describe={describe}

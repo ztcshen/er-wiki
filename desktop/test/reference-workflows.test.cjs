@@ -107,12 +107,26 @@ test('named workspace restoration prunes obsolete selection without changing mod
     view: [80,90,900,700], layout: { direction: 'vertical', children: [{ id: 'context', active: 'references', visible: true }] } };
   const state = restoreWorkspaceState(normalizeReadingState({}), snapshot, model);
   assert.equal(state.location.tableId, null); assert.equal(state.layout.direction, 'vertical'); assert.equal(state.layout.children[1].active, 'references');
-  assert.deepEqual(cleanReadingLayout({ children: [{ id: 'context', active: 'script', children: [{ view: 'html' }] }] }).children[1].children.map(v => v.view), ['details','references','queries']);
+  assert.deepEqual(cleanReadingLayout({ children: [{ id: 'context', active: 'script', children: [{ view: 'html' }] }] }).children[1].children.map(v => v.view), ['details','references','queries','display']);
   assert.equal(cleanReadingWorkspaces([{ id: 'a', name: 'First', snapshot }, { id: 'a', name: 'Duplicate', snapshot }]).length, 1);
   assert.equal(cleanReadingWorkspaces([{ id: 'b', name: 'Old workspace', snapshot: null }]).length, 1);
   assert.equal(cleanReadingLayout({ children: [null, { id: 'context', active: 'references' }] }).children[1].active, 'references');
   assert.deepEqual(normalizeReadingState({ layout: null, views: { scope: [0,0,900,600] } }).views.scope, [0,0,900,600]);
   assert.equal(canonicalModelContent({ ...model, reading: state, workspaces: [snapshot] }), content);
+});
+
+test('display dock restores through named workspaces while legacy visibility and default tabs stay unchanged', async () => {
+  const { cleanReadingLayout, cleanWorkspaceSnapshot, restoreWorkspaceState } = await import('../eda/reading-workspaces.mjs');
+  const { normalizeReadingState } = await import('../eda/reading-state.mjs');
+  const saved = cleanWorkspaceSnapshot({ layout: { direction: 'vertical', children: [{ id: 'context', active: 'display', visible: true }] } });
+  const restored = restoreWorkspaceState(normalizeReadingState({}), saved, fixture());
+  assert.equal(restored.layout.children[1].active, 'display'); assert.equal(restored.layout.children[1].visible, true);
+  assert.equal(restored.layout.direction, 'vertical');
+  const defaults = cleanReadingLayout(); assert.equal(defaults.children[1].active, 'details'); assert.equal(defaults.children[1].visible, false);
+  for (const active of ['details', 'references', 'queries']) {
+    const legacy = cleanReadingLayout({ children: [{ id: 'context', active, visible: false }] });
+    assert.equal(legacy.children[1].active, active); assert.equal(legacy.children[1].visible, false);
+  }
 });
 
 test('saved review queries are declarative projections with current typed identifiers', async () => {

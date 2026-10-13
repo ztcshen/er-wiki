@@ -47,13 +47,18 @@ per-view members, positions, colors and visible fields. Domain-level layout and
 relationship routing are separate stages; relationship candidates have explicit
 confirmation state. Export the model and its saved views as a standalone offline
 HTML reader with field documentation, search and diagram navigation. These
-capabilities are available in the local 0.7.0 build; published downloads remain
+capabilities are available in the local 0.8.0 build; published downloads remain
 listed on Releases.
 
 The reading workbench adds incoming/outgoing object references, saved declarative
 review queries and named local workspaces. Workspaces remember the split panels,
 selection and camera; queries travel with the shared model. Derived indexes and
 deduplicated layout caches can be rebuilt independently of model data.
+
+The editor uses compact menus, document tabs, a project tree, a docked Properties
+and View panel, and a shared status bar. Cross-probing a table already in the
+current view preserves its document and routes. Grid, connection-point, caption
+and focus-dimming preferences persist locally without editing the shared model.
 
 The Electron desktop app imports SQL locally, edits table/relationship definitions,
 round-trips JSON and exports SVG/PNG. The hosted demo is read-only and uses

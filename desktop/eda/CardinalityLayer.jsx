@@ -6,6 +6,7 @@ import {
 } from "./cardinality.mjs";
 import { tr } from "../i18n/renderer";
 import { SELF_REFERENCE_COLOR } from './presentation.mjs';
+import { displayOpacity } from './display-options.mjs';
 
 export default function CardinalityLayer({
   result,
@@ -15,6 +16,8 @@ export default function CardinalityLayer({
   onSelect,
   onHover,
   describe,
+  dimOthers = true,
+  hasSelection = false,
 }) {
   const badges = useMemo(
     () => cardinalityBadges(result, activeRelation),
@@ -47,7 +50,7 @@ export default function CardinalityLayer({
             role="button"
             tabIndex={0}
             aria-label={describe(badge.refs)}
-            opacity={(activeNet || activeRelation != null || activeIds?.length) && !active ? 0.2 : 1}
+            opacity={displayOpacity(hasSelection || activeNet || activeRelation != null || activeIds?.length, active, dimOthers)}
             onClick={select}
             onKeyDown={(event) => {
               if (event.key === "Enter") select();
@@ -89,7 +92,7 @@ export default function CardinalityLayer({
             data-bundle-count={badge.count}
             data-rel-ids={JSON.stringify(badge.refs)}
             pointerEvents="none"
-            opacity={(activeNet || activeRelation != null || activeIds?.length) && !active ? 0.2 : 1}
+            opacity={displayOpacity(hasSelection || activeNet || activeRelation != null || activeIds?.length, active, dimOthers)}
           >
             <rect
               x="-32"

@@ -9,6 +9,8 @@ export default function EdaDirectory({
   onSearch,
   reading,
   navigate,
+  title,
+  viewName,
 }) {
   const { selectedTable, domainId } = reading.location;
   const names = new Map(tables.map((table) => [table.id, table]));
@@ -16,13 +18,14 @@ export default function EdaDirectory({
     <aside className="eda-directory" aria-label="模型目录">
       <div className="eda-directory-heading">
         <div>
-          <strong>目录</strong>
+          <strong>项目</strong>
           <span className="eda-directory-total">{tables.length}</span>
         </div>
         <div className="eda-directory-tools">
           <GroupControls fit={() => {}} />
         </div>
       </div>
+      <div className="eda-project-root"><i className="bi bi-folder2-open" aria-hidden="true"/><div><strong title={title}>{title}</strong><small>{viewName || tr('完整模型')}</small></div></div>
       <label className="eda-search-box">
         <i className="bi bi-search" aria-hidden="true" />
         <span className="visually-hidden">定位表或字段</span>

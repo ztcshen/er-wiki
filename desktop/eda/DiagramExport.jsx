@@ -79,7 +79,7 @@ export default function DiagramExport({
       const svg = diagramSvg(
         selected,
         viewport,
-        getComputedStyle(document.querySelector(".eda-workspace")),
+        getComputedStyle((!Scene && document.querySelector('.eda-canvas')) || document.querySelector(".eda-workspace")),
         {
           Scene,
           showCardinality,

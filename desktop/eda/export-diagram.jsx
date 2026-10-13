@@ -38,9 +38,12 @@ export function diagramSvg(
     "--wiki-canvas",
     "--eda-active",
     "--eda-field-active",
+    "--eda-table-fill",
+    "--eda-table-outline",
+    "--eda-label-tint",
   ];
   const css = document.createElementNS(svg.namespaceURI, "style");
-  css.textContent = `svg{${palette.map((k) => `${k}:${style.getPropertyValue(k)}`).join(";")};background:var(--wiki-canvas);font-family:system-ui,sans-serif}
+  css.textContent = `svg{${palette.map(k => { const value = style.getPropertyValue(k).trim(); return value ? `${k}:${value}` : ''; }).filter(Boolean).join(";")};background:var(--wiki-canvas);font-family:system-ui,sans-serif}
     .eda-node-title{font-size:14px;font-weight:600;fill:var(--wiki-ink)}
     .eda-small{font-size:11px;fill:var(--wiki-muted)}
     .eda-label-code{font-size:12px;font-weight:600;fill:var(--wiki-ink)}
