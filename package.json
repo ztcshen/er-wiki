@@ -20,7 +20,7 @@
   "devDependencies": {
     "@babel/core": "7.29.7",
     "@fortawesome/fontawesome-free": "6.5.2",
-    "bootstrap-icons": "1.11.1",
+    "bootstrap-icons": "1.13.1",
     "cmdk": "1.1.1",
     "fake-indexeddb": "6.2.5",
     "jsonschema": "1.5.0",
