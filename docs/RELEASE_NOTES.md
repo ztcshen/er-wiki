@@ -1,5 +1,6 @@
 # v0.8.0 — Compact engineering workbench
 
+- Update Electron to 44.4.5 and refresh the desktop packaging dependency tree.
 - Read and edit multiple diagram views over one shared model, with saved members, positions, colors and visible fields. Export a standalone offline HTML reader with field documentation, search and navigation.
 - Browse incoming/outgoing object references, save declarative review queries and restore named local reading workspaces. Derived indexes and deduplicated layout caches remain rebuildable.
 - Arrange isolated tables within their domains without inventing relationships, and show explicitly configured overview reference links without changing model semantics.
