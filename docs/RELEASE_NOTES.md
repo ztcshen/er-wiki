@@ -1,4 +1,9 @@
-# v0.8.0 — Compact engineering workbench (local build)
+# v0.8.0 — Compact engineering workbench
+
+- Read and edit multiple diagram views over one shared model, with saved members, positions, colors and visible fields. Export a standalone offline HTML reader with field documentation, search and navigation.
+- Browse incoming/outgoing object references, save declarative review queries and restore named local reading workspaces. Derived indexes and deduplicated layout caches remain rebuildable.
+- Arrange isolated tables within their domains without inventing relationships, and show explicitly configured overview reference links without changing model semantics.
+- Place relationship annotations after routing while preserving table positions, field mappings and routed paths. Dense graphs may still be marked degraded.
 
 - Compact File/Edit/View menus, real document tabs and a project tree replace the tall stacked controls. Workspace save/load and panel arrangement move into a compact menu.
 - A docked Properties/View panel shows document information when nothing is selected and object details when selecting a table, field or relationship. Existing references, saved queries and checks remain available.
@@ -8,6 +13,11 @@
 
 The interaction references are Altium's public environment/panel documentation;
 this release does not claim to reproduce its private implementation.
+
+Download `er-wiki-0.8.0-macos-arm64.zip` for macOS Apple Silicon. The application
+is ad-hoc signed, without Developer ID signing or notarization. Public artifacts
+include fictional fulfillment data only. Layout remains heuristic; Windows/Linux
+binaries are not included.
 
 # v0.7.0 — Independent annotation placement (local build)
 
