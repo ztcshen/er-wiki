@@ -47,7 +47,7 @@ per-view members, positions, colors and visible fields. Domain-level layout and
 relationship routing are separate stages; relationship candidates have explicit
 confirmation state. Export the model and its saved views as a standalone offline
 HTML reader with field documentation, search and diagram navigation. These
-capabilities are included in 0.8.0. Download the macOS Apple Silicon application
+capabilities are included in 0.8.1. Download the macOS Apple Silicon application
 from [Releases](https://github.com/ztcshen/er-wiki/releases/latest).
 
 The reading workbench adds incoming/outgoing object references, saved declarative

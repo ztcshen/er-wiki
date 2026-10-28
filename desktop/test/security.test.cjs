@@ -5,6 +5,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { assetPath, isAppURL, safeFilename, safeRoute, MAX_FILE_BYTES, allowsPermission } = require('../security.cjs');
 const { atomicWrite, readModelFile } = require('../files.cjs');
+const { installSessionPolicy } = require('../native/session.cjs');
 
 test('protocol serves only contained local assets and editor routes', () => {
   assert.equal(assetPath('/app/dist', 'erwiki://app/editor/diagrams/test-id'), '/app/dist/index.html');
@@ -26,12 +27,38 @@ test('routes and suggested filenames cannot inject paths or remote URLs', () => 
 test('clipboard is limited to the focused app main frame; sensitive device permissions stay denied', () => {
   const context = { focused: true, mainFrame: true, url: 'erwiki://app/editor' };
   assert.equal(allowsPermission('clipboard-read', context), true);
-  for (const permission of ['media', 'geolocation', 'notifications', 'fileSystem']) {
+  for (const permission of ['media', 'geolocation', 'notifications', 'fileSystem', 'pointerLock']) {
     assert.equal(allowsPermission(permission, context), false);
   }
   for (const restriction of [{ focused: false }, { mainFrame: false }, { url: 'https://evil.invalid' }]) {
     assert.equal(allowsPermission('clipboard-read', { ...context, ...restriction }), false);
   }
+});
+test('session handlers deny pointer lock even when a request is attributed to the trusted main frame', async () => {
+  const contents = {};
+  const handlers = {};
+  installSessionPolicy({
+    session: { defaultSession: {
+      setPermissionRequestHandler: handler => { handlers.request = handler; },
+      setPermissionCheckHandler: handler => { handlers.check = handler; },
+      webRequest: { onBeforeRequest: handler => { handlers.network = handler; } },
+    } },
+    protocol: { handle: (_scheme, handler) => { handlers.protocol = handler; } },
+    net: { fetch: async () => new Response('fixture') },
+    root: '/app/dist',
+    getWindow: () => ({ isFocused: () => true, webContents: contents }),
+  });
+  for (const details of [
+    { requestingUrl: 'erwiki://app/editor', isMainFrame: true },
+    { requestingUrl: 'https://embedded.invalid/', isMainFrame: false },
+  ]) {
+    let decision;
+    handlers.request(contents, 'pointerLock', allowed => { decision = allowed; }, details);
+    assert.equal(decision, false);
+    assert.equal(handlers.check(contents, 'pointerLock', 'erwiki://app', details), false);
+  }
+  const response = await handlers.protocol({ method: 'GET', url: 'erwiki://app/editor' });
+  assert.match(response.headers.get('Content-Security-Policy'), /(?:^|;\s*)frame-src 'none'(?:;|$)/);
 });
 test('atomic export replaces only its target and supports Unicode', async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'er-wiki-files-'));

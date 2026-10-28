@@ -1,3 +1,24 @@
+# v0.8.1 — Electron security update
+
+- Upgrade the pinned Electron runtime from 44.4.5 to 44.10.0, which includes the
+  upstream fix for [GHSA-x562-297c-g43g / CVE-2026-113798](https://github.com/electron/electron/security/advisories/GHSA-x562-297c-g43g).
+- Refresh the Electron downloader to patched Undici 7.30.1. Electron 44.10.0 also
+  includes the upstream mitigation for compromised eMudhra intermediate certificates
+  ([GHSA-jr5w-w6x2-84p9](https://github.com/electron/electron/security/advisories/GHSA-jr5w-w6x2-84p9)).
+- Add a regression check for both native permission handlers: pointer lock remains
+  denied even if Electron attributes an embedded request to the trusted main frame.
+- Verify that the application content policy continues to block frame embedding.
+
+The advisory concerns applications that embed untrusted frames and grant pointer
+lock based on the requesting origin. ER Wiki's existing policy denies pointer
+lock and uses `frame-src 'none'`; the runtime upgrade removes the affected
+dependency version.
+
+Download `er-wiki-0.8.1-macos-arm64.zip` for macOS Apple Silicon. Artifacts include
+the application, corresponding project and pinned renderer source, and SHA-256
+checksums. The application is ad-hoc signed without Developer ID signing or
+notarization. Windows/Linux binaries are not included.
+
 # v0.8.0 — Compact engineering workbench
 
 - Update Electron to 44.4.5 and refresh the desktop packaging dependency tree.

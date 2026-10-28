@@ -27,6 +27,8 @@ jobs:
       - name: Validate version tag
         run: node -e "const p=require('./desktop/package.json'); if(process.env.RELEASE_TAG!=='v'+p.version)process.exit(1)"
       - run: npm ci && npm run setup
+      - run: npm audit --audit-level=high
+      - run: npm --prefix desktop audit --audit-level=high
       - run: npm run scan && npm test && npm run package
       - name: Archive application
         run: |
